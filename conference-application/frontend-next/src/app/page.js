@@ -3,7 +3,8 @@ import styles from './page.module.css'
 import { Suspense } from 'react'
 
 export async function getAgendaItems() {
-  const res = await fetch("http://127.0.0.1:8080");
+  
+  const res = await fetch(process.env.REMOTE_URL+"/agenda/");
   if (!res.ok) {
     // This will activate the closest `error.js` Error Boundary
     throw new Error('Failed to fetch data')

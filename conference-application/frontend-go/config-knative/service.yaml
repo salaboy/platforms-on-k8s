@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: agenda-service
+  name: frontend-go
 spec:
   template:
     metadata:
@@ -10,16 +10,13 @@ spec:
     spec:
       containerConcurrency: 0
       containers:
-        - image: ko://github.com/salaboy/platforms-on-k8s/conference-application/agenda-service
+        - image: ko://github.com/salaboy/platforms-on-k8s/conference-application/frontend-go
           name: user-container
           env: 
-          - name: REDIS_HOST
-            value: redis-master.default.svc.cluster.local
-          - name: REDIS_PASSWORD
-            valueFrom:
-              secretKeyRef:
-                name: redis
-                key: redis-password
+          - name: AGENDA_SERVICE_URL
+            value: http://agenda-service.default.svc.cluster.local
+          - name: C4P_SERVICE_URL
+            value: http://c4p-service.default.svc.cluster.local  
           livenessProbe:
             httpGet:
               path: /health/readiness

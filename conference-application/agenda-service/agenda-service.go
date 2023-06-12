@@ -31,6 +31,10 @@ type AgendaItem struct {
 var rdb *redis.Client
 var KEY = "AGENDAITEMS"
 
+var REDIS_HOST = getEnv("REDIS_HOST", "localhost")
+var REDIS_PORT = getEnv("REDIS_PORT", "6379")
+var REDIS_PASSOWRD = getEnv("REDIS_PASSWORD", "")
+
 func getAgendaByDayHandler(w http.ResponseWriter, r *http.Request) {
 
 }
@@ -157,9 +161,9 @@ func main() {
 	log.Printf("Starting Agenda Service in Port: %s", appPort)
 
 	rdb = redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     REDIS_HOST + ":" + REDIS_PORT,
+		Password: REDIS_PASSOWRD, // no password set
+		DB:       0,              // use default DB
 	})
 
 	log.Printf("Connected to Redis.")
@@ -209,4 +213,12 @@ func (ai AgendaItem) UnmarshalBinary(data []byte) error {
 	}
 
 	return nil
+}
+
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
+	}
+	return value
 }

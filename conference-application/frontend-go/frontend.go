@@ -14,11 +14,18 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service")
+var C4P_SERVICE_URL = getEnv("C4P_SERVICE_URL", "http://c4p-service")
+
 func newAgendaServiceHandler(w http.ResponseWriter, r *http.Request) {
-	proxyRequest("http://localhost:8081", w, r)
+	proxyRequest("agenda", AGENDA_SERVICE_URL, w, r)
 }
 
-func proxyRequest(serviceUrl string, w http.ResponseWriter, r *http.Request) {
+func newC4PServiceHandler(w http.ResponseWriter, r *http.Request) {
+	proxyRequest("c4p", C4P_SERVICE_URL, w, r)
+}
+
+func proxyRequest(serviceName string, serviceUrl string, w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -37,6 +44,8 @@ func proxyRequest(serviceUrl string, w http.ResponseWriter, r *http.Request) {
 	if !strings.HasPrefix(url, "http") {
 		url = fmt.Sprintf("http://%s", url)
 	}
+	// remove the service path
+	url = strings.Replace(url, serviceName+"/", "", -1)
 
 	log.Printf("Proxying request to %s", url)
 
@@ -79,14 +88,6 @@ func proxyRequest(serviceUrl string, w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(response)
-}
-
 func main() {
 	appPort := os.Getenv("APP_PORT")
 	if appPort == "" {
@@ -97,8 +98,8 @@ func main() {
 
 	r := mux.NewRouter()
 
-	// Dapr subscription routes orders topic to this route
 	r.HandleFunc("/agenda/", newAgendaServiceHandler)
+	r.HandleFunc("/c4p/", newC4PServiceHandler)
 
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
@@ -110,4 +111,12 @@ func main() {
 	if err != http.ErrServerClosed {
 		log.Panic(err)
 	}
+}
+
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
+	}
+	return value
 }
