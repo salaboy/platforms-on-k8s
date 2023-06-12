@@ -1,0 +1,30 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: write-app
+spec:
+  template:
+    metadata:
+      annotations:  
+        dapr.io/app-id: write-app
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true" 
+        dapr.io/metrics-port: "9092"
+        autoscaling.knative.dev/min-scale: "1"
+        #dapr.io/disable-builtin-k8s-secret-store: "true"     
+    spec:
+      containerConcurrency: 0
+      containers:
+        - image: ko://github.com/salaboy/prototype-apps/complexapp/write-values
+          name: user-container
+          env: 
+          - name: STATE_STORE_NAME
+            value: statestore
+          livenessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /health/liveness
+              port: 8080
