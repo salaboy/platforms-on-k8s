@@ -28,9 +28,22 @@ type AgendaItem struct {
 	Time     string
 }
 
+type ServiceInfo struct {
+	Name         string
+	Version      string
+	Source       string
+	PodId        string
+	PodNamespace string
+	PodNodeName  string
+}
+
 var rdb *redis.Client
 var KEY = "AGENDAITEMS"
-
+var VERSION = getEnv("VERSION", "1.0.0")
+var SOURCE = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/agenda-service")
+var POD_ID = getEnv("POD_ID", "N/A")
+var POD_NAMESPACE = getEnv("POD_NAMESPACE", "N/A")
+var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
 var REDIS_HOST = getEnv("REDIS_HOST", "localhost")
 var REDIS_PORT = getEnv("REDIS_PORT", "6379")
 var REDIS_PASSOWRD = getEnv("REDIS_PASSWORD", "")
@@ -182,6 +195,17 @@ func main() {
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	})
+
+	r.HandleFunc("/service/info", func(w http.ResponseWriter, r *http.Request) {
+		var info ServiceInfo = ServiceInfo{
+			Name:         "AGENDA",
+			Version:      VERSION,
+			Source:       SOURCE,
+			PodId:        POD_ID,
+			PodNamespace: POD_NODENAME,
+		}
+		json.NewEncoder(w).Encode(info)
 	})
 
 	// Start the server; this is a blocking call

@@ -14,9 +14,23 @@ import (
 	"github.com/gorilla/mux"
 )
 
+var VERSION = getEnv("VERSION", "1.0.0")
+var SOURCE = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/frontend-go")
+var POD_ID = getEnv("POD_ID", "N/A")
+var POD_NAMESPACE = getEnv("POD_NAMESPACE", "N/A")
+var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
 var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service")
 var C4P_SERVICE_URL = getEnv("C4P_SERVICE_URL", "http://c4p-service")
 var NOTIFICATION_SERVICE_URL = getEnv("NOTIFICATION_SERVICE_URL", "http://notifications-service")
+
+type ServiceInfo struct {
+	Name         string
+	Version      string
+	Source       string
+	PodId        string
+	PodNamespace string
+	PodNodeName  string
+}
 
 func agendaServiceHandler(w http.ResponseWriter, r *http.Request) {
 	proxyRequest("agenda", AGENDA_SERVICE_URL, w, r)
@@ -49,6 +63,8 @@ func proxyRequest(serviceName string, serviceUrl string, w http.ResponseWriter, 
 	if !strings.HasPrefix(url, "http") {
 		url = fmt.Sprintf("http://%s", url)
 	}
+
+	log.Printf("Proxying request before replace to %s", url)
 	// remove the service path
 	url = strings.Replace(url, serviceName+"/", "", -1)
 
@@ -103,13 +119,26 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/agenda/", agendaServiceHandler)
-	r.HandleFunc("/c4p/", c4PServiceHandler)
-	r.HandleFunc("/notifications/", notificationServiceHandler)
+	r.PathPrefix("/agenda/").HandlerFunc(agendaServiceHandler)
+	r.PathPrefix("/c4p/").HandlerFunc(c4PServiceHandler)
+	// r.HandleFunc("/agenda/", agendaServiceHandler)
+	// r.HandleFunc("/c4p/", c4PServiceHandler)
+	// r.HandleFunc("/notifications/", notificationServiceHandler)
 
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	})
+
+	r.HandleFunc("/service/info", func(w http.ResponseWriter, r *http.Request) {
+		var info ServiceInfo = ServiceInfo{
+			Name:         "FRONTEND",
+			Version:      VERSION,
+			Source:       SOURCE,
+			PodId:        POD_ID,
+			PodNamespace: POD_NODENAME,
+		}
+		json.NewEncoder(w).Encode(info)
 	})
 
 	// Start the server; this is a blocking call

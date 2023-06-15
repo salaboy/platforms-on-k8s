@@ -41,6 +41,10 @@ type ServiceInfo struct {
 }
 
 var VERSION = getEnv("VERSION", "1.0.0")
+var SOURCE = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/c4p-service")
+var POD_ID = getEnv("POD_ID", "N/A")
+var POD_NAMESPACE = getEnv("POD_NAMESPACE", "N/A")
+var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
 var POSTGRESQL_HOST = getEnv("POSTGRES_HOST", "localhost")
 var POSTGRESQL_PORT = getEnv("POSTGRES_PORT", "5432")
 var POSTGRESQL_USERNAME = getEnv("POSTGRES_USERNAME", "postgres")
@@ -194,13 +198,15 @@ func main() {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
 
-	r.HandleFunc("/info", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/service/info", func(w http.ResponseWriter, r *http.Request) {
 		var info ServiceInfo = ServiceInfo{
-			Name: "C4P",
-			Version:  ,
-			Source: 
+			Name:         "C4P",
+			Version:      VERSION,
+			Source:       SOURCE,
+			PodId:        POD_ID,
+			PodNamespace: POD_NODENAME,
 		}
-		json.NewEncoder(w).Encode()
+		json.NewEncoder(w).Encode(info)
 	})
 
 	// Start the server; this is a blocking call
