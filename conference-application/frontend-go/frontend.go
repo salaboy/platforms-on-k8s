@@ -16,13 +16,18 @@ import (
 
 var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service")
 var C4P_SERVICE_URL = getEnv("C4P_SERVICE_URL", "http://c4p-service")
+var NOTIFICATION_SERVICE_URL = getEnv("NOTIFICATION_SERVICE_URL", "http://notifications-service")
 
-func newAgendaServiceHandler(w http.ResponseWriter, r *http.Request) {
+func agendaServiceHandler(w http.ResponseWriter, r *http.Request) {
 	proxyRequest("agenda", AGENDA_SERVICE_URL, w, r)
 }
 
-func newC4PServiceHandler(w http.ResponseWriter, r *http.Request) {
+func c4PServiceHandler(w http.ResponseWriter, r *http.Request) {
 	proxyRequest("c4p", C4P_SERVICE_URL, w, r)
+}
+
+func notificationServiceHandler(w http.ResponseWriter, r *http.Request) {
+	proxyRequest("notifications", NOTIFICATION_SERVICE_URL, w, r)
 }
 
 func proxyRequest(serviceName string, serviceUrl string, w http.ResponseWriter, r *http.Request) {
@@ -98,8 +103,9 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/agenda/", newAgendaServiceHandler)
-	r.HandleFunc("/c4p/", newC4PServiceHandler)
+	r.HandleFunc("/agenda/", agendaServiceHandler)
+	r.HandleFunc("/c4p/", c4PServiceHandler)
+	r.HandleFunc("/notifications/", notificationServiceHandler)
 
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
