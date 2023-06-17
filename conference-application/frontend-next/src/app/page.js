@@ -12,7 +12,7 @@ export default function Home() {
  
   useEffect(() => {
     setLoading(true)
-    fetch('/api/agenda')
+    fetch('/api/agenda/')
       .then((res) => res.json())
       .then((data) => {
         setData(data)

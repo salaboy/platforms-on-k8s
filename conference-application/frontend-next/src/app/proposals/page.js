@@ -29,7 +29,7 @@ export default function Proposals() {
 
     console.log("Sending Post!" + JSON.stringify(data))
     try{
-      fetch('/api/c4p', {
+      fetch('/api/c4p/', {
         method: "POST",
         body: JSON.stringify(data),
         headers: {

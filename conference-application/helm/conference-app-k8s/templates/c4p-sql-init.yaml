@@ -1,0 +1,10 @@
+{{- if .Values.install.infrastructure }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: c4p-init-sql
+  namespace: {{ .Release.Namespace }}
+data:
+  init.sql: |- 
+    CREATE TABLE proposals( id VARCHAR PRIMARY KEY NOT NULL, title VARCHAR NOT NULL, description TEXT NOT NULL, author VARCHAR NOT NULL, email VARCHAR NOT NULL, approved boolean, status VARCHAR NOT NULL);
+{{- end }}

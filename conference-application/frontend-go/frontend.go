@@ -19,9 +19,9 @@ var SOURCE = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/
 var POD_ID = getEnv("POD_ID", "N/A")
 var POD_NAMESPACE = getEnv("POD_NAMESPACE", "N/A")
 var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
-var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service")
-var C4P_SERVICE_URL = getEnv("C4P_SERVICE_URL", "http://c4p-service")
-var NOTIFICATION_SERVICE_URL = getEnv("NOTIFICATION_SERVICE_URL", "http://notifications-service")
+var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
+var C4P_SERVICE_URL = getEnv("C4P_SERVICE_URL", "http://c4p-service.default.svc.cluster.local")
+var NOTIFICATION_SERVICE_URL = getEnv("NOTIFICATION_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
 
 type ServiceInfo struct {
 	Name         string
@@ -33,15 +33,15 @@ type ServiceInfo struct {
 }
 
 func agendaServiceHandler(w http.ResponseWriter, r *http.Request) {
-	proxyRequest("agenda", AGENDA_SERVICE_URL, w, r)
+	proxyRequest("api/agenda", AGENDA_SERVICE_URL, w, r)
 }
 
 func c4PServiceHandler(w http.ResponseWriter, r *http.Request) {
-	proxyRequest("c4p", C4P_SERVICE_URL, w, r)
+	proxyRequest("api/c4p", C4P_SERVICE_URL, w, r)
 }
 
 func notificationServiceHandler(w http.ResponseWriter, r *http.Request) {
-	proxyRequest("notifications", NOTIFICATION_SERVICE_URL, w, r)
+	proxyRequest("api/notifications", NOTIFICATION_SERVICE_URL, w, r)
 }
 
 func proxyRequest(serviceName string, serviceUrl string, w http.ResponseWriter, r *http.Request) {
@@ -119,8 +119,8 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.PathPrefix("/agenda/").HandlerFunc(agendaServiceHandler)
-	r.PathPrefix("/c4p/").HandlerFunc(c4PServiceHandler)
+	r.PathPrefix("/api/agenda/").HandlerFunc(agendaServiceHandler)
+	r.PathPrefix("/api/c4p/").HandlerFunc(c4PServiceHandler)
 	// r.HandleFunc("/agenda/", agendaServiceHandler)
 	// r.HandleFunc("/c4p/", c4PServiceHandler)
 	// r.HandleFunc("/notifications/", notificationServiceHandler)
@@ -140,6 +140,8 @@ func main() {
 		}
 		json.NewEncoder(w).Encode(info)
 	})
+
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir(os.Getenv("KO_DATA_PATH"))))
 
 	// Start the server; this is a blocking call
 	err := http.ListenAndServe(":"+appPort, r)

@@ -12,11 +12,6 @@ spec:
       containers:
         - image: ko://github.com/salaboy/platforms-on-k8s/conference-application/frontend-go
           name: user-container
-          env: 
-          - name: AGENDA_SERVICE_URL
-            value: http://agenda-service.default.svc.cluster.local
-          - name: C4P_SERVICE_URL
-            value: http://c4p-service.default.svc.cluster.local  
           livenessProbe:
             httpGet:
               path: /health/readiness

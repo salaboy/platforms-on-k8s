@@ -12,7 +12,7 @@ export default function Backend() {
 
   useEffect(() => {
     setLoading(true)
-    fetch('/api/c4p')
+    fetch('/api/c4p/')
       .then((res) => res.json())
       .then((data) => {
         setData(data)
@@ -60,7 +60,7 @@ export default function Backend() {
       <div>
             <ul>
               {data.map((p) => (
-                <li key={p.Id}>{p.Id} - {p.Title} - {p.Description} - {p.Author} - {p.Email}  - {p.Status.Status}  - {p.Approved} 
+                <li key={p.Id}>{p.Id} - {p.Title} - {p.Description} - {p.Author} - {p.Email}  - {p.Status.Status}  - {p.Approved.toString()} 
                   <button main onClick={() => decide(p.Id, true)} >Approve</button>
                   <button main onClick={() => decide(p.Id, false)}>Reject</button>
                 </li>

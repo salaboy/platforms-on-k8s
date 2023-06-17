@@ -1,21 +1,24 @@
+/** @type {import('next').NextConfig} */
 module.exports = {
+    //output: 'export', //-> this is to get static files
+    // output: 'standalone', -> this is to get a server for nodejs
     async rewrites() {
       return [
         {
           source: '/api/agenda',
-          destination: 'http://frontend-go.default.74.220.17.238.sslip.io/agenda/',
+          destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/agenda/',
         },
         {
             source: '/api/agenda/:path*',
-            destination: 'http://frontend-go.default.74.220.17.238.sslip.io/agenda/:path*',
+            destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/agenda/:path*',
         },
         {
             source: '/api/c4p',
-            destination: 'http://frontend-go.default.74.220.17.238.sslip.io/c4p/',
+            destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/c4p/',
         },
         {
             source: '/api/c4p/:path*',
-            destination: 'http://frontend-go.default.74.220.17.238.sslip.io/c4p/:path*',
+            destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/c4p/:path*',
         },
       ]
     },

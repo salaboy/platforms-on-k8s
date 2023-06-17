@@ -32,4 +32,10 @@ helm install postgres oci://registry-1.docker.io/bitnamicharts/postgresql --set 
 and Kafka:
 
 ```
+helm install kafka oci://registry-1.docker.io/bitnamicharts/kafka
+```
+
+Optional Ingress Controller: 
+```
+helm install ingress-controller oci://registry-1.docker.io/bitnamicharts/nginx-ingress-controller
 ```

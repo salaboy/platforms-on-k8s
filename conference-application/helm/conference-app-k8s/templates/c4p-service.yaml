@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-c4p-service-deployment
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: c4p-service
+  template:
+    metadata:
+      labels:
+        app: c4p-service
+    spec:
+      containers:
+      - name: c4p-service
+        image: salaboy/c4p-service-a3dc0474cbfa348afcdf47a8eee70ba9@sha256:7ed233b0f0c9ee5d82a3988ed54947c93ec60ea1fe8dc75243aba5e0ad45d0cb
+        env:
+        - name: AGENDA_SERVICE_URL
+          value: http://agenda-service.{{ .Release.Namespace }}.svc.cluster.local
+        - name: POSTGRES_HOST
+          value: {{ .Release.Name }}-postgresql.{{ .Release.Namespace }}.svc.cluster.local
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Release.Name }}-postgresql
+              key: postgres-password        
+        livenessProbe:
+          httpGet:
+            path: /health/readiness
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /health/liveness
+            port: 8080
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: c4p-service
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    app: c4p-service
+  ports:
+  - port: 80
+    targetPort: 8080

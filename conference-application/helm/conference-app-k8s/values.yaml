@@ -1,0 +1,18 @@
+install:
+  infrastructure: true
+  ingress: false
+postgresql:
+  image:
+    debug: true
+  primary: 
+    initdb:
+      user: postgres
+      password: postgres
+      scriptsConfigMap: c4p-init-sql
+  global:
+    postgresql:
+      auth: 
+        postgresPassword: postgres
+redis: 
+  architecture: standalone
+            
