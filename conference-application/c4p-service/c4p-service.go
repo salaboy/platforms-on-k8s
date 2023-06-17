@@ -57,7 +57,7 @@ func getAllProposalsHandler(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.Query(`SELECT * FROM Proposals`)
 
 	if err != nil {
-		log.Fatalln("There was an error executing the query")
+		log.Printf("There was an error executing the query %v", err)
 	}
 
 	defer rows.Close()
@@ -67,7 +67,7 @@ func getAllProposalsHandler(w http.ResponseWriter, r *http.Request) {
 		var proposal Proposal
 		err = rows.Scan(&proposal.Id, &proposal.Title, &proposal.Description, &proposal.Email, &proposal.Author, &proposal.Approved, &proposal.Status.Status)
 		if err != nil {
-			log.Fatalln("There was an error scanning the sql rows")
+			log.Printf("There was an error scanning the sql rows: %v", err)
 		}
 
 		proposals = append(proposals, proposal)
@@ -85,7 +85,7 @@ func decideProposaldHandler(w http.ResponseWriter, r *http.Request) {
 	var decision ProposalDecision
 	err := json.NewDecoder(r.Body).Decode(&decision)
 	if err != nil {
-		log.Fatalln("There was an error decoding the request body into the struct")
+		log.Printf("There was an error decoding the request body into the struct: %v", err)
 	}
 
 	log.Printf("Updating Proposal By Id: %s", proposalId)
@@ -93,13 +93,13 @@ func decideProposaldHandler(w http.ResponseWriter, r *http.Request) {
 	updateStmt := `UPDATE Proposals set Status=$1, Approved=$2 where Id=$3`
 	_, err = db.Exec(updateStmt, "DECIDED", decision.Approved, proposalId)
 	if err != nil {
-		log.Fatalln("There was an error executing the update query")
+		log.Printf("There was an error executing the update query: %v", err)
 	}
 
 	rows, err := db.Query(`SELECT * FROM Proposals where id=$1`, proposalId)
 
 	if err != nil {
-		log.Fatalln("There was an error executing the query")
+		log.Printf("There was an error executing the query: %v", err)
 	}
 
 	defer rows.Close()
@@ -109,7 +109,7 @@ func decideProposaldHandler(w http.ResponseWriter, r *http.Request) {
 	for rows.Next() {
 		err = rows.Scan(&proposal.Id, &proposal.Title, &proposal.Description, &proposal.Email, &proposal.Author, &proposal.Approved, &proposal.Status.Status)
 		if err != nil {
-			log.Fatalln("There was an error scanning the sql rows")
+			log.Printf("There was an error scanning the sql rows: %v", err)
 		}
 	}
 
@@ -128,11 +128,11 @@ func decideProposaldHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func newProposalHandler(w http.ResponseWriter, r *http.Request) {
-
 	var proposal Proposal
 	err := json.NewDecoder(r.Body).Decode(&proposal)
 	if err != nil {
-		log.Fatalln("There was an error decoding the request body into the struct")
+		log.Printf("There was an error decoding the request body into the struct: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
 	}
 
 	proposal.Id = uuid.New().String()
@@ -142,7 +142,8 @@ func newProposalHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = db.Exec(insertStmt, proposal.Id, proposal.Title, proposal.Description, proposal.Email, proposal.Author, false, "PENDING")
 
 	if err != nil {
-		log.Fatalf("An error occured while executing query: %v", err)
+		log.Printf("An error occured while executing query: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
 	}
 
 	log.Printf("Proposal Stored in Database: %s", proposal)

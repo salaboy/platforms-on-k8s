@@ -1,31 +1,39 @@
+'use client'
 import Image from 'next/image'
 import styles from './styles/home.module.css'
-import { Suspense } from 'react'
+import { useState, useEffect } from 'react'
 
-export async function getAgendaItems() {
+
+
+export default function Home() {
   
-  const res = await fetch(process.env.REMOTE_URL+"/agenda/");
-  if (!res.ok) {
-    // This will activate the closest `error.js` Error Boundary
-    throw new Error('Failed to fetch data')
-  }
-  return res.json();
-}
-
-export default async function Home() {
-  const items = await getAgendaItems();
+  const [data, setData] = useState(null)
+  const [isLoading, setLoading] = useState(false)
+ 
+  useEffect(() => {
+    setLoading(true)
+    fetch('/api/agenda')
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data)
+        setLoading(false)
+      })
+  }, [])
+ 
+  if (isLoading) return <p>Loading...</p>
+  if (!data) return <p>No Proposals</p>
 
   return (
     <main className={styles.main}>
       
         <div>
-          <Suspense fallback={<div>Loading...</div>}>
+          
             <ul>
-              {items.map((item) => (
+              {data.map((item) => (
                 <li key={item.Id}>{item.Id} - {item.Title} - {item.Author} - {item.Day} - {item.Time} </li>
               ))}
             </ul>
-          </Suspense>
+          
         </div>
 
        

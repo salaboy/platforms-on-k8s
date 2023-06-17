@@ -1,32 +1,72 @@
+'use client'
 import styles from '@/app/styles/backend.module.css'
-import { Suspense } from 'react'
+import { useState, useEffect } from 'react'
 
-export async function getProposals() {
+
+export default function Backend() {
+
+  const [data, setData] = useState(null)
+  const [isLoading, setLoading] = useState(false)
+  const [isError, setIsError] = useState(false);
+  const [decisionsMade, setDecisionsMade] = useState(1)
+
+  useEffect(() => {
+    setLoading(true)
+    fetch('/api/c4p')
+      .then((res) => res.json())
+      .then((data) => {
+        setData(data)
+        setLoading(false)
+      })
+  }, [decisionsMade])
+ 
+  if (isLoading) return <p>Loading...</p>
+  if (!data) return <p>No Proposals</p>
+
   
-  const res = await fetch(process.env.REMOTE_URL+"/c4p/");
-  if (!res.ok) {
-    // This will activate the closest `error.js` Error Boundary
-    throw new Error('Failed to fetch data')
+
+  function decide(id, approved){
+    const decision = {
+      approved: approved,
+     
+    }
+    try{
+      setLoading(true);
+      fetch('/api/c4p/'+id+"/decide", {
+        method: "POST",
+        body: JSON.stringify(decision),
+        headers: {
+          'accept': 'application/json',
+        },
+      }).then((response) => response.json()).then((data) => {
+          setDecisionsMade(decisionsMade+1)
+          setLoading(false);
+        }
+      )
+    }catch(err){
+        setLoading(false);
+        setIsError(true);
+    }
+  
   }
-  return res.json();
-}
 
-export default async function Backend() {
   
-  const proposals = await getProposals();
+
 
   return (
     <main className={styles.main}>
       <h1>Backend</h1>
       <h2>Review Proposals (Tab)</h2>
       <div>
-          <Suspense fallback={<div>Loading...</div>}>
             <ul>
-              {proposals.map((p) => (
-                <li key={p.Id}>{p.Id} - {p.Title} - {p.Description} - {p.Author} - {p.Email}  - {p.Approved} </li>
+              {data.map((p) => (
+                <li key={p.Id}>{p.Id} - {p.Title} - {p.Description} - {p.Author} - {p.Email}  - {p.Status.Status}  - {p.Approved} 
+                  <button main onClick={() => decide(p.Id, true)} >Approve</button>
+                  <button main onClick={() => decide(p.Id, false)}>Reject</button>
+                </li>
+                
               ))}
             </ul>
-          </Suspense>
         </div>
 
       <h2>Notifications (Tab)</h2> 
