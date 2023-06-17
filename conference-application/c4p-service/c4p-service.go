@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"database/sql"
 	"encoding/json"
 	"log"
@@ -31,6 +32,26 @@ type ProposalDecision struct {
 	Approved bool
 }
 
+type ProposalRef struct {
+	Id string
+}
+
+type AgendaItem struct {
+	Id       string
+	Proposal ProposalRef
+	Title    string
+	Author   string
+	Day      string
+	Time     string
+}
+
+type DecisionResponse struct {
+	ProposalId string
+	AgendaItem AgendaItem
+	Proposal   Proposal
+	Decision   bool
+}
+
 type ServiceInfo struct {
 	Name         string
 	Version      string
@@ -49,6 +70,7 @@ var POSTGRESQL_HOST = getEnv("POSTGRES_HOST", "localhost")
 var POSTGRESQL_PORT = getEnv("POSTGRES_PORT", "5432")
 var POSTGRESQL_USERNAME = getEnv("POSTGRES_USERNAME", "postgres")
 var POSTGRESQL_PASSOWRD = getEnv("POSTGRES_PASSWORD", "")
+var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
 
 var db *sql.DB
 
@@ -112,16 +134,50 @@ func decideProposaldHandler(w http.ResponseWriter, r *http.Request) {
 			log.Printf("There was an error scanning the sql rows: %v", err)
 		}
 	}
-
+	var decisionResponse DecisionResponse
+	decisionResponse.ProposalId = proposalId
+	decisionResponse.Decision = decision.Approved
+	decisionResponse.Proposal = proposal
 	if decision.Approved {
 		log.Printf("Proposal Id: %s was approved!", proposalId)
-
 		log.Printf("Publish Proposal Id: %s to the Conference Agenda", proposalId)
+		agendaItem := AgendaItem{
+			Title: proposal.Title,
+			Proposal: ProposalRef{
+				Id: proposal.Id,
+			},
+			Author: proposal.Author,
+			Day:    "",
+			Time:   "",
+		}
+		agendaItemJson, err := json.Marshal(agendaItem)
+		if err != nil {
+			log.Printf("There was an error marshalling the Agenda Item to JSON: %v", err)
+		}
+		r, err := http.NewRequest("POST", AGENDA_SERVICE_URL, bytes.NewBuffer(agendaItemJson))
+		if err != nil {
+			log.Printf("There was an error creating the request to the Agenda Item Service: %v", err)
+		}
+		r.Header.Add("Content-Type", "application/json")
+		client := &http.Client{}
+		res, err := client.Do(r)
+		if err != nil {
+			log.Printf("There was an error submitting the request to the Agenda Item Service: %v", err)
+		}
+		defer res.Body.Close()
+		var agendaItemResponse AgendaItem
+		err = json.NewDecoder(res.Body).Decode(&agendaItemResponse)
+		if err != nil {
+			log.Printf("There was an error decoding the request body into the struct: %v", err)
+		}
+		decisionResponse.AgendaItem = agendaItemResponse
+
 		log.Printf("Email Proposal's Id: %s author about decision", proposalId)
 
 	} else {
 		log.Printf("Proposal Id: %s was rejected!", proposalId)
 		log.Printf("Email Proposal's Id: %s author about decision", proposalId)
+
 	}
 
 	respondWithJSON(w, http.StatusOK, proposal)

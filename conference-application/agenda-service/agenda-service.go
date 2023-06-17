@@ -84,7 +84,7 @@ func getHighlightsHandler(w http.ResponseWriter, r *http.Request) {
 			var agendaItem AgendaItem
 			err = json.Unmarshal([]byte(ai), &agendaItem)
 			if err != nil {
-				log.Fatalln("There was an error decoding the AgendaItem into the struct")
+				log.Printf(("There was an error decoding the AgendaItem into the struct: %v", err)
 			}
 			agendaItems = append(agendaItems, agendaItem)
 		}
@@ -107,7 +107,7 @@ func getAllAgendaItemsHandler(w http.ResponseWriter, r *http.Request) {
 		var agendaItem AgendaItem
 		err = json.Unmarshal([]byte(ai), &agendaItem)
 		if err != nil {
-			log.Fatalln("There was an error decoding the AgendaItem into the struct")
+			log.Printf("There was an error decoding the AgendaItem into the struct: %v", err)
 		}
 		agendaItems = append(agendaItems, agendaItem)
 	}
@@ -127,7 +127,7 @@ func getAgendaItemByIdHandler(w http.ResponseWriter, r *http.Request) {
 	var agendaItem AgendaItem
 	err = json.Unmarshal([]byte(agendaItemById), &agendaItem)
 	if err != nil {
-		log.Fatalln("There was an error decoding the request body into the struct")
+		log.Printf("There was an error decoding the request body into the struct: %v", err)
 	}
 	log.Printf("Agenda Item retrieved from Database: %s", agendaItem)
 	respondWithJSON(w, http.StatusOK, agendaItem)
@@ -139,7 +139,7 @@ func newAgendaItemHandler(w http.ResponseWriter, r *http.Request) {
 	var agendaItem AgendaItem
 	err := json.NewDecoder(r.Body).Decode(&agendaItem)
 	if err != nil {
-		log.Fatalln("There was an error decoding the request body into the struct")
+		log.Printf("There was an error decoding the request body into the struct: %v", err)
 	}
 
 	// @TODO: write fail scenario (check for fail string in title return 500)
