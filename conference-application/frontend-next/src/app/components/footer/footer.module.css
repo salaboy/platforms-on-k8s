@@ -1,0 +1,43 @@
+.footer {
+    font-size: .8em;
+    border-top: 1px solid #000;
+}
+.logos {
+    list-style-type: none;
+    display: flex;
+}
+.logosItem {
+    padding: 10px;
+}
+
+.logosItem:first-child {
+    padding-left: 0px;
+}
+
+.menu {
+    list-style-type: none;
+    display: flex;
+    justify-content: start;
+    flex-direction: column;
+}
+.menuItem {
+    padding: 10px;
+}
+
+.menuItem:last-child {
+    padding-right: 0px;
+}
+
+.active {
+    text-decoration: underline;
+}
+
+/* Tablet and Smaller Desktop */
+@media (min-width: 701px) and (max-width: 1120px) {
+  
+}
+
+@media (prefers-color-scheme: dark) {
+  
+}
+
