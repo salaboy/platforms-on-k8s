@@ -1,0 +1,45 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
+    gap: var(--grid-gap);
+    max-width: 100%;
+    margin: var(--grid-margin);
+}
+
+.grid.align-bottom {
+    align-items: end;
+}
+
+.grid .col.single {
+    grid-column-end: span 1;
+}
+
+.grid .col.quarter {
+    grid-column-end: span 3;
+}
+
+.grid .col.third {
+    grid-column-end: span 4;
+}
+
+.grid .col.half {
+    grid-column-end: span 6;
+}
+
+.grid .col.twoThirds {
+    grid-column-end: span 9;
+}
+.grid .col.full {
+    grid-column-end: span 12;
+}
+
+.grid .col.positionHalf {
+    grid-column-start: 7;
+}
+.grid .col.positionThird {
+    grid-column-start: 4;
+}
+.grid .col.positionTwoThird {
+    grid-column-start: 10;
+}
+

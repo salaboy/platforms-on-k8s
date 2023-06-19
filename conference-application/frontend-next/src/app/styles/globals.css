@@ -1,5 +1,36 @@
 :root {
-  
+  /* Raw Values */
+  /* SIZING */
+  --sizing-block: 4px;
+  --sizing-x: var(--sizing-block);
+  --sizing-x2: calc(var(--sizing-block)*2);
+  --sizing-x3: calc(var(--sizing-block)*3);
+  --sizing-x4: calc(var(--sizing-block)*4);
+  --sizing-x5: calc(var(--sizing-block)*5);
+  --sizing-x6: calc(var(--sizing-block)*6);
+  --sizing-x7: calc(var(--sizing-block)*7);
+  --sizing-x8: calc(var(--sizing-block)*8);
+  --sizing-x9: calc(var(--sizing-block)*9);
+  --sizing-x10: calc(var(--sizing-block)*10);
+  --sizing-x12: calc(var(--sizing-block)*12);
+  --sizing-x14: calc(var(--sizing-block)*14);
+  --sizing-x16: calc(var(--sizing-block)*16);
+  --sizing-x18: calc(var(--sizing-block)*18);
+  --sizing-x20: calc(var(--sizing-block)*20);
+  /* Tokens */
+  /* SIZING */
+  --sizing-xxs: var(--sizing-x);
+  --sizing-xs: var(--sizing-x2); 
+  --sizing-s: var(--sizing-x5);
+  --sizing-m: var(--sizing-x6);
+  --sizing-b: var(--sizing-x10);
+  --sizing-xb: var(--sizing-x14);
+  --sizing-xxb: var(--sizing-x20); 
+  /* GRID */
+  --grid-gap: var(--sizing-m);
+  --grid-margin: var(--sizing-s);
+  --grid-columns: 12;
+
 }
 
 @media (prefers-color-scheme: dark) {
@@ -25,6 +56,8 @@ a {
   color: inherit;
   text-decoration: none;
 }
+
+@import url("./grid.css");
 
 @media (prefers-color-scheme: dark) {
   html {

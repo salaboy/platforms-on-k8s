@@ -26,13 +26,14 @@ export default function Home() {
   return (
     <main className={styles.main}>
       
-        <div>
-          
-            <ul>
-              {data.map((item) => (
-                <li key={item.Id}>{item.Id} - {item.Title} - {item.Author} - {item.Day} - {item.Time} </li>
-              ))}
-            </ul>
+        <div className="grid">
+            <div className='col half'>
+              <ul>
+                {data.map((item) => (
+                  <li key={item.Id}>{item.Id} - {item.Title} - {item.Author} - {item.Day} - {item.Time} </li>
+                ))}
+              </ul>
+            </div>
           
         </div>
 
