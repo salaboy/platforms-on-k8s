@@ -20,6 +20,14 @@ module.exports = {
             source: '/api/c4p/:path*',
             destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/c4p/:path*',
         },
+        {
+          source: '/api/events',
+          destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/events/',
+        },
+        {
+          source: '/api/events/:path*',
+          destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/events/:path*',
+        },
       ]
     },
   }

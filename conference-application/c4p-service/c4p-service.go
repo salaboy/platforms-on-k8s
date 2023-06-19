@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"github.com/gorilla/mux"
+	kafka "github.com/segmentio/kafka-go"
 )
 
 type Proposal struct {
@@ -69,8 +71,11 @@ var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
 var POSTGRESQL_HOST = getEnv("POSTGRES_HOST", "localhost")
 var POSTGRESQL_PORT = getEnv("POSTGRES_PORT", "5432")
 var POSTGRESQL_USERNAME = getEnv("POSTGRES_USERNAME", "postgres")
-var POSTGRESQL_PASSOWRD = getEnv("POSTGRES_PASSWORD", "")
+var POSTGRESQL_PASSOWRD = getEnv("POSTGRES_PASSWORD", "postgres")
 var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
+
+var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
+var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
 
 var db *sql.DB
 
@@ -101,110 +106,154 @@ func getAllProposalsHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func decideProposaldHandler(w http.ResponseWriter, r *http.Request) {
+func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-	proposalId := mux.Vars(r)["id"]
-	var decision ProposalDecision
-	err := json.NewDecoder(r.Body).Decode(&decision)
-	if err != nil {
-		log.Printf("There was an error decoding the request body into the struct: %v", err)
-	}
-
-	log.Printf("Updating Proposal By Id: %s", proposalId)
-
-	updateStmt := `UPDATE Proposals set Status=$1, Approved=$2 where Id=$3`
-	_, err = db.Exec(updateStmt, "DECIDED", decision.Approved, proposalId)
-	if err != nil {
-		log.Printf("There was an error executing the update query: %v", err)
-	}
-
-	rows, err := db.Query(`SELECT * FROM Proposals where id=$1`, proposalId)
-
-	if err != nil {
-		log.Printf("There was an error executing the query: %v", err)
-	}
-
-	defer rows.Close()
-
-	//@TODO: validate that only one result comes from the query
-	var proposal Proposal
-	for rows.Next() {
-		err = rows.Scan(&proposal.Id, &proposal.Title, &proposal.Description, &proposal.Email, &proposal.Author, &proposal.Approved, &proposal.Status.Status)
-		if err != nil {
-			log.Printf("There was an error scanning the sql rows: %v", err)
-		}
-	}
-	var decisionResponse DecisionResponse
-	decisionResponse.ProposalId = proposalId
-	decisionResponse.Decision = decision.Approved
-	decisionResponse.Proposal = proposal
-	if decision.Approved {
-		log.Printf("Proposal Id: %s was approved!", proposalId)
-		log.Printf("Publish Proposal Id: %s to the Conference Agenda", proposalId)
-		agendaItem := AgendaItem{
-			Title: proposal.Title,
-			Proposal: ProposalRef{
-				Id: proposal.Id,
-			},
-			Author: proposal.Author,
-			Day:    "",
-			Time:   "",
-		}
-		agendaItemJson, err := json.Marshal(agendaItem)
-		if err != nil {
-			log.Printf("There was an error marshalling the Agenda Item to JSON: %v", err)
-		}
-		r, err := http.NewRequest("POST", AGENDA_SERVICE_URL, bytes.NewBuffer(agendaItemJson))
-		if err != nil {
-			log.Printf("There was an error creating the request to the Agenda Item Service: %v", err)
-		}
-		r.Header.Add("Content-Type", "application/json")
-		client := &http.Client{}
-		res, err := client.Do(r)
-		if err != nil {
-			log.Printf("There was an error submitting the request to the Agenda Item Service: %v", err)
-		}
-		defer res.Body.Close()
-		var agendaItemResponse AgendaItem
-		err = json.NewDecoder(res.Body).Decode(&agendaItemResponse)
+		proposalId := mux.Vars(r)["id"]
+		var decision ProposalDecision
+		err := json.NewDecoder(r.Body).Decode(&decision)
 		if err != nil {
 			log.Printf("There was an error decoding the request body into the struct: %v", err)
 		}
-		decisionResponse.AgendaItem = agendaItemResponse
 
-		log.Printf("Email Proposal's Id: %s author about decision", proposalId)
+		log.Printf("Updating Proposal By Id: %s", proposalId)
 
-	} else {
-		log.Printf("Proposal Id: %s was rejected!", proposalId)
-		log.Printf("Email Proposal's Id: %s author about decision", proposalId)
+		updateStmt := `UPDATE Proposals set Status=$1, Approved=$2 where Id=$3`
+		_, err = db.Exec(updateStmt, "DECIDED", decision.Approved, proposalId)
+		if err != nil {
+			log.Printf("There was an error executing the update query: %v", err)
+		}
 
-	}
+		rows, err := db.Query(`SELECT * FROM Proposals where id=$1`, proposalId)
 
-	respondWithJSON(w, http.StatusOK, proposal)
+		if err != nil {
+			log.Printf("There was an error executing the query: %v", err)
+		}
+
+		defer rows.Close()
+
+		//@TODO: validate that only one result comes from the query
+		var proposal Proposal
+		for rows.Next() {
+			err = rows.Scan(&proposal.Id, &proposal.Title, &proposal.Description, &proposal.Email, &proposal.Author, &proposal.Approved, &proposal.Status.Status)
+			if err != nil {
+				log.Printf("There was an error scanning the sql rows: %v", err)
+			}
+		}
+		var decisionResponse DecisionResponse
+		decisionResponse.ProposalId = proposalId
+		decisionResponse.Decision = decision.Approved
+		decisionResponse.Proposal = proposal
+		if decision.Approved {
+			log.Printf("Proposal Id: %s was approved!", proposalId)
+			log.Printf("Publish Proposal Id: %s to the Conference Agenda", proposalId)
+			agendaItem := AgendaItem{
+				Title: proposal.Title,
+				Proposal: ProposalRef{
+					Id: proposal.Id,
+				},
+				Author: proposal.Author,
+				Day:    "",
+				Time:   "",
+			}
+			agendaItemJson, err := json.Marshal(agendaItem)
+			if err != nil {
+				log.Printf("There was an error marshalling the Agenda Item to JSON: %v", err)
+			}
+			r, err := http.NewRequest("POST", AGENDA_SERVICE_URL, bytes.NewBuffer(agendaItemJson))
+			if err != nil {
+				log.Printf("There was an error creating the request to the Agenda Item Service: %v", err)
+			}
+			r.Header.Add("Content-Type", "application/json")
+			client := &http.Client{}
+			res, err := client.Do(r)
+			if err != nil {
+				log.Printf("There was an error submitting the request to the Agenda Item Service: %v", err)
+			}
+			defer res.Body.Close()
+			var agendaItemResponse AgendaItem
+			err = json.NewDecoder(res.Body).Decode(&agendaItemResponse)
+			if err != nil {
+				log.Printf("There was an error decoding the request body into the struct: %v", err)
+			}
+			decisionResponse.AgendaItem = agendaItemResponse
+
+			log.Printf("Email Proposal's Id: %s author about decision", proposalId)
+
+			proposalJson, err := json.Marshal(proposal)
+			if err != nil {
+				log.Printf("An error occured while marshalling the proposal to json: %v", err)
+				respondWithJSON(w, http.StatusInternalServerError, err)
+				return
+			}
+			msg := kafka.Message{
+				Key:   []byte(fmt.Sprintf("proposal-approved-%s", proposal.Id)),
+				Value: proposalJson,
+			}
+			err = kafkaWriter.WriteMessages(r.Context(), msg)
+
+			if err != nil {
+				log.Printf("An error occured while writing the message to Kafka: %v", err)
+				respondWithJSON(w, http.StatusInternalServerError, err)
+				return
+			}
+			log.Printf("Proposal Approved Event emitted to Kafka: %s", proposal)
+
+		} else {
+			log.Printf("Proposal Id: %s was rejected!", proposalId)
+			log.Printf("Email Proposal's Id: %s author about decision", proposalId)
+
+		}
+
+		respondWithJSON(w, http.StatusOK, proposal)
+	})
 }
 
-func newProposalHandler(w http.ResponseWriter, r *http.Request) {
-	var proposal Proposal
-	err := json.NewDecoder(r.Body).Decode(&proposal)
-	if err != nil {
-		log.Printf("There was an error decoding the request body into the struct: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-	}
+func newProposalHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		var proposal Proposal
+		err := json.NewDecoder(r.Body).Decode(&proposal)
+		if err != nil {
+			log.Printf("There was an error decoding the request body into the struct: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	proposal.Id = uuid.New().String()
+		proposal.Id = uuid.New().String()
 
-	insertStmt := `insert into Proposals("id", "title", "description", "email", "author", "approved", "status") values($1, $2, $3, $4, $5, $6, $7)`
+		insertStmt := `insert into Proposals("id", "title", "description", "email", "author", "approved", "status") values($1, $2, $3, $4, $5, $6, $7)`
 
-	_, err = db.Exec(insertStmt, proposal.Id, proposal.Title, proposal.Description, proposal.Email, proposal.Author, false, "PENDING")
+		_, err = db.Exec(insertStmt, proposal.Id, proposal.Title, proposal.Description, proposal.Email, proposal.Author, false, "PENDING")
 
-	if err != nil {
-		log.Printf("An error occured while executing query: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-	}
+		if err != nil {
+			log.Printf("An error occured while executing query: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	log.Printf("Proposal Stored in Database: %s", proposal)
+		log.Printf("Proposal Stored in Database: %s", proposal)
 
-	respondWithJSON(w, http.StatusOK, proposal)
+		proposalJson, err := json.Marshal(proposal)
+		if err != nil {
+			log.Printf("An error occured while marshalling the proposal to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		msg := kafka.Message{
+			Key:   []byte(fmt.Sprintf("new-proposal-%s", proposal.Id)),
+			Value: proposalJson,
+		}
+		err = kafkaWriter.WriteMessages(r.Context(), msg)
+
+		if err != nil {
+			log.Printf("An error occured while writing the message to Kafka: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		log.Printf("New Proposal Event emitted to Kafka: %s", proposal)
+		respondWithJSON(w, http.StatusOK, proposal)
+	})
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -213,6 +262,14 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(response)
+}
+
+func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
+	return &kafka.Writer{
+		Addr:     kafka.TCP(kafkaURL),
+		Topic:    topic,
+		Balancer: &kafka.LeastBytes{},
+	}
 }
 
 func main() {
@@ -243,12 +300,19 @@ func main() {
 
 	log.Printf("Connected to PostgreSQL.")
 
+	log.Printf("Connecting to Kafka Instance: %s, topic: %s.", KAFKA_URL, KAFKA_TOPIC)
+	//https://github.com/segmentio/kafka-go/blob/main/examples/producer-api/main.go
+	kafkaWriter := getKafkaWriter(KAFKA_URL, KAFKA_TOPIC)
+
+	log.Printf("Connected to Kafka.")
+	defer kafkaWriter.Close()
+
 	r := mux.NewRouter()
 
 	// Dapr subscription routes orders topic to this route
-	r.HandleFunc("/", newProposalHandler).Methods("POST")
+	r.HandleFunc("/", newProposalHandler(kafkaWriter)).Methods("POST")
 	r.HandleFunc("/", getAllProposalsHandler).Methods("GET")
-	r.HandleFunc("/{id}/decide", decideProposaldHandler).Methods("POST")
+	r.HandleFunc("/{id}/decide", decideProposaldHandler(kafkaWriter)).Methods("POST")
 
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {

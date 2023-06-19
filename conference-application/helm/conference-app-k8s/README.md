@@ -9,15 +9,21 @@ This chart doesn't depend on anything to be installed in the target Kubernetes C
 
 
 ```
-helm add 
-helm install conference-app platforms-on-k8s/conference-app-k8s
+helm add repo platforms-on-k8s 
+helm install conference-app platforms-on-k8s/conference-app-k8s -n chapter02
 ```
 
 Chart parameters: 
 
 - install.infrastructure: true 
-- install.ingress: true
+- install.ingress: false
 
 ## Interacting with the application
 
+```
+kubectl port-forward svc/frontend -n chapter02 8080:80
+```
 
+Point your browser to: 
+
+[http://localhost:8080](http://localhost:8080)

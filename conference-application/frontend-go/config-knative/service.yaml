@@ -12,6 +12,9 @@ spec:
       containers:
         - image: ko://github.com/salaboy/platforms-on-k8s/conference-application/frontend-go
           name: user-container
+          env: 
+          - name: KAFKA_URL
+            value: kafka.default.svc.cluster.local:9092
           livenessProbe:
             httpGet:
               path: /health/readiness

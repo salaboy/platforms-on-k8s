@@ -13,6 +13,13 @@
 - `/health/liveness` GET
 
 
-## Build from source
+## Build & Run from source
 
+```
+docker-compose up 
+```
+
+```
+go run c4p-service.go
+```
 ## Create Container

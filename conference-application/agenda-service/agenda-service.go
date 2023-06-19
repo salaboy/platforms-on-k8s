@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -12,6 +13,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 	"github.com/redis/go-redis/v9"
+	kafka "github.com/segmentio/kafka-go"
 	"golang.org/x/exp/slices"
 )
 
@@ -47,6 +49,8 @@ var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
 var REDIS_HOST = getEnv("REDIS_HOST", "localhost")
 var REDIS_PORT = getEnv("REDIS_PORT", "6379")
 var REDIS_PASSOWRD = getEnv("REDIS_PASSWORD", "")
+var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
+var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
 
 func getAgendaByDayHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -84,7 +88,7 @@ func getHighlightsHandler(w http.ResponseWriter, r *http.Request) {
 			var agendaItem AgendaItem
 			err = json.Unmarshal([]byte(ai), &agendaItem)
 			if err != nil {
-				log.Printf(("There was an error decoding the AgendaItem into the struct: %v", err)
+				log.Printf("There was an error decoding the AgendaItem into the struct: %v", err)
 			}
 			agendaItems = append(agendaItems, agendaItem)
 		}
@@ -133,28 +137,50 @@ func getAgendaItemByIdHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, agendaItem)
 }
 
-func newAgendaItemHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
+func newAgendaItemHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.Background()
 
-	var agendaItem AgendaItem
-	err := json.NewDecoder(r.Body).Decode(&agendaItem)
-	if err != nil {
-		log.Printf("There was an error decoding the request body into the struct: %v", err)
-	}
+		var agendaItem AgendaItem
+		err := json.NewDecoder(r.Body).Decode(&agendaItem)
+		if err != nil {
+			log.Printf("There was an error decoding the request body into the struct: %v", err)
+		}
 
-	// @TODO: write fail scenario (check for fail string in title return 500)
+		// @TODO: write fail scenario (check for fail string in title return 500)
 
-	agendaItem.Id = uuid.New().String()
+		agendaItem.Id = uuid.New().String()
 
-	err = rdb.HSetNX(ctx, KEY, agendaItem.Id, agendaItem).Err()
-	if err != nil {
-		panic(err)
-	}
+		err = rdb.HSetNX(ctx, KEY, agendaItem.Id, agendaItem).Err()
+		if err != nil {
+			panic(err)
+		}
 
-	log.Printf("Agenda Item Stored in Database: %s", agendaItem)
+		log.Printf("Agenda Item Stored in Database: %s", agendaItem)
 
-	// @TODO avoid doing two marshals to json
-	respondWithJSON(w, http.StatusOK, agendaItem)
+		agendaItemJson, err := json.Marshal(agendaItem)
+		if err != nil {
+			log.Printf("An error occured while marshalling the agenda item to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		msg := kafka.Message{
+			Key:   []byte(fmt.Sprintf("new-agenda-item-%s", agendaItem.Id)),
+			Value: agendaItemJson,
+		}
+		err = kafkaWriter.WriteMessages(r.Context(), msg)
+
+		if err != nil {
+			log.Printf("An error occured while writing the message to Kafka: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		log.Printf("New Agenda Item Event emitted to Kafka: %s", agendaItem)
+
+		// @TODO avoid doing two marshals to json
+		respondWithJSON(w, http.StatusOK, agendaItem)
+	})
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -163,6 +189,14 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(response)
+}
+
+func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
+	return &kafka.Writer{
+		Addr:     kafka.TCP(kafkaURL),
+		Topic:    topic,
+		Balancer: &kafka.LeastBytes{},
+	}
 }
 
 func main() {
@@ -181,10 +215,17 @@ func main() {
 
 	log.Printf("Connected to Redis.")
 
+	log.Printf("Connecting to Kafka Instance: %s, topic: %s.", KAFKA_URL, KAFKA_TOPIC)
+	//https://github.com/segmentio/kafka-go/blob/main/examples/producer-api/main.go
+	kafkaWriter := getKafkaWriter(KAFKA_URL, KAFKA_TOPIC)
+
+	log.Printf("Connected to Kafka.")
+	defer kafkaWriter.Close()
+
 	r := mux.NewRouter()
 
 	// Dapr subscription routes orders topic to this route
-	r.HandleFunc("/", newAgendaItemHandler).Methods("POST")
+	r.HandleFunc("/", newAgendaItemHandler(kafkaWriter)).Methods("POST")
 	r.HandleFunc("/", getAllAgendaItemsHandler).Methods("GET")
 	r.HandleFunc("/highlights", getHighlightsHandler).Methods("GET")
 	r.HandleFunc("/{id}", getAgendaItemByIdHandler).Methods("GET")
