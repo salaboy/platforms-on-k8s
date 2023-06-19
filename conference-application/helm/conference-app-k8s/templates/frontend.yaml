@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: salaboy/frontend-go-1739aa83b5e69d4ccb8a5615830ae66c@sha256:ba6436305ff592c76c006cf09048bb85537fd58b21b61541df4de6e0deef481d
+        image: salaboy/frontend-go-1739aa83b5e69d4ccb8a5615830ae66c@sha256:b0a5f6def4819e7df498e73585e22b287b672358ebfb750b2393c280be719bb8
         env: 
         - name: AGENDA_SERVICE_URL
           value: http://agenda-service.{{ .Release.Namespace }}.svc.cluster.local

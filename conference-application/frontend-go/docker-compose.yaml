@@ -1,15 +1,5 @@
 version: "3.8"
 services:
-  postgresql:
-    image: postgres
-    restart: always
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - 5432:5432
-    volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
   kafka:
     image: docker.io/bitnami/kafka:3.4
     ports:

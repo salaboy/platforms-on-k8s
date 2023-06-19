@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/gorilla/mux"
+	kafka "github.com/segmentio/kafka-go"
 )
 
 var VERSION = getEnv("VERSION", "1.0.0")
@@ -23,6 +25,10 @@ var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.def
 var C4P_SERVICE_URL = getEnv("C4P_SERVICE_URL", "http://c4p-service.default.svc.cluster.local")
 var NOTIFICATION_SERVICE_URL = getEnv("NOTIFICATION_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
 
+var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
+var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
+var KAFKA_GROUP_ID = getEnv("KAFKA_GROUP_ID", "app")
+
 type ServiceInfo struct {
 	Name         string
 	Version      string
@@ -30,6 +36,12 @@ type ServiceInfo struct {
 	PodId        string
 	PodNamespace string
 	PodNodeName  string
+}
+
+var events []string
+
+func eventsHandler(w http.ResponseWriter, r *http.Request) {
+	respondWithJSON(w, http.StatusOK, events)
 }
 
 func agendaServiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +54,17 @@ func c4PServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 func notificationServiceHandler(w http.ResponseWriter, r *http.Request) {
 	proxyRequest("api/notifications", NOTIFICATION_SERVICE_URL, w, r)
+}
+
+func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
+	brokers := strings.Split(kafkaURL, ",")
+	return kafka.NewReader(kafka.ReaderConfig{
+		Brokers:  brokers,
+		GroupID:  groupID,
+		Topic:    topic,
+		MinBytes: 10e3, // 10KB
+		MaxBytes: 10e6, // 10MB
+	})
 }
 
 func proxyRequest(serviceName string, serviceUrl string, w http.ResponseWriter, r *http.Request) {
@@ -115,12 +138,12 @@ func main() {
 		appPort = "8080"
 	}
 
-	log.Printf("Starting Frontend Go in Port: %s", appPort)
-
 	r := mux.NewRouter()
 
 	r.PathPrefix("/api/agenda/").HandlerFunc(agendaServiceHandler)
 	r.PathPrefix("/api/c4p/").HandlerFunc(c4PServiceHandler)
+	r.PathPrefix("/api/events/").HandlerFunc(eventsHandler)
+
 	// r.HandleFunc("/agenda/", agendaServiceHandler)
 	// r.HandleFunc("/c4p/", c4PServiceHandler)
 	// r.HandleFunc("/notifications/", notificationServiceHandler)
@@ -143,11 +166,28 @@ func main() {
 
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir(os.Getenv("KO_DATA_PATH"))))
 
+	log.Printf("Connecting to Kafka Instance: %s, topic: %s., group: %s", KAFKA_URL, KAFKA_TOPIC, KAFKA_GROUP_ID)
+	reader := getKafkaReader(KAFKA_URL, KAFKA_TOPIC, KAFKA_GROUP_ID)
+
+	go consumeFromKafka(reader)
+
+	defer reader.Close()
+
+	log.Printf("Starting Frontend Go in Port: %s", appPort)
+
 	// Start the server; this is a blocking call
 	err := http.ListenAndServe(":"+appPort, r)
 	if err != http.ErrServerClosed {
 		log.Panic(err)
 	}
+}
+
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
 }
 
 func getEnv(key, fallback string) string {
@@ -156,4 +196,17 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
+}
+
+func consumeFromKafka(reader *kafka.Reader) {
+	fmt.Println("Consuming Events ...")
+	for {
+		m, err := reader.ReadMessage(context.Background())
+		if err != nil {
+			log.Fatalln(err)
+		}
+		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
+
+		events = append(events, fmt.Sprintf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value)))
+	}
 }
