@@ -22,6 +22,8 @@ spec:
           value: http://c4p-service.{{ .Release.Namespace }}.svc.cluster.local
         - name: NOTIFICATIONS_SERVICE_URL
           value: http://notifications-service.{{ .Release.Namespace }}.svc.cluster.local  
+        - name: KAFKA_URL
+          value: http://kafka.{{ .Release.Namespace }}.svc.cluster.local  
         livenessProbe:
           httpGet:
             path: /health/readiness

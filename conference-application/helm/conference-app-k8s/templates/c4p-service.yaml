@@ -18,6 +18,8 @@ spec:
         env:
         - name: AGENDA_SERVICE_URL
           value: http://agenda-service.{{ .Release.Namespace }}.svc.cluster.local
+        - name: KAFKA_URL
+          value: http://kafka.{{ .Release.Namespace }}.svc.cluster.local
         - name: POSTGRES_HOST
           value: {{ .Release.Name }}-postgresql.{{ .Release.Namespace }}.svc.cluster.local
         - name: POSTGRES_PASSWORD

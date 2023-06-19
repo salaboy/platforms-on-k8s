@@ -16,6 +16,8 @@ spec:
       - name: agenda-service
         image: salaboy/agenda-service-0967b907d9920c99918e2b91b91937b3@sha256:e77e183d8d4510ef3c01cbc39dbb4ae54262f34795ed4aa71ffb529b0d6b802b
         env:
+        - name: KAFKA_URL
+          value: http://kafka.{{ .Release.Namespace }}.svc.cluster.local
         - name: REDIS_HOST
           value: {{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.cluster.local
         - name: REDIS_PASSWORD

@@ -5,52 +5,63 @@ import { useState, useEffect } from 'react'
 
 export default function Backend() {
 
-  const [data, setData] = useState(null)
-  const [isLoading, setLoading] = useState(false)
+  const [proposals, setProposals] = useState(null)
+  const [events, setEvents] = useState(null)
+  const [isLoadingProposals, setLoadingProposals] = useState(false)
+  const [isLoadingEvents, setLoadingEvents] = useState(false)
   const [isError, setIsError] = useState(false);
   const [decisionsMade, setDecisionsMade] = useState(1)
 
   useEffect(() => {
-    setLoading(true)
+    setLoadingProposals(true)
     fetch('/api/c4p/')
       .then((res) => res.json())
       .then((data) => {
-        setData(data)
-        setLoading(false)
+        setProposals(data)
+        setLoadingProposals(false)
+      })
+    setLoadingEvents(true)
+    fetch('/api/events/')
+      .then((res) => res.json())
+      .then((data) => {
+        setEvents(data)
+        setLoadingEvents(false)
       })
   }, [decisionsMade])
- 
-  if (isLoading) return <p>Loading...</p>
-  if (!data) return <p>No Proposals</p>
 
-  
 
-  function decide(id, approved){
+  if (isLoadingProposals) return <p>Loading...</p>
+  if (!proposals) return <p>No Proposals</p>
+
+  // if (isLoadingEvents) return <p>Loading...</p>
+  // if (!events) return <p>No Events</p>
+
+
+
+  function decide(id, approved) {
     const decision = {
       approved: approved,
-     
+
     }
-    try{
-      setLoading(true);
-      fetch('/api/c4p/'+id+"/decide", {
+    try {
+      setLoadingProposals(true);
+      fetch('/api/c4p/' + id + "/decide", {
         method: "POST",
         body: JSON.stringify(decision),
         headers: {
           'accept': 'application/json',
         },
       }).then((response) => response.json()).then((data) => {
-          setDecisionsMade(decisionsMade+1)
-          setLoading(false);
-        }
+        setDecisionsMade(decisionsMade + 1)
+        setLoadingProposals(false);
+      }
       )
-    }catch(err){
-        setLoading(false);
-        setIsError(true);
+    } catch (err) {
+      setLoadingProposals(false);
+      setIsError(true);
     }
-  
-  }
 
-  
+  }
 
 
   return (
@@ -58,22 +69,32 @@ export default function Backend() {
       <h1>Backend</h1>
       <h2>Review Proposals (Tab)</h2>
       <div>
-            <ul>
-              {data.map((p) => (
-                <li key={p.Id}>{p.Id} - {p.Title} - {p.Description} - {p.Author} - {p.Email}  - {p.Status.Status}  - {p.Approved.toString()} 
-                  <button main onClick={() => decide(p.Id, true)} >Approve</button>
-                  <button main onClick={() => decide(p.Id, false)}>Reject</button>
-                </li>
-                
-              ))}
-            </ul>
-        </div>
+        <ul>
+          {proposals.map((p) => (
+            <li key={p.Id}>{p.Id} - {p.Title} - {p.Description} - {p.Author} - {p.Email}  - {p.Status.Status}  - {p.Approved.toString()}
+              <button main onClick={() => decide(p.Id, true)} >Approve</button>
+              <button main onClick={() => decide(p.Id, false)}>Reject</button>
+            </li>
 
-      <h2>Notifications (Tab)</h2> 
+          ))}
+        </ul>
+      </div>
+
+      <h2>Notifications (Tab)</h2>
       (TBD)
 
-      <h2>Events (Tab)</h2> 
-      (TBD)
+      <h2>Events (Tab)</h2>
+      <div>
+        <ul>
+          {events === null && ((
+            <p>No Events</p>
+          ))}
+          {events !== null && events.map((e) => (
+            <li key={e}>{e}</li>
+          ))}
+        </ul>
+      </div>
+
     </main>
   )
 }

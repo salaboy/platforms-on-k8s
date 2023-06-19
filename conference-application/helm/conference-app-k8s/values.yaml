@@ -15,4 +15,8 @@ postgresql:
         postgresPassword: postgres
 redis: 
   architecture: standalone
-            
+kafka: 
+  provisioning:
+    topics:
+    - name: events-topic
+      partitions: 1

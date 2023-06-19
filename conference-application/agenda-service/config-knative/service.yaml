@@ -13,6 +13,8 @@ spec:
         - image: ko://github.com/salaboy/platforms-on-k8s/conference-application/agenda-service
           name: user-container
           env: 
+          - name: KAFKA_URL
+            value: kafka.default.svc.cluster.local:9092
           - name: REDIS_HOST
             value: redis-master.default.svc.cluster.local
           - name: REDIS_PASSWORD
