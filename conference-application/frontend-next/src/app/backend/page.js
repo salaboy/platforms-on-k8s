@@ -66,8 +66,29 @@ export default function Backend() {
 
   return (
     <main className={styles.main}>
-      <h1>Backend</h1>
-      <h2>Review Proposals (Tab)</h2>
+      <div className="grid">
+        <div className="col full">
+          <h1>Backend</h1>
+        </div>
+      </div>
+      <div className="grid">
+        <div className="col third">
+          <ul className={styles.tabs}>
+            <li className={styles.tabItem}>
+              <a >Review Proposals</a>
+            </li>
+            <li className={styles.tabItem}>
+              <a >Notifications</a>
+            </li>
+            <li className={styles.tabItem}>
+              <a >Events</a>
+            </li>
+          </ul>
+          
+        </div>
+
+        <div className="col half">
+        <h2>Review Proposals (Tab)</h2>
       <div>
         <ul>
           {proposals.map((p) => (
@@ -94,6 +115,11 @@ export default function Backend() {
           ))}
         </ul>
       </div>
+          
+        </div>
+      </div>
+      
+     
 
     </main>
   )

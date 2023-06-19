@@ -2,6 +2,8 @@
 import styles from '@/app/styles/proposals.module.css'
 import React, { useState } from "react"
 import { LoremIpsum } from "lorem-ipsum";
+import Textfield from '../components/forms/textfield/textfield';
+import Textarea from '../components/forms/textarea/textarea';
 
 export default function Proposals() {
 
@@ -77,32 +79,27 @@ export default function Proposals() {
 
   return (
     <main className={styles.main}>
-      <h1>Proposals</h1>
+      <div className="grid">
+        <div className="col full">
+          <h1>Proposals</h1>
+        </div>
+      </div>
 
-      <h2>Submit your Proposal</h2>
-
-      <div>
-      {!sended && (
+      <div className="grid">
+        <div className="col third positionSingle">
+         <h2>Submit your Proposal</h2>
+          <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Fugiat, architecto placeat aperiam facilis quis quia incidunt at molestiae quaerat dicta dolore beatae natus. Beatae perferendis, aliquam hic commodi modi id.</p>
+        </div>
+        <div className="col half positionHalf">
+        {!sended && (
         <div>
-          <div>
-            <label>Title</label>
-            <input type="text" id="title" name="title" value={title}/>
-          </div>
-
-          <div>
-            <label>Description</label>
-            <textarea id="description" name="description" value={description}></textarea>
-          </div>
-
-          <div>
-            <label>Author</label>
-            <input type="text" id="author" name="author" value={author} />
-          </div>
-
-          <div>
-            <label>Email</label>
-            <input type="text" id="email" name="email" value={email} />
-          </div>
+          
+            <Textfield label="Title" id="title" name="title" value={title} />
+            <Textarea label="Description" id="description" name="description" value={description}  />  
+            
+            <Textfield label="Author" id="author" name="author" value={author} />
+            <Textfield label="Email" id="email" name="email" value={author} />
+            
 
           {isError && <small className="mt-3 d-inline-block text-danger">Something went wrong. Please try again later.</small>}
 
@@ -117,9 +114,17 @@ export default function Proposals() {
           {sended && (
             <>
               <h3>Thanks!</h3>
-              <button main onClick={handleBack} >Back</button>
+              <button main onClick={handleBack} >Send another proposal</button>
             </>
           )}
+        </div>
+      </div>
+      
+
+      
+
+      <div>
+      
       
     </div>
        

@@ -8,7 +8,11 @@ export default async function Agenda() {
 
   return (
     <main className={styles.main}>
-      <h1>Agenda</h1>
+      <div className="grid">
+        <div className="col full">
+          <h1>Agenda</h1>
+        </div>
+      </div>
 
        
     </main>

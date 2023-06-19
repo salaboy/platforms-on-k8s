@@ -1,0 +1,14 @@
+.textfield {
+    margin-bottom: var(--sizing-m);
+}
+
+.textfield label{
+    display: block;
+    margin-bottom: var(--sizing-xs);
+}
+
+.textfield input{
+    display: block;
+    width: 100%;
+    max-width: 400px;
+}

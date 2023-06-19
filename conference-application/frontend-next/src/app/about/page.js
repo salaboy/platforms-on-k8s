@@ -8,7 +8,12 @@ export default async function About() {
 
   return (
     <main className={styles.main}>
-      <h1>About</h1>
+      <div className="grid">
+        <div className="col full">
+          <h1>About</h1>
+        </div>
+      </div>
+      
 
        
     </main>

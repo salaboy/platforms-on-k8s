@@ -1,0 +1,15 @@
+.textarea {
+    margin-bottom: var(--sizing-m);
+}
+
+.textarea label{
+    display: block;
+    margin-bottom: var(--sizing-xs);
+}
+
+.textarea textarea{
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    min-height: 200px;
+}

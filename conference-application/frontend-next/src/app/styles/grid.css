@@ -27,12 +27,15 @@
 }
 
 .grid .col.twoThirds {
-    grid-column-end: span 9;
+    grid-column-end: span 8;
 }
 .grid .col.full {
     grid-column-end: span 12;
 }
 
+.grid .col.positionSingle {
+    grid-column-start: 2;
+}
 .grid .col.positionHalf {
     grid-column-start: 7;
 }
