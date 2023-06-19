@@ -6,6 +6,14 @@
     margin: var(--grid-margin);
 }
 
+.grid.content {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
+    gap: calc(var(--grid-gap)*2);
+    max-width: 100%;
+    margin: calc(var(--grid-margin)*4);
+}
+
 .grid.align-bottom {
     align-items: end;
 }
@@ -42,7 +50,7 @@
 .grid .col.positionThird {
     grid-column-start: 4;
 }
-.grid .col.positionTwoThird {
+.grid .col.positionTwoThirds {
     grid-column-start: 10;
 }
 

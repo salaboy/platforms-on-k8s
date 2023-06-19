@@ -79,13 +79,13 @@ export default function Proposals() {
 
   return (
     <main className={styles.main}>
-      <div className="grid">
+      <div className="grid content">
         <div className="col full">
           <h1>Proposals</h1>
         </div>
       </div>
 
-      <div className="grid">
+      <div className="grid content">
         <div className="col third positionSingle">
          <h2>Submit your Proposal</h2>
           <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Fugiat, architecto placeat aperiam facilis quis quia incidunt at molestiae quaerat dicta dolore beatae natus. Beatae perferendis, aliquam hic commodi modi id.</p>

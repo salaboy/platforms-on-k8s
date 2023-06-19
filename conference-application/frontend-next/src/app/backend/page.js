@@ -66,12 +66,12 @@ export default function Backend() {
 
   return (
     <main className={styles.main}>
-      <div className="grid">
+      <div className="grid content">
         <div className="col full">
           <h1>Backend</h1>
         </div>
       </div>
-      <div className="grid">
+      <div className="grid content">
         <div className="col third">
           <ul className={styles.tabs}>
             <li className={styles.tabItem}>

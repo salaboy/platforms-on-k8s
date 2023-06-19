@@ -1,6 +1,11 @@
 .main {
  
 }
+.section {
+    padding-top: 10vh;
+    padding-bottom: 10vh;
+    border-bottom: 1px solid #000;
+}
 
 
 /* Tablet and Smaller Desktop */

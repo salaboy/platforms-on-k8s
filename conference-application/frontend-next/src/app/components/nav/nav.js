@@ -13,7 +13,7 @@ export default function Nav() {
             <div className="grid">
                 <div className="col third">
                     <ul className={styles.logos}>
-                        <li className={styles.logosItem} ><Link href="/"  className={pathname === "/" ? `${styles.active} ` : ' '} scroll={false}>Logos</Link></li>
+                        <li className={styles.logosItem} ><Link href="/"  className={pathname === "/" ? `${styles.active} ` : ' '} scroll={false}>CloudCon 2023</Link></li>
                     </ul>
                 </div>
                 <div className="col half positionHalf">
@@ -28,7 +28,6 @@ export default function Nav() {
                 </div>
                 
             </div>
-
         </nav>    
         
     
