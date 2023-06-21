@@ -90,7 +90,18 @@ var db *sql.DB
 
 func getAllProposalsHandler(w http.ResponseWriter, r *http.Request) {
 
-	rows, err := db.Query(`SELECT * FROM Proposals`)
+	status := r.URL.Query().Get("status")
+	var query = "SELECT * FROM Proposals p"
+	if status != "" {
+		query = fmt.Sprintf("%s where p.status=$1", query)
+	}
+	var rows *sql.Rows
+	var err error
+	if status != "" {
+		rows, err = db.Query(query, status)
+	} else {
+		rows, err = db.Query(query)
+	}
 
 	if err != nil {
 		log.Printf("There was an error executing the query %v", err)

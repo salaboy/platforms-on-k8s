@@ -19,10 +19,10 @@ export default function Nav() {
                 <div className="col half positionHalf">
                     
                         <ul className={styles.menu}>
-                            <li className={styles.menuItem}><Link href="/about/" className={pathname === "/about" ? `${styles.active} ` : ' '} scroll={false}>About</Link></li>
                             <li className={styles.menuItem}><Link href="/agenda/" className={pathname === "/agenda" ? `${styles.active} ` : ' '} scroll={false}>Agenda</Link></li>
-                            <li className={styles.menuItem}><Link href="/proposals/" className={pathname === "/proposals" ? `${styles.active} ` : ' '} scroll={false}>Proposals</Link></li>
-                            <li className={styles.menuItem}><Link href="/backend/" className={pathname === "/backend" ? `${styles.active} ` : ' '} scroll={false}>Backend</Link></li>
+                            <li className={styles.menuItem}><Link href="/proposals/" className={pathname === "/proposals" ? `${styles.active} ` : ' '} scroll={false}>Call for Proposals</Link></li>
+                            <li className={styles.menuItem}><Link href="/about/" className={pathname === "/about" ? `${styles.active} ` : ' '} scroll={false}>About</Link></li>
+                            <li className={styles.menuItem}><Link href="/backoffice/" className={pathname === "/backoffice" ? `${styles.active} ` : ' '} scroll={false}>Back Office</Link></li>
                         </ul>
                     
                 </div>

@@ -1,6 +1,7 @@
 'use client'
 import styles from '@/app/styles/backend.module.css'
 import { useState, useEffect } from 'react'
+import ProposalList from '../components/proposals/proposallist'
 
 
 export default function Backend() {
@@ -17,13 +18,6 @@ export default function Backend() {
 
   useEffect(() => {
     const id = setInterval(() => {
-      setLoadingProposals(true)
-      fetch('/api/c4p/')
-        .then((res) => res.json())
-        .then((data) => {
-          setProposals(data)
-          setLoadingProposals(false)
-        })
       setLoadingEvents(true)
       fetch('/api/events/')
         .then((res) => res.json())
@@ -45,38 +39,7 @@ export default function Backend() {
  
 
 
-  // if (isLoadingProposals) return <p>Loading...</p>
-  // if (!proposals) return <p>No Proposals</p>
 
-  // if (isLoadingEvents) return <p>Loading...</p>
-  // if (!events) return <p>No Events</p>
-
-
-
-  function decide(id, approved) {
-    const decision = {
-      approved: approved,
-
-    }
-    try {
-      setLoadingProposals(true);
-      fetch('/api/c4p/' + id + "/decide", {
-        method: "POST",
-        body: JSON.stringify(decision),
-        headers: {
-          'accept': 'application/json',
-        },
-      }).then((response) => response.json()).then((data) => {
-        setDecisionsMade(decisionsMade + 1)
-        setLoadingProposals(false);
-      }
-      )
-    } catch (err) {
-      setLoadingProposals(false);
-      setIsError(true);
-    }
-
-  }
 
 
   return (
@@ -106,16 +69,8 @@ export default function Backend() {
         <h2>Review Proposals (Tab)</h2>
       <div>
         <ul>
-          {proposals === null && ((
-            <p>No Proposals</p>
-          ))}
-          {proposals !== null && proposals.map((p) => (
-            <li key={p.Id}>{p.Id} - {p.Title} - {p.Description} - {p.Author} - {p.Email}  - {p.Status.Status}  - {p.Approved.toString()}
-              <button main onClick={() => decide(p.Id, true)} >Approve</button>
-              <button main onClick={() => decide(p.Id, false)}>Reject</button>
-            </li>
-
-          ))}
+          <ProposalList/>
+          
         </ul>
       </div>
 
