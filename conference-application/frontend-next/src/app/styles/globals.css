@@ -45,7 +45,12 @@
 
 html,
 body {
- 
+ font-family: var(--font-body);
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-headings);
+  text-transform: uppercase;
 }
 
 body {
