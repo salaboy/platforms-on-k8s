@@ -10,12 +10,12 @@ export default function Home() {
     <main className={styles.main}>
         <section className={`${styles.hero}  ${styles.section} ` }>
           <div className="grid content">
-              <div className='col half'>
-                  <h1>Cloud-Native Conference 2023</h1>
+              <div className='col twoThirds'>
+                  <h1>Cloud-Native Conf 2023</h1>
               </div>
               <div className='col third '>
                   <p>The flagship conference gathers adopters and technologists from leading Open Source and Cloud-Native communities.</p>
-                  <h2>30th February.</h2>
+                  <h3>30th February.</h3>
               </div>
           </div>
         </section>
