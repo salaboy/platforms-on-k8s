@@ -54,6 +54,14 @@ type DecisionResponse struct {
 	Decision   bool
 }
 
+type Notification struct {
+	ProposalId   string
+	AgendaItemId string
+	Title        string
+	Email        string
+	Accepted     bool
+}
+
 type ServiceInfo struct {
 	Name         string
 	Version      string
@@ -73,6 +81,7 @@ var POSTGRESQL_PORT = getEnv("POSTGRES_PORT", "5432")
 var POSTGRESQL_USERNAME = getEnv("POSTGRES_USERNAME", "postgres")
 var POSTGRESQL_PASSOWRD = getEnv("POSTGRES_PASSWORD", "postgres")
 var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
+var NOTIFICATIONS_SERVICE_URL = getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
 
 var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
 var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
@@ -178,8 +187,6 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 			}
 			decisionResponse.AgendaItem = agendaItemResponse
 
-			log.Printf("Email Proposal's Id: %s author about decision", proposalId)
-
 			proposalJson, err := json.Marshal(proposal)
 			if err != nil {
 				log.Printf("An error occured while marshalling the proposal to json: %v", err)
@@ -200,10 +207,38 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 			log.Printf("Proposal Approved Event emitted to Kafka: %s", proposal)
 
 		} else {
+
 			log.Printf("Proposal Id: %s was rejected!", proposalId)
-			log.Printf("Email Proposal's Id: %s author about decision", proposalId)
 
 		}
+		log.Printf("Sending Notification to Proposal's author: %s author about decision", proposal.Email)
+
+		notification := Notification{
+			ProposalId:   decisionResponse.ProposalId,
+			AgendaItemId: decisionResponse.AgendaItem.Id,
+			Title:        decisionResponse.AgendaItem.Title,
+			Email:        decisionResponse.AgendaItem.Author,
+			Accepted:     decisionResponse.Proposal.Approved,
+		}
+
+		notificationJson, err := json.Marshal(notification)
+		if err != nil {
+			log.Printf("An error occured while marshalling the proposal to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		r, err = http.NewRequest("POST", NOTIFICATIONS_SERVICE_URL, bytes.NewBuffer(notificationJson))
+		if err != nil {
+			log.Printf("There was an error creating the request to the Notifications Service: %v", err)
+		}
+		r.Header.Add("Content-Type", "application/json")
+		client := &http.Client{}
+		res, err := client.Do(r)
+		if err != nil {
+			log.Printf("There was an error submitting the request to the Agenda Item Service: %v", err)
+		}
+		defer res.Body.Close()
 
 		respondWithJSON(w, http.StatusOK, proposal)
 	})

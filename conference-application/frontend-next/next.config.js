@@ -28,6 +28,14 @@ module.exports = {
           source: '/api/events/:path*',
           destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/events/:path*',
         },
+        {
+          source: '/api/notifications',
+          destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/notifications/',
+        },
+        {
+          source: '/api/notifications/:path*',
+          destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/notifications/:path*',
+        },
       ]
     },
   }

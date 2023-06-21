@@ -1,0 +1,7 @@
+{
+    "proposalId": "123",
+    "agendaItemId": "ABC",
+    "title": "my cobol proposal",
+    "email": "test@gmail.com",
+    "accepted": false
+}

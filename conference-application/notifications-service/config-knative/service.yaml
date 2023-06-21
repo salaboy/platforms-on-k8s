@@ -1,0 +1,25 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: notifications-service
+spec:
+  template:
+    metadata:
+      annotations:  
+        autoscaling.knative.dev/min-scale: "1"
+    spec:
+      containerConcurrency: 0
+      containers:
+        - image: ko://github.com/salaboy/platforms-on-k8s/conference-application/notifications-service
+          name: user-container
+          env:
+          - name: KAFKA_URL
+            value: kafka.default.svc.cluster.local:9092 
+          livenessProbe:
+            httpGet:
+              path: /health/readiness
+              port: 8080
+          readinessProbe:
+            httpGet:
+              path: /health/liveness
+              port: 8080

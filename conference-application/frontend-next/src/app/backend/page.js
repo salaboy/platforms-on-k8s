@@ -7,8 +7,10 @@ export default function Backend() {
 
   const [proposals, setProposals] = useState(null)
   const [events, setEvents] = useState(null)
+  const [notifications, setNotifications] = useState(null)
   const [isLoadingProposals, setLoadingProposals] = useState(false)
   const [isLoadingEvents, setLoadingEvents] = useState(false)
+  const [isLoadingNotifications, setLoadingNotifications] = useState(false)
   const [isError, setIsError] = useState(false);
   const [decisionsMade, setDecisionsMade] = useState(1)
 
@@ -27,11 +29,17 @@ export default function Backend() {
         setEvents(data)
         setLoadingEvents(false)
       })
-  }, [decisionsMade])
+    fetch('/api/notifications/')
+      .then((res) => res.json())
+      .then((data) => {
+        setNotifications(data)
+        setLoadingNotifications(false)
+      })  
+  }, [])
 
 
-  if (isLoadingProposals) return <p>Loading...</p>
-  if (!proposals) return <p>No Proposals</p>
+  // if (isLoadingProposals) return <p>Loading...</p>
+  // if (!proposals) return <p>No Proposals</p>
 
   // if (isLoadingEvents) return <p>Loading...</p>
   // if (!events) return <p>No Events</p>
@@ -91,7 +99,10 @@ export default function Backend() {
         <h2>Review Proposals (Tab)</h2>
       <div>
         <ul>
-          {proposals.map((p) => (
+          {proposals === null && ((
+            <p>No Proposals</p>
+          ))}
+          {proposals !== null && proposals.map((p) => (
             <li key={p.Id}>{p.Id} - {p.Title} - {p.Description} - {p.Author} - {p.Email}  - {p.Status.Status}  - {p.Approved.toString()}
               <button main onClick={() => decide(p.Id, true)} >Approve</button>
               <button main onClick={() => decide(p.Id, false)}>Reject</button>
@@ -102,7 +113,16 @@ export default function Backend() {
       </div>
 
       <h2>Notifications (Tab)</h2>
-      (TBD)
+      <div>
+        <ul>
+          {notifications === null && ((
+            <p>No Notifications</p>
+          ))}
+          {notifications !== null && notifications.map((notif) => (
+            <li key={notif.Id}>{notif.EmailText}</li>
+          ))}
+        </ul>
+      </div>
 
       <h2>Events (Tab)</h2>
       <div>

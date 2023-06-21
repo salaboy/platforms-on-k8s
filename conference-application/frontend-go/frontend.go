@@ -142,11 +142,8 @@ func main() {
 
 	r.PathPrefix("/api/agenda/").HandlerFunc(agendaServiceHandler)
 	r.PathPrefix("/api/c4p/").HandlerFunc(c4PServiceHandler)
+	r.PathPrefix("/api/notifications/").HandlerFunc(notificationServiceHandler)
 	r.PathPrefix("/api/events/").HandlerFunc(eventsHandler)
-
-	// r.HandleFunc("/agenda/", agendaServiceHandler)
-	// r.HandleFunc("/c4p/", c4PServiceHandler)
-	// r.HandleFunc("/notifications/", notificationServiceHandler)
 
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
