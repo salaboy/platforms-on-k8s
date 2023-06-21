@@ -13,29 +13,36 @@ export default function Backend() {
   const [isLoadingNotifications, setLoadingNotifications] = useState(false)
   const [isError, setIsError] = useState(false);
   const [decisionsMade, setDecisionsMade] = useState(1)
+  const [check, setCheck] = useState(0)
 
   useEffect(() => {
-    setLoadingProposals(true)
-    fetch('/api/c4p/')
-      .then((res) => res.json())
-      .then((data) => {
-        setProposals(data)
-        setLoadingProposals(false)
-      })
-    setLoadingEvents(true)
-    fetch('/api/events/')
-      .then((res) => res.json())
-      .then((data) => {
-        setEvents(data)
-        setLoadingEvents(false)
-      })
-    fetch('/api/notifications/')
-      .then((res) => res.json())
-      .then((data) => {
-        setNotifications(data)
-        setLoadingNotifications(false)
-      })  
-  }, [])
+    const id = setInterval(() => {
+      setLoadingProposals(true)
+      fetch('/api/c4p/')
+        .then((res) => res.json())
+        .then((data) => {
+          setProposals(data)
+          setLoadingProposals(false)
+        })
+      setLoadingEvents(true)
+      fetch('/api/events/')
+        .then((res) => res.json())
+        .then((data) => {
+          setEvents(data)
+          setLoadingEvents(false)
+        })
+      fetch('/api/notifications/')
+        .then((res) => res.json())
+        .then((data) => {
+          setNotifications(data)
+          setLoadingNotifications(false)
+        })  
+        setCheck(check + 1)
+    }, 3000);
+    return () => clearInterval(id);
+  }, [check])
+
+ 
 
 
   // if (isLoadingProposals) return <p>Loading...</p>
