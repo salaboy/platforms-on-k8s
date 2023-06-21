@@ -97,23 +97,29 @@ h1, h2, h3, h4, .h1, .h2, .h3, .h4 {
 h1, .h1 {
   font-size: var(--headings-h1-font-size);
   line-height: var(--headings-h1-line-height);
+  margin-bottom: var(--sizing-m);
 }
 h2, .h2 {
   font-size: var(--headings-h2-font-size);
   line-height: var(--headings-h2-line-height);
+  margin-bottom: var(--sizing-s);
 }
 h3, .h3 {
   font-size: var(--headings-h3-font-size);
   line-height: var(--headings-h3-line-height);
+  margin-bottom: var(--sizing-s);
 }
 h4, .h4 {
   font-size: var(--headings-h4-font-size);
   line-height: var(--headings-h4-line-height);
+  margin-bottom: var(--sizing-xs);
 }
 
 p {
   font-size: var(--text-font-size);
   line-height: var(--text-line-height);
+  padding: 0;
+  margin-bottom: var(--sizing-s);
 }
 
 p.--s {
