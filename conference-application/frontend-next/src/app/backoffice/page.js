@@ -47,7 +47,7 @@ export default function Backoffice() {
 
       <h2>Events (Tab)</h2>
       <div>
-        {/* <EventsList></EventsList> */}
+        <EventsList></EventsList>
       </div>
           
         </div>

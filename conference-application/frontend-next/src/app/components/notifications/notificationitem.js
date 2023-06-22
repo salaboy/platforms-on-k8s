@@ -2,20 +2,22 @@
 'use client'
 
 
-function NotificationItem({id, title, email, approved, emailText}) {
+function NotificationItem({id, title, emailTo,  emailSubject, emailBody, approved}) {
 
     return (
       
       <div>
         <div className="ProposalItem__header">
-          <h3>{title}</h3>
-          <h5>{email}</h5>
+          <h3>Proposal: {title}</h3>
+          
           <div className="ProposalItem__status">
-            {approved}
+            Approved? {approved}
           </div>
         </div>
         <div className="ProposalItem__description">
-          <p className="p p-s">{emailText}</p>
+          To: <p className="p p-s">{emailTo}</p>
+          Subject: <p className="p p-s">{emailSubject}</p>
+          Body: <p className="p p-s">{emailBody}</p>
         </div>
         
       </div>

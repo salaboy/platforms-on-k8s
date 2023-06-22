@@ -58,7 +58,7 @@ type Notification struct {
 	ProposalId   string
 	AgendaItemId string
 	Title        string
-	Email        string
+	EmailTo      string
 	Accepted     bool
 }
 
@@ -228,7 +228,7 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 			ProposalId:   decisionResponse.ProposalId,
 			AgendaItemId: decisionResponse.AgendaItem.Id,
 			Title:        decisionResponse.AgendaItem.Title,
-			Email:        decisionResponse.AgendaItem.Author,
+			EmailTo:      decisionResponse.AgendaItem.Author,
 			Accepted:     decisionResponse.Proposal.Approved,
 		}
 

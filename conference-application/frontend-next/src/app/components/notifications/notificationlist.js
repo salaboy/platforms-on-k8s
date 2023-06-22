@@ -41,9 +41,9 @@ function NotificationList() {
                 key={item.Id}
                 id={item.Id}
                 title={item.Title}
-                author={item.Author}
-                emailText={item.EmailText}
-                email={item.Email}
+                emailTo={item.EmailTo}
+                emailBody={item.EmailBody}
+                emailSubject={item.EmailSubject}
                 approved={item.Approved}
               />
 

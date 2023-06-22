@@ -31,8 +31,6 @@ function EventsList() {
     return (
       <div>
 
-            
-        
 
         <div>
         {

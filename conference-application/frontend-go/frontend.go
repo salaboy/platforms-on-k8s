@@ -38,7 +38,13 @@ type ServiceInfo struct {
 	PodNodeName  string
 }
 
-var events []string
+var events []Event
+
+type Event struct {
+	Id      int64
+	Type    string
+	Payload string
+}
 
 func eventsHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, events)
@@ -203,7 +209,11 @@ func consumeFromKafka(reader *kafka.Reader) {
 			log.Fatalln(err)
 		}
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-
-		events = append(events, fmt.Sprintf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value)))
+		var event = Event{
+			Id:      m.Offset,
+			Type:    string(m.Key),
+			Payload: string(m.Value),
+		}
+		events = append(events, event)
 	}
 }

@@ -8,15 +8,14 @@ function EventItem({id, type, payload}) {
       
       <div>
         <div className="ProposalItem__header">
-          <h3>{title}</h3>
-          <h5>{email}</h5>
+          <h3>{id}</h3>
+          <h5>{type}</h5>
+          {/* Maybe render using: https://www.npmjs.com/package/react-json-pretty */}
           <div className="ProposalItem__status">
-            {approved}
+            {payload}
           </div>
         </div>
-        <div className="ProposalItem__description">
-          <p className="p p-s">{emailText}</p>
-        </div>
+        
         
       </div>
       

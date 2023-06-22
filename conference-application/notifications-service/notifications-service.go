@@ -26,9 +26,10 @@ type Notification struct {
 	ProposalId   string
 	AgendaItemId string
 	Title        string
-	Email        string
+	EmailTo      string
 	Accepted     bool
-	EmailText    string
+	EmailSubject string
+	EmailBody    string
 }
 
 var VERSION = getEnv("VERSION", "1.0.0")
@@ -72,20 +73,20 @@ func sendNotificationHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrit
 
 		bodyThanks := "Thanks and see you soon. \n\n\t - The Conference Organizers -"
 
-		emailTo := notification.Email
+		emailTo := notification.EmailTo
 		subject := fmt.Sprintf("Your proposal  %s was %s", notification.Title, status)
+		notification.EmailSubject = subject
 		body := fmt.Sprintf("We are %s to inform that your proposal: `%s` with title: `%s` was %s", mood, notification.ProposalId, notification.Title, status)
 
-		emailText := fmt.Sprintf("\n To: %s \n Subject: %s \n Body: \n\t %s", emailTo, subject, body)
-
 		if notification.Accepted {
-			emailText = fmt.Sprintf("%s \n\t %s \n", emailText, bodyAccepted)
+			body = fmt.Sprintf("%s \n\t %s \n", body, bodyAccepted)
 		} else {
-			emailText = fmt.Sprintf("%s \n\t %s \n", emailText, bodyRejected)
+			body = fmt.Sprintf("%s \n\t %s \n", body, bodyRejected)
 		}
-		emailText = fmt.Sprintf("%s \n\t %s  \n", emailText, bodyThanks)
-		log.Println(emailText)
-		notification.EmailText = emailText
+		body = fmt.Sprintf("%s \n\t %s  \n", body, bodyThanks)
+		notification.EmailBody = body
+
+		log.Printf("\n To: %s \n Subject: %s \n Body: %s \n", emailTo, subject, body)
 
 		notifications = append(notifications, notification)
 
