@@ -1,10 +1,22 @@
 .nav {
-    
+   background-color: var(--nav-color-background); 
+   font-size: var(--nav-text-font-size);
+   line-height: var(--nav-text-line-height);
+   text-transform: uppercase;
+   letter-spacing: var(--nav-text-letter-spacing);
+   padding: var(--nav-padding);
+
 }
+
+
+
+
 .logos {
     list-style-type: none;
     display: flex;
+    color: var(--nav-color-text);
 }
+
 .logosItem {
     padding: 10px;
 }
@@ -18,6 +30,12 @@
     display: flex;
     justify-content: end;
 }
+.menu  a, .logos a{
+    color: var(--nav-color-text);
+}
+.menu  a:hover, .logos a:hover{
+    color: var(--nav-color-text-hover);
+}
 .menuItem {
     padding: 10px;
 }
@@ -27,7 +45,8 @@
 }
 
 .active {
-    text-decoration: underline;
+    color: var(--nav-color-text-active) !important;
+    
 }
 
 /* Tablet and Smaller Desktop */

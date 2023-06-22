@@ -74,6 +74,15 @@
   --color-background-light: var(--color-white);
 
   /*COMPONENTS TOKENS */
+  /*Nav*/
+  --nav-color-background: var(--color-white);
+  --nav-text-font-size: var(--text-small-font-size);
+  --nav-text-line-height: var(--text-small-line-height);
+  --nav-text-letter-spacing: 0.02em;
+  --nav-color-text: var(--color-text);
+  --nav-color-text-hover: var(--color-primary);
+  --nav-color-text-active: var(--color-primary);
+  --nav-padding: var(--sizing-x3) 0;
   /*Buttons*/
   --button-color-border: var(--color-primary);
   --button-color-background: var(--color-blue-100);
@@ -81,6 +90,7 @@
   --button-border-radius: var(--sizing-x);
   --button-text-font-size: var(--text-small-font-size);
   --button-text-line-height: var(--text-small-line-height);
+  --button-text-letter-spacing: 0.02em;
   --button-padding: var(--sizing-x3) var(--sizing-s);
 }
 

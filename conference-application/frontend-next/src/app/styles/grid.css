@@ -3,7 +3,7 @@
     grid-template-columns: repeat(var(--grid-columns), 1fr);
     gap: var(--grid-gap);
     max-width: 100%;
-    margin: var(--grid-margin);
+    margin: 0 var(--grid-margin);
 }
 
 .grid.content {
