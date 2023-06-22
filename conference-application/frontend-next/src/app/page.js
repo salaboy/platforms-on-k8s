@@ -1,7 +1,7 @@
 'use client'
 import Image from 'next/image'
 import styles from './styles/home.module.css'
-
+import Button from './components/forms/button/button'
 
 
 export default function Home() {
@@ -16,6 +16,7 @@ export default function Home() {
               <div className='col third '>
                   <p>The flagship conference gathers adopters and technologists from leading Open Source and Cloud-Native communities.</p>
                   <h3>30th February.</h3>
+                  <Button link="/agenda/">Explore the Schedule</Button>
               </div>
           </div>
         </section>

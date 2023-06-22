@@ -2,14 +2,14 @@
 import styles from './button.module.css'
 import Link from 'next/link';
 
-function Button({children, link, external, inline, clickHandler, small, main, disabled, inverted, state}) {
+function Button({children, link, external, inline, clickHandler, small, main, disabled, inverted}) {
 
     var buttonElement;
     if(link){
       if(external){
         buttonElement = <a href={link} target="_blank">  <span>{children}</span> </a>
       }else {
-        buttonElement = <Link to={link}>  <span>{children}</span> </Link>
+        buttonElement = <Link href={link}>  <span>{children}</span> </Link>
       }
     }else {
       if(clickHandler){
@@ -20,7 +20,7 @@ function Button({children, link, external, inline, clickHandler, small, main, di
     }
 
     return (
-      <div>
+      <div className={styles.button}>
             {buttonElement}
       </div>
     );

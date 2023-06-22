@@ -21,6 +21,8 @@
   --sizing-x25: calc(var(--sizing-block)*25);
   --sizing-x30: calc(var(--sizing-block)*30);
   /* COLORS */
+  --color-white: #FFFFFF;
+    
   --color-blue-100: #F0F3FC;
   --color-blue-300: #CBD8FB;
   --color-blue-500: #0040E5;
@@ -69,6 +71,17 @@
   --color-secondary: var(--color-green-500);
   --color-text: var(--color-orange-900);
   --color-background: var(--color-blue-100);
+  --color-background-light: var(--color-white);
+
+  /*COMPONENTS TOKENS */
+  /*Buttons*/
+  --button-color-border: var(--color-primary);
+  --button-color-background: var(--color-blue-100);
+  --button-color-background-hover: var(--color-white);
+  --button-border-radius: var(--sizing-x);
+  --button-text-font-size: var(--text-small-font-size);
+  --button-text-line-height: var(--text-small-line-height);
+  --button-padding: var(--sizing-x3) var(--sizing-s);
 }
 
 @media (prefers-color-scheme: dark) {
