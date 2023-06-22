@@ -85,6 +85,7 @@
   --color-background-light: var(--color-white);
   --color-background-primary: var(--color-blue-500);
   --color-background-highlight: var(--color-green-500);
+  --color-background-secondary: var(--color-orange-400);
   --color-background-dark: var(--color-text);
 
 
@@ -107,6 +108,17 @@
   --button-text-line-height: var(--text-small-line-height);
   --button-text-letter-spacing: 0.04em;
   --button-padding: var(--sizing-x3) var(--sizing-s);
+  /*Forms*/
+  --form-label-font-size: var(--text-small-font-size);
+  --form-label-line-height: var(--text-small-line-height);
+  --form-input-font-size: var(--text-font-size);
+  --form-input-line-height: var(--text-line-height);
+  --form-input-border: 2px solid var(--color-orange-900);
+  --form-input-border-focus: 2px solid var(--color-primary);
+  --form-input-background: var(--color-background-light);
+  --form-input-background-focus: var(--color-background-light);
+  --form-input-border-radius: var(--sizing-x);
+  --form-input-padding: 0 var(--sizing-x2);
 }
 
 @media (prefers-color-scheme: dark) {

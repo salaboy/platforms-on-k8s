@@ -1,6 +1,10 @@
 .main {
  
 }
+.hero {
+    background-color: var(--color-background-highlight);
+    padding: var(--sizing-xxb) 0;
+}
 
 
 /* Tablet and Smaller Desktop */

@@ -2,6 +2,12 @@
  
 }
 
+.hero {
+    background-color: var(--color-background-secondary);
+    padding: var(--sizing-xxb) 0;
+}
+
+
 
 /* Tablet and Smaller Desktop */
 @media (min-width: 701px) and (max-width: 1120px) {

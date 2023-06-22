@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { LoremIpsum } from "lorem-ipsum";
 import Textfield from '../components/forms/textfield/textfield';
 import Textarea from '../components/forms/textarea/textarea';
+import Button from '../components/forms/button/button';
 
 export default function Proposals() {
 
@@ -79,15 +80,19 @@ export default function Proposals() {
 
   return (
     <main className={styles.main}>
-      <div className="grid content">
-        <div className="col full">
+      <div className={`${styles.hero} ` }>
+        <div className={ `grid content noMargin`}>
+          <div className="col full">
           <h1>Proposals</h1>
+            
+          </div>
         </div>
       </div>
+    
 
       <div className="grid content">
         <div className="col third positionSingle">
-         <h2>Submit your Proposal</h2>
+         <h3>Submit your Proposal</h3>
           <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Fugiat, architecto placeat aperiam facilis quis quia incidunt at molestiae quaerat dicta dolore beatae natus. Beatae perferendis, aliquam hic commodi modi id.</p>
         </div>
         <div className="col half positionHalf">
@@ -104,17 +109,17 @@ export default function Proposals() {
           {isError && <small className="mt-3 d-inline-block text-danger">Something went wrong. Please try again later.</small>}
 
           {!generated && (  
-              <button main inline onClick={generate} disabled={generated}>Generate</button>
+              <Button main clickHandler={generate} disabled={generated}>Generate</Button>
           )}
           {generated && (
-          <button type="submit" onClick={handleSubmit} >Send Proposal</button>
+          <Button type="submit" clickHandler={handleSubmit} >Send Proposal</Button>
           )}
           </div>
           )}
           {sended && (
             <>
-              <h3>Thanks!</h3>
-              <button main onClick={handleBack} >Send another proposal</button>
+              <h3>Thanks!</h3> 
+              <Button  clickHandler={handleBack} >Send another proposal</Button>
             </>
           )}
         </div>

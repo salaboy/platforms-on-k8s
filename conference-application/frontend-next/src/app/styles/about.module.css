@@ -1,7 +1,13 @@
 .main {
  
 }
-
+.hero {
+    background-color: var(--color-blue-300);
+    padding: var(--sizing-xxb) 0;
+}
+.hero h1 {
+    color: var(--color-primary);
+}
 
 /* Tablet and Smaller Desktop */
 @media (min-width: 701px) and (max-width: 1120px) {
