@@ -10,10 +10,10 @@ export default function Footer() {
     const pathname = usePathname()
     return (
         <nav className={styles.footer}>
-            <div className="grid">
+            <div className="grid content noMargin">
                 <div className="col third">
                     <ul className={styles.logos}>
-                        <li className={styles.logosItem} ><Link href="/"  className={pathname === "/" ? `${styles.active} ` : ' '} scroll={false}>CloudCon 2023.</Link></li>
+                        <li className={styles.logosItem} ><h4><Link href="/"  className={pathname === "/" ? `${styles.active} ` : ' '} scroll={false}>Cloud-Native <br /> Conf 2023.</Link></h4></li>
                     </ul>
                 </div>
                 <div className="col third ">
@@ -30,8 +30,11 @@ export default function Footer() {
                     
                         <ul className={styles.menu}>
                             
-                            <li className={styles.menuItem}><Link href="/backend/" className={pathname === "/backend" ? `${styles.active} ` : ' '} scroll={false}>Backend</Link></li>
+                            <li className={styles.menuItem}><Link href="/backoffice/" className={pathname === "/backoffice" ? `${styles.active} ` : ' '} scroll={false}>Go to Backoffice</Link></li>
                         </ul>
+                        <p className='p --s'>
+                            Copyright Salaboy. 2023. Visit <a href="https://salaboy.com" target='_blank'>my blog</a> for more information.
+                        </p>
                         
                 </div>
                 

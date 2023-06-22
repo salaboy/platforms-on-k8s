@@ -6,6 +6,7 @@
     text-transform: uppercase;
     border-radius: var(--button-border-radius);
     background-color: var(--button-color-background);
+    letter-spacing: var(--button-text-letter-spacing);
 }
 
 .button a:hover{

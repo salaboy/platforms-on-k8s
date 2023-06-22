@@ -12,10 +12,11 @@ export default function Home() {
           <div className="grid content">
               <div className='col twoThirds'>
                   <h1>Cloud-Native Conf 2023</h1>
+                  <h3>30th February.</h3>
               </div>
               <div className='col third '>
                   <p>The flagship conference gathers adopters and technologists from leading Open Source and Cloud-Native communities.</p>
-                  <h3>30th February.</h3>
+                  
                   <Button link="/agenda/">Explore the Schedule</Button>
               </div>
           </div>
@@ -27,7 +28,7 @@ export default function Home() {
                
               </div>
               <div className='col half'>
-                <h4>The Venue</h4>
+                <h5>The Venue</h5>
                 <h2>The Cloud</h2>
                
               </div>
@@ -39,8 +40,10 @@ export default function Home() {
         <section className={`${styles.proposals}  ${styles.section} ` }>
           <div className="grid content" >
               
-              <div className='col twoThirds'>
-                The Call for Proposals is Open. Submit your proposal HERE.
+              <div className='col third '>
+                <h3>The Call for Proposals is Open</h3>
+                <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Autem, adipisci dolore eum, molestiae aut quidem asperiores culpa quae error harum suscipit repellendus excepturi delectus labore officiis! In saepe reiciendis rerum!</p>
+                <Button link="/proposals/">Submit your proposal</Button> 
               </div>
              
             

@@ -46,12 +46,19 @@
 
   --headings-h1-font-size: 120px;
   --headings-h1-line-height: var(--sizing-x25);
+  --headings-h1-letter-spacing: -0.01em;
   --headings-h2-font-size: 85px;
   --headings-h2-line-height: var(--sizing-x18);
+  --headings-h2-letter-spacing: 0.03em;
   --headings-h3-font-size: 52px;
   --headings-h3-line-height: var(--sizing-x11);
+  --headings-h3-letter-spacing: 0.04em;
   --headings-h4-font-size: 32px;
   --headings-h4-line-height: var(--sizing-x7);
+  --headings-h4-letter-spacing: 0.05em;
+  --headings-h5-font-size: var(--text-font-size);
+  --headings-h5-line-height: var(--text-line-height);
+  --headings-h5-letter-spacing: 0.04em;
 
   /* Tokens */
   /* SIZING */
@@ -70,8 +77,16 @@
   --color-primary: var(--color-blue-500);
   --color-secondary: var(--color-green-500);
   --color-text: var(--color-orange-900);
+  --color-text-primary: var(--color-white);
+  --color-text-highlight: var(--color-text);
+  --color-text-dark: var(--color-orange-100);
+  --color-link-dark: var(--color-orange-400);
   --color-background: var(--color-blue-100);
   --color-background-light: var(--color-white);
+  --color-background-primary: var(--color-blue-500);
+  --color-background-highlight: var(--color-green-500);
+  --color-background-dark: var(--color-text);
+
 
   /*COMPONENTS TOKENS */
   /*Nav*/
@@ -90,7 +105,7 @@
   --button-border-radius: var(--sizing-x);
   --button-text-font-size: var(--text-small-font-size);
   --button-text-line-height: var(--text-small-line-height);
-  --button-text-letter-spacing: 0.02em;
+  --button-text-letter-spacing: 0.04em;
   --button-padding: var(--sizing-x3) var(--sizing-s);
 }
 
@@ -117,25 +132,39 @@ h1, h2, h3, h4, .h1, .h2, .h3, .h4 {
   font-family: var(--font-headings);
   text-transform: uppercase;
 }
+
 h1, .h1 {
   font-size: var(--headings-h1-font-size);
   line-height: var(--headings-h1-line-height);
   margin-bottom: var(--sizing-m);
+  letter-spacing: var(--headings-h1-letter-spacing);
 }
 h2, .h2 {
   font-size: var(--headings-h2-font-size);
   line-height: var(--headings-h2-line-height);
   margin-bottom: var(--sizing-s);
+  letter-spacing: var(--headings-h2-letter-spacing);
 }
 h3, .h3 {
   font-size: var(--headings-h3-font-size);
   line-height: var(--headings-h3-line-height);
   margin-bottom: var(--sizing-s);
+  letter-spacing: var(--headings-h3-letter-spacing);
 }
 h4, .h4 {
   font-size: var(--headings-h4-font-size);
   line-height: var(--headings-h4-line-height);
   margin-bottom: var(--sizing-xs);
+  letter-spacing: var(--headings-h4-letter-spacing);
+}
+
+h5, .h5 {
+  font-size: var(--headings-h5-font-size);
+  line-height: var(--headings-h5-line-height);
+  margin-bottom: var(--sizing-xs);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: var(--headings-h5-letter-spacing);
 }
 
 p {

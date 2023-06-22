@@ -13,6 +13,10 @@
     max-width: 100%;
     margin: calc(var(--grid-margin)*4);
 }
+.grid.noMargin {
+    margin-top: 0;
+    margin-bottom: 0;
+}
 
 .grid.align-bottom {
     align-items: end;

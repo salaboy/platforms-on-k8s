@@ -4,7 +4,16 @@
 .section {
     padding-top: 10vh;
     padding-bottom: 10vh;
-    border-bottom: 1px solid #000;
+    
+}
+
+.section.hero {
+    background-color: var(--color-background-light);
+}
+
+.section.venue {
+    background-color: var(--color-background-primary);
+    color: var(--color-text-primary);
 }
 
 
