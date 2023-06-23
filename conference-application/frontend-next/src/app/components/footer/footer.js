@@ -33,7 +33,7 @@ export default function Footer() {
                             <li className={styles.menuItem}><Link href="/backoffice/" className={pathname === "/backoffice" ? `${styles.active} ` : ' '} scroll={false}>Go to Backoffice</Link></li>
                         </ul>
                         <p className='p --s'>
-                            Copyright Salaboy. 2023. Visit <a href="https://salaboy.com" target='_blank'>my blog</a> for more information.
+                            Copyright Salaboy. 2023. <br /> Visit <a href="https://salaboy.com" target='_blank'>my blog</a> for more information.
                         </p>
                         
                 </div>
