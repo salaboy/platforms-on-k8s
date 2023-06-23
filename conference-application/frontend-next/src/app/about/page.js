@@ -1,84 +1,90 @@
 import styles from '@/app/styles/about.module.css'
 
-
-
+import Button from '../components/forms/button/button'
+import Image from 'next/image'
 
 export default async function About() {
   
-
+  
   return (
     <main className={styles.main}>
-      <div className={`${styles.hero} ` }>
-        <div className={ `grid content noMargin`}>
-          <div className="col full">
-            <h1>About</h1>
-            
+      
+        <div className={`${styles.hero} ` }>
+          <div className={ `grid content noMargin`}>
+            <div className="col full">
+              <h1>About</h1>
+              
+            </div>
           </div>
         </div>
-      </div>
+
       <div className="grid content">
+      
         <div className="col full">
-          <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Ipsa incidunt atque natus sapiente reiciendis amet quo autem, eveniet quam cum earum vero quibusdam nisi vitae iusto tempora exercitationem numquam magnam?</p>
-          {/* <div className="grid">
+          
+          <div className="grid">
           <div>
             <h4>Repository</h4>
             <p>You can find the links to the source code and tutorials by going to the main Github repository: <a href="https://github.com/salaboy/from-monolith-to-k8s">https://github.com/salaboy/from-monolith-to-k8s</a></p>
             <br/>
-            <Button main external link="https://github.com/salaboy/from-monolith-to-k8s">Go to the repository</Button>
+            <Button main external link="https://github.com/salaboy/platforms-on-k8s">Go to the repository</Button>
           </div>
           <div>
             <h4>Book</h4>
             <div className="grid">
             <div>
-              <p>This application is fully covered by the <a target="_blank" href="http://mng.bz/jjKP">Continuous Delivery for Kubernetes Book</a>.</p>
+              <p>This application is fully covered by the <a target="_blank" href="http://mng.bz/jjKP">Plaform Engineering on Kubernetes Book</a>.</p>
             </div>
             <div>
-              <img src={BookImage} height="200"></img>
+            <Image
+              src="/images/book.jpeg"
+              width={554}
+              height={694}
+              alt="Book"
+            />
             </div>
             </div>
           </div>
+          </div>
         </div>
-      </section>
-      <section className="section white ">
+      
         <div className="grid">
           <div>
             <h4>Developed and maintained by</h4>
-
-            <Speaker
-              name={"Mauricio Salatino (Salaboy)"}
-              position={<a target="_blank" href="https://twitter.com/salaboy">Twitter: @salaboy</a>}
-              authorImage={SalaboyImage}
-              externalImage={true}
-              small
-
+            https://twitter.com/salaboy
+            <Image
+              src="/images/salaboy.png"
+              width={100}
+              height={100}
+              alt="Salaboy"
             />
-            <Speaker
-              name={"Ezequiel Salatino"}
-              position={<a target="_blank" href="https://salatino.me">Website: salatino.me</a>}
-              authorImage={EzeImage}
-              externalImage={true}
-              small
-
+            https://salatino.me
+            <Image
+              src="/images/esala.png"
+              width={100}
+              height={100}
+              alt="Esala"
             />
-            <Speaker
-              name={"Matheus Cruz"}
-              position={<a target="_blank" href="https://twitter.com/mcruzdev1">Twitter: @mcruzdev1</a>}
-              authorImage={MatheusImage}
-              externalImage={true}
-              small
-
+            https://twitter.com/mcruzdev1
+            <Image
+              src="/images/matheus.jpg"
+              width={100}
+              height={100}
+              alt="Matheus"
             />
-
+       
+          
           </div>
           <div>
           <h4>Contribute</h4>
             <p className="p p-b">Do you want to contribute to make this application better?
-            Go to the <a href="https://github.com/salaboy/from-monolith-to-k8s/issues">From Monolith To K8s repository</a> and create an issue or drop me a message in Twitter <a href="https://twitter.com/salaboy">@Salaboy</a> </p>
+            Go to the <a href="https://github.com/salaboy/platforms-on-k8s/issues">Platforms on K8s repository</a> and create an issue or drop me a message in Twitter <a href="https://twitter.com/salaboy">@Salaboy</a> </p>
             <br/>
             <Button  external link="https://twitter.com/salaboy">Drop me a message</Button>
           </div>
-        </div> */}
-        </div>
+        </div> 
+        
+        
       </div> 
       
 

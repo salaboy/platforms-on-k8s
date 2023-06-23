@@ -27,6 +27,7 @@ function ProposalItem({title, author, id, status, approved, email, description, 
           {id}
         </div>
         )}
+        
         {status && status==="PENDING" && (
           <div className="ProposalItem__actions">
             <div >
@@ -35,8 +36,12 @@ function ProposalItem({title, author, id, status, approved, email, description, 
             <div>
               <Button clickHandler={() => handleAction(id, status,"REJECT")}>Reject</Button>
             </div>
+            <div>
+              <Button clickHandler={() => handleAction(id, status,"ARCHIVE")}>Archive</Button>
+            </div>
           </div>
         )}
+        
         {status && status==="DECIDED" && (
           <div className="ProposalItem__status-info">
 
@@ -46,7 +51,14 @@ function ProposalItem({title, author, id, status, approved, email, description, 
               {approved === false  && (
                 <div className="ProposalItem__badge --rejected">Rejected</div>
               )}
-
+              <div>
+              <Button clickHandler={() => handleAction(id, status,"ARCHIVE")}>Archive</Button>
+            </div>
+          </div>
+        )}
+        {status && status==="ARCHIVED" && (
+          <div className="ProposalItem__status-info">
+                <div className="ProposalItem__badge --approved">Archived</div>
           </div>
         )}
       </div>

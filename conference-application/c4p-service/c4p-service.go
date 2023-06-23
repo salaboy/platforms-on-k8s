@@ -255,6 +255,62 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 	})
 }
 
+func archiveProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		proposalId := mux.Vars(r)["id"]
+		var decision ProposalDecision
+		err := json.NewDecoder(r.Body).Decode(&decision)
+		if err != nil {
+			log.Printf("There was an error decoding the request body into the struct: %v", err)
+		}
+
+		log.Printf("Archiving Proposal By Id: %s", proposalId)
+
+		updateStmt := `UPDATE Proposals set Status=$1 where Id=$2`
+		_, err = db.Exec(updateStmt, "ARCHIVED", proposalId)
+		if err != nil {
+			log.Printf("There was an error executing the update query: %v", err)
+		}
+		rows, err := db.Query(`SELECT * FROM Proposals where id=$1`, proposalId)
+
+		if err != nil {
+			log.Printf("There was an error executing the query: %v", err)
+		}
+
+		defer rows.Close()
+
+		//@TODO: validate that only one result comes from the query
+		var proposal Proposal
+		for rows.Next() {
+			err = rows.Scan(&proposal.Id, &proposal.Title, &proposal.Description, &proposal.Email, &proposal.Author, &proposal.Approved, &proposal.Status.Status)
+			if err != nil {
+				log.Printf("There was an error scanning the sql rows: %v", err)
+			}
+		}
+
+		proposalJson, err := json.Marshal(proposal)
+		if err != nil {
+			log.Printf("An error occured while marshalling the proposal to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		msg := kafka.Message{
+			Key:   []byte(fmt.Sprintf("proposal-archived-%s", proposal.Id)),
+			Value: proposalJson,
+		}
+		err = kafkaWriter.WriteMessages(r.Context(), msg)
+
+		if err != nil {
+			log.Printf("An error occured while writing the message to Kafka: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		log.Printf("Proposal Archived Event emitted to Kafka: %s", proposal)
+
+		respondWithJSON(w, http.StatusOK, proposal)
+	})
+}
+
 func newProposalHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWriter, r *http.Request) {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var proposal Proposal
@@ -355,9 +411,9 @@ func main() {
 
 	r := mux.NewRouter()
 
-	// Dapr subscription routes orders topic to this route
 	r.HandleFunc("/", newProposalHandler(kafkaWriter)).Methods("POST")
 	r.HandleFunc("/", getAllProposalsHandler).Methods("GET")
+	r.HandleFunc("/{id}", archiveProposaldHandler(kafkaWriter)).Methods("DELETE")
 	r.HandleFunc("/{id}/decide", decideProposaldHandler(kafkaWriter)).Methods("POST")
 
 	// Add handlers for readiness and liveness endpoints

@@ -5,9 +5,12 @@ import AgendaItem from './agendaitem'
 
 function AgendaList(props) {
 
+    
+    const [isError, setIsError] = useState(false);
     const [agendaItems, setAgendaItems] = useState('') // state hook
-    const {day, highlights} = props;
+    const {day, highlights, admin} = props;
     const [isLoading, setLoading] = useState(false)
+    
     const mockAgendaItems = [{
         "title": "Cached Entry",
         "author": "Cached Author",
@@ -16,11 +19,8 @@ function AgendaList(props) {
         "description": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Id officia doloribus, molestiae, mollitia quia maiores velit consequuntur dolorem labore beatae, porro aliquam quis! Quasi commodi aperiam, assumenda rem molestiae porro."
     }]
     
-
-
-    useEffect(() => {                           // side effect hook
-        setLoading(true)
-        console.log("Querying  /agenda/")
+    const fetchData = () => {
+        console.log("Querying /agenda/")
         fetch('/api/agenda/')
         .then((res) => res.json())
         .then((data) => {
@@ -30,7 +30,33 @@ function AgendaList(props) {
                     setAgendaItems(mockAgendaItems)
                     console.log(error)
             })
+    };
 
+    const handleArchive = (id) => {
+        setLoading(true);
+        setIsError(false);
+        console.log("Archiving Agenda Item ..." + id)
+        fetch('/api/agenda/' + id , {
+          method: "DELETE",
+          headers: {
+            'accept': 'application/json',
+          },
+        }).then((response) => response.json()).then(() => {
+          fetchData()
+          setLoading(false);
+        }).catch(err => {
+          console.log(err);
+          setLoading(false);
+          setIsError(true);
+        });
+    
+      }
+
+
+
+    useEffect(() => {                           // side effect hook
+        setLoading(true)
+        fetchData()
   
     }, [setAgendaItems])
 
@@ -43,9 +69,11 @@ function AgendaList(props) {
                         name={item.Title}
                         time={item.Time}
                         key={index}
+                        id={item.Id}
                         description={item.Description}
                         author={item.Author}
-
+                        admin={admin}
+                        handleArchive={handleArchive}
                     />
 
 

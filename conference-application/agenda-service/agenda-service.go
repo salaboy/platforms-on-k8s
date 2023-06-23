@@ -26,8 +26,7 @@ type AgendaItem struct {
 	Proposal Proposal
 	Title    string
 	Author   string
-	Day      string
-	Time     string
+	Archived bool
 }
 
 type ServiceInfo struct {
@@ -51,10 +50,6 @@ var REDIS_PORT = getEnv("REDIS_PORT", "6379")
 var REDIS_PASSOWRD = getEnv("REDIS_PASSWORD", "")
 var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
 var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
-
-func getAgendaByDayHandler(w http.ResponseWriter, r *http.Request) {
-
-}
 
 func getHighlightsHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
@@ -113,7 +108,9 @@ func getAllAgendaItemsHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			log.Printf("There was an error decoding the AgendaItem into the struct: %v", err)
 		}
-		agendaItems = append(agendaItems, agendaItem)
+		if !agendaItem.Archived {
+			agendaItems = append(agendaItems, agendaItem)
+		}
 	}
 	log.Printf("Agenda Items retrieved from Database: %d", len(agendaItems))
 	respondWithJSON(w, http.StatusOK, agendaItems)
@@ -135,6 +132,54 @@ func getAgendaItemByIdHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Agenda Item retrieved from Database: %s", agendaItem)
 	respondWithJSON(w, http.StatusOK, agendaItem)
+}
+
+func archiveAgendaItemHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.Background()
+		agendaItemId := mux.Vars(r)["id"]
+		log.Printf("Fetching Agenda Item By Id: %s", agendaItemId)
+		agendaItemById, err := rdb.HGet(ctx, KEY, agendaItemId).Result()
+		if err != nil {
+			panic(err)
+		}
+		var agendaItem AgendaItem
+		err = json.Unmarshal([]byte(agendaItemById), &agendaItem)
+		if err != nil {
+			log.Printf("There was an error decoding the request body into the struct: %v", err)
+		}
+		log.Printf("Agenda Item retrieved from Database: %s", agendaItem)
+		agendaItem.Archived = true
+
+		err = rdb.HSetNX(ctx, KEY, agendaItem.Id, agendaItem).Err()
+		if err != nil {
+			panic(err)
+		}
+
+		log.Printf("Agenda Item Archived in Database: %s", agendaItem)
+
+		agendaItemJson, err := json.Marshal(agendaItem)
+		if err != nil {
+			log.Printf("An error occured while marshalling the agenda item to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		msg := kafka.Message{
+			Key:   []byte(fmt.Sprintf("agenda-item-archived-%s", agendaItem.Id)),
+			Value: agendaItemJson,
+		}
+		err = kafkaWriter.WriteMessages(r.Context(), msg)
+
+		if err != nil {
+			log.Printf("An error occured while writing the message to Kafka: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+		log.Printf("Agenda Item Archived Event emitted to Kafka: %s", agendaItem)
+
+		respondWithJSON(w, http.StatusOK, agendaItem)
+	})
 }
 
 func newAgendaItemHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWriter, r *http.Request) {
@@ -224,14 +269,13 @@ func main() {
 
 	r := mux.NewRouter()
 
-	// Dapr subscription routes orders topic to this route
 	r.HandleFunc("/", newAgendaItemHandler(kafkaWriter)).Methods("POST")
 	r.HandleFunc("/", getAllAgendaItemsHandler).Methods("GET")
-	r.HandleFunc("/highlights", getHighlightsHandler).Methods("GET")
+
 	r.HandleFunc("/{id}", getAgendaItemByIdHandler).Methods("GET")
-	r.HandleFunc("/day/{day}", getAgendaByDayHandler).Methods("GET")
-	// r.HandleFunc("/{id}", deleteAgendaItemHandler).Methods("DELETE")
+	r.HandleFunc("/{id}", archiveAgendaItemHandler(kafkaWriter)).Methods("DELETE")
 	// r.HandleFunc("/", deleteAllHandler).Methods("DELETE")
+	r.HandleFunc("/highlights", getHighlightsHandler).Methods("GET")
 
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {

@@ -1,9 +1,14 @@
 'use client'
 import styles from '@/app/styles/agenda.module.css'
 import { useState, useContext } from 'react'
+import Button from '../forms/button/button'
 
-function AgendaItem({key, name, day, time, author, description}) {
+function AgendaItem({key, id, name, day, time, author, description, admin, handleArchive}) {
     const [open, setOpen] = useState(false) // state hook
+
+    const handleAction = (id) => {
+      handleArchive(id);
+    }
 
     const handleOpen = () => {
       if(open){
@@ -44,6 +49,9 @@ function AgendaItem({key, name, day, time, author, description}) {
             </div>
          
         </div>
+          {admin && (
+            <Button clickHandler={() => handleAction(id)}>Archive</Button>
+          )}
       </div>
       
     );

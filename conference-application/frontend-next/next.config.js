@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
-    //output: 'export', //-> this is to get static files
+    // output: 'export', //-> this is to get static files
     // output: 'standalone', -> this is to get a server for nodejs
     async rewrites() {
       return [

@@ -5,6 +5,7 @@ import { LoremIpsum } from "lorem-ipsum";
 import Textfield from '../components/forms/textfield/textfield';
 import Textarea from '../components/forms/textarea/textarea';
 import Button from '../components/forms/button/button';
+import toast, { Toaster } from "react-hot-toast";
 
 export default function Proposals() {
 
@@ -92,8 +93,9 @@ export default function Proposals() {
 
       <div className="grid content">
         <div className="col third positionSingle">
-         <h3>Submit your Proposal</h3>
-          <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Fugiat, architecto placeat aperiam facilis quis quia incidunt at molestiae quaerat dicta dolore beatae natus. Beatae perferendis, aliquam hic commodi modi id.</p>
+        <h4>Join us as a speaker</h4>
+        <p data-scroll data-scroll-speed="2" className="p p-b">Are you passionate about Cloud, Kubernetes, Docker or other technologies related with the Cloud. Submit your proposal to share your knowledge with our amazing community!</p>
+         
         </div>
         <div className="col half positionHalf">
         {!sended && (

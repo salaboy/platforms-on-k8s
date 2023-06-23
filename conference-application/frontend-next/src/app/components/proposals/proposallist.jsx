@@ -4,109 +4,138 @@ import ProposalItem from './proposalitem'
 import Button from '../forms/button/button'
 
 function ProposalList() {
-    const [loading, setLoading] = useState(false);
-    const [isError, setIsError] = useState(false);
-    const [decisionsMade, setDecisionsMade] = useState(1)
-    const [statusFilter, setStatusFilter] = useState(false)
-    const [proposalItems, setProposalItems] = useState([]) // state hook
+  const [loading, setLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+  const [statusFilter, setStatusFilter] = useState(false)
+  const [proposalItems, setProposalItems] = useState([]) // state hook
 
-    const handleApproval = (id, approved) => {
-      setLoading(true);
-      setIsError(false);
-      const data = {
-        approved: approved,
+  const handleApproval = (id, approved) => {
+    setLoading(true);
+    setIsError(false);
+    const data = {
+      approved: approved,
+    }
+    console.log("Decision Made ...")
+    fetch('/api/c4p/' + id + "/decide", {
+      method: "POST",
+      body: JSON.stringify(data),
+      headers: {
+        'accept': 'application/json',
+      },
+    }).then((response) => response.json()).then((data) => {
+      var filter = "?status=" + statusFilter
+      if (statusFilter == "") {
+        filter = ""
       }
-      console.log("Decision Made ...")
-      fetch('/api/c4p/' + id + "/decide", {
-        method: "POST",
-        body: JSON.stringify(data),
-        headers: {
-          'accept': 'application/json',
-        },
-      }).then((response) => response.json()).then((data) => {
-        setDecisionsMade(decisionsMade+1)
-        setLoading(false);
-      }).catch(err => {
-          setLoading(false);
-          setIsError(true);
-        });
+      fetchData(filter)
+      setLoading(false);
+    }).catch(err => {
+      setLoading(false);
+      setIsError(true);
+    });
 
-    }
+  }
 
-    function ApprovalButtons(item){
-      if(item.status == "PENDING"){
-      return <span><a onClick={() => handleApproval(item.id, true)} disabled={loading}  id="approve" >{loading ? 'Loading...' : 'Approve'}</a> /
-      <a onClick={() => handleApproval(item.id,false)} disabled={loading}  id="reject" >{loading ? 'Loading...' : 'Reject'}</a></span>
-      }else{
-        return <span>No Actions</span>
+  const handleArchive = (id) => {
+    setLoading(true);
+    setIsError(false);
+    console.log("Archiving Proposal ..." + id)
+    fetch('/api/c4p/' + id , {
+      method: "DELETE",
+      headers: {
+        'accept': 'application/json',
+      },
+    }).then((response) => response.json()).then(() => {
+      var filter = "?status=" + statusFilter
+      if (statusFilter == "") {
+        filter = ""
       }
+      fetchData(filter)
+      setLoading(false);
+    }).catch(err => {
+      console.log(err);
+      setLoading(false);
+      setIsError(true);
+    });
+
+  }
+
+
+  function ItemAction(status, id, action) {
+    console.log("status: " + status + " - id: " + id + " - action: " + action)
+    if (status == "PENDING") {
+      if (action == "APPROVE") {
+        handleApproval(id, true)
+      } else {
+        handleApproval(id, false)
+      } 
     }
-
-    function ItemAction(status, id, action){
-
-      if(status == "PENDING"){
-        if(action == "APPROVE"){
-          handleApproval(id, true)
-        }else {
-          handleApproval(id, false)
-        }
-      }
+    if (action == "ARCHIVE"){
+      handleArchive(id)
     }
+  }
 
-    function PendingFilter(){
-      setStatusFilter("PENDING")
+  function PendingFilter() {
+    setStatusFilter("PENDING")
+  }
+
+  function AllFilter() {
+    setStatusFilter("")
+  }
+
+  function DecidedFilter() {
+    setStatusFilter("DECIDED")
+  }
+  function ArchivedFilter() {
+    setStatusFilter("ARCHIVED")
+  }
+
+  const fetchData = (filter) => {
+    console.log("Fetching Proposals ... (" + filter + ").")
+    fetch('/api/c4p/' + filter)
+      .then((res) => res.json())
+      .then((data) => {
+        setProposalItems(data)
+        setLoading(false)
+      }).catch((error) => {
+        console.log(error)
+      })
+  }
+  useEffect(() => {
+    setLoading(true)
+    var filter = "?status=" + statusFilter
+    if (statusFilter == "") {
+      filter = ""
     }
+    fetchData(filter)
 
-    function AllFilter(){
-      setStatusFilter("")
-    }
+  }, [ statusFilter])
 
-    function DecidedFilter(){
-      setStatusFilter("DECIDED")
-    }
+  return (
+    <div>
 
-    useEffect(() => {
-      setLoading(true)
-      var filter = "?status="+statusFilter
-      if(statusFilter == ""){
-        filter =""
-      }
-      fetch('/api/c4p/'+filter)
-        .then((res) => res.json())
-        .then((data) => {
-          console.log("Fetching Proposals ...")
-          setProposalItems(data)
-          setLoading(false)
-        }).catch((error) => {
-            console.log(error)
-          })
+      <div className="ProposalList__filters">
+        Filter By: 
+        <Button inverted state={statusFilter == "" ? "inactive" : "active"} clickHandler={() => AllFilter()}>All</Button>
+        <Button inverted state={statusFilter == "PENDING" ? "active" : "inactive"} clickHandler={() => PendingFilter()}>Pending</Button>
+        <Button inverted state={statusFilter == "DECIDED" ? "active" : "inactive"} clickHandler={() => DecidedFilter()}>Decided</Button>
+        <Button inverted state={statusFilter == "ARCHIVED" ? "active" : "inactive"} clickHandler={() => ArchivedFilter()}>Archived</Button>
+      </div>
 
-    }, [decisionsMade, statusFilter])
-
-    return (
       <div>
-
-            <div className="ProposalList__filters">
-              <Button inverted state={statusFilter == "" ? "inactive" : "active"} clickHandler={() => AllFilter()}>All</Button> 
-              <Button inverted state={statusFilter == "PENDING" ? "active" : "inactive" } clickHandler={() => PendingFilter()}>Pending</Button>
-              <Button inverted state={statusFilter == "DECIDED" ? "active" : "inactive" } clickHandler={() => DecidedFilter()}>Decided</Button>
-            </div>
-        
-
-        <div>
         {
-        proposalItems && proposalItems.map((item,index)=>(
-              <ProposalItem
-                key={item.Id}
-                id={item.Id}
-                title={item.Title}
-                author={item.Author}
-                description={item.Description}
-                email={item.Email}
-                approved={item.Approved}
-                status={item.Status.Status}
-                actionHandler={ItemAction}
-              />
+          proposalItems && proposalItems.map((item, index) => (
+            <ProposalItem
+              key={item.Id}
+              id={item.Id}
+              title={item.Title}
+              author={item.Author}
+              description={item.Description}
+              email={item.Email}
+              approved={item.Approved}
+              status={item.Status.Status}
+              actionHandler={ItemAction}
+            />
 
           ))
         }
@@ -125,9 +154,9 @@ function ProposalList() {
             <span>There are no proposals.</span>
           )
         }
-        </div>
       </div>
-    );
+    </div>
+  );
 
 }
 export default ProposalList;
