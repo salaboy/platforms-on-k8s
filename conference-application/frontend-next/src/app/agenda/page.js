@@ -2,6 +2,7 @@
 import styles from '@/app/styles/agenda.module.css'
 import { useState, useEffect } from 'react'
 import AgendaList from "../components/agenda/agendalist"
+import Cloud from '../components/cloud/cloud'
 
 
 export default async function Agenda() {
@@ -12,7 +13,7 @@ export default async function Agenda() {
       <div className={`${styles.hero} ` }>
         <div className={ `grid content noMargin`}>
           <div className="col full">
-            <h1>Agenda</h1>
+            <h1><Cloud number="1" brown /> Agenda</h1>
             
           </div>
         </div>

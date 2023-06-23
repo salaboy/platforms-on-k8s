@@ -3,6 +3,7 @@
 import styles from './nav.module.css'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import Cloud from '../cloud/cloud'
 
 
 
@@ -13,7 +14,7 @@ export default function Nav() {
             <div className="grid">
                 <div className="col third">
                     <ul className={styles.logos}>
-                        <li className={styles.logosItem} ><Link href="/"  className={pathname === "/" ? `${styles.active} ` : ' '} scroll={false}>CloudCon 2023</Link></li>
+                        <li className={styles.logosItem} ><Link href="/"  className={pathname === "/" ? `${styles.active} ` : ' '} scroll={false}> <Cloud number="1" brand />CloudCon 2023</Link></li>
                     </ul>
                 </div>
                 <div className="col half positionHalf">

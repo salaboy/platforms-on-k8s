@@ -6,6 +6,7 @@ import Textfield from '../components/forms/textfield/textfield';
 import Textarea from '../components/forms/textarea/textarea';
 import Button from '../components/forms/button/button';
 import toast, { Toaster } from "react-hot-toast";
+import Cloud from '../components/cloud/cloud'
 
 export default function Proposals() {
 
@@ -84,7 +85,7 @@ export default function Proposals() {
       <div className={`${styles.hero} ` }>
         <div className={ `grid content noMargin`}>
           <div className="col full">
-          <h1>Proposals</h1>
+          <h1>Proposals <Cloud number="3" blue /></h1>
             
           </div>
         </div>
