@@ -208,6 +208,7 @@ a {
 }
 
 @import url("./grid.css");
+@import url("./tabs.css");
 
 @media (prefers-color-scheme: dark) {
   html {
@@ -216,15 +217,5 @@ a {
 }
 
 
-.react-tabs__tab-list {
-  display: flex;
-  list-style-type: none;
-  
-}
-.react-tabs__tab {
-  padding: var(--sizing-s);
-}
-.react-tabs__tab-panel {
-  padding: var(--sizing-b);
-}
+
 

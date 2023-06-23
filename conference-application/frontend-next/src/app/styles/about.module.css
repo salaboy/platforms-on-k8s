@@ -1,5 +1,5 @@
 .main {
- 
+ min-height: 100vh;
 }
 .hero {
     background-color: var(--color-blue-300);

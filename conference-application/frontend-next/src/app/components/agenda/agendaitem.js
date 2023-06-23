@@ -1,4 +1,5 @@
 'use client'
+import styles from '@/app/styles/agenda.module.css'
 import { useState, useContext } from 'react'
 
 function AgendaItem({key, name, day, time, author, description}) {
@@ -16,7 +17,7 @@ function AgendaItem({key, name, day, time, author, description}) {
 
     return (
       
-      <div onClick={() => handleOpen()}>
+      <div onClick={() => handleOpen()} className={styles.agendaItem}>
         <div className="AgendaItem__date">
           <div className="AgendaItem__day">
             {day}
@@ -26,7 +27,7 @@ function AgendaItem({key, name, day, time, author, description}) {
           </div>
         </div>
         <div className="AgendaItem__data">
-          <h3>{name}</h3>
+          <h4>{name}</h4>
           <p className="p p-s"> {author}</p>
           {open && (
             <div className="AgendaItem__description">

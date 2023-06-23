@@ -17,7 +17,7 @@ export default async function Agenda() {
           </div>
         </div>
       </div>
-      <div className="grid content">
+      <div className="grid content noMargin">
         <div className="col full">
         
           <div >

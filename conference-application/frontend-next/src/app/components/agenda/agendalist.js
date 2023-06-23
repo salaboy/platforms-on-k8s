@@ -1,5 +1,5 @@
 'use client'
-
+import styles from '@/app/styles/agenda.module.css'
 import { useState, useEffect } from 'react'
 import AgendaItem from './agendaitem'
 
@@ -36,7 +36,7 @@ function AgendaList(props) {
 
     return (
         <div>
-            <div>
+            <div className={styles.agendaList}>
                 {agendaItems && agendaItems.length > 0 && agendaItems.map((item, index) => (
 
                     <AgendaItem
@@ -51,9 +51,9 @@ function AgendaList(props) {
 
                 ))}
                 {agendaItems && agendaItems.length == 0 && (
-                    <span>
-               There are no confirmed talks just yet.
-                    </span>
+                    <p>
+                            There are no confirmed talks just yet.
+                    </p>
                 )}
             </div>
 
