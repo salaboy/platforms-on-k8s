@@ -1,6 +1,7 @@
 
 'use client'
 import Button from '../forms/button/button'
+import styles from '@/app/styles/proposals.module.css'
 
 function ProposalItem({title, author, id, status, approved, email, description, actionHandler}) {
 
@@ -11,16 +12,16 @@ function ProposalItem({title, author, id, status, approved, email, description, 
 
     return (
       
-      <div>
+      <div className={`${styles.ProposalItem}  ${status==='PENDING' ? styles.pending : ''}   ${status==='REJECT' ? styles.rejected : ''}   ${status==='APPROVE' ? styles.approved : ''}  ${status==='ARCHIVE' ? styles.archived : ''}` }>
         <div className="ProposalItem__header">
-          <h3>{title}</h3>
-          <h5>{author} {email}</h5>
+          <h4>{title}</h4>
+          <div>{author} {email}</div>
           <div className="ProposalItem__status">
             {status}
           </div>
         </div>
         <div className="ProposalItem__description">
-          <p className="p p-s">{description}</p>
+          <p className="p --s">{description}</p>
         </div>
         {false && (
         <div className="ProposalItem__id">

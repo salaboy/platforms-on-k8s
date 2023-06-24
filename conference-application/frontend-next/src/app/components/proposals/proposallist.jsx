@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import ProposalItem from './proposalitem'
 import Button from '../forms/button/button'
+import styles from '@/app/styles/proposals.module.css'
 
 function ProposalList() {
   const [loading, setLoading] = useState(false);
@@ -112,17 +113,19 @@ function ProposalList() {
   }, [ statusFilter])
 
   return (
-    <div>
+    <div className={styles.ProposalList}>
 
-      <div className="ProposalList__filters">
-        Filter By: 
-        <Button inverted state={statusFilter == "" ? "inactive" : "active"} clickHandler={() => AllFilter()}>All</Button>
-        <Button inverted state={statusFilter == "PENDING" ? "active" : "inactive"} clickHandler={() => PendingFilter()}>Pending</Button>
-        <Button inverted state={statusFilter == "DECIDED" ? "active" : "inactive"} clickHandler={() => DecidedFilter()}>Decided</Button>
-        <Button inverted state={statusFilter == "ARCHIVED" ? "active" : "inactive"} clickHandler={() => ArchivedFilter()}>Archived</Button>
+      <div className={styles.ProposalList_Filters}>
+        <div className={styles.container}>
+          Filter By: 
+          <Button  state={statusFilter == "" ? "inactive" : "active"} clickHandler={() => AllFilter()}>All</Button>
+          <Button  state={statusFilter == "PENDING" ? "active" : "inactive"} clickHandler={() => PendingFilter()}>Pending</Button>
+          <Button  state={statusFilter == "DECIDED" ? "active" : "inactive"} clickHandler={() => DecidedFilter()}>Decided</Button>
+          <Button  state={statusFilter == "ARCHIVED" ? "active" : "inactive"} clickHandler={() => ArchivedFilter()}>Archived</Button>
+        </div>
       </div>
 
-      <div>
+      <div className={styles.ProposalList_Items}>
         {
           proposalItems && proposalItems.map((item, index) => (
             <ProposalItem
