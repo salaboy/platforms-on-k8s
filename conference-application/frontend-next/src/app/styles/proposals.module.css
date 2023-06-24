@@ -31,9 +31,64 @@
 
 .ProposalItem {
     border: 4px solid var(--color-text);
-    padding: var(--sizing-m);
+    padding: var(--sizing-b) var(--sizing-b) var(--sizing-xxb) var(--sizing-b);
     flex-grow: 1;
     width: 25%;
+    max-width: 28vw;
+    position: relative;
+}
+.ProposalItem .status {
+    position: absolute;
+    top: 0;
+    right: 0;
+    padding: 0 var(--sizing-xs) 0 calc(var(--sizing-s) - var(--sizing-x));
+    background-color: var(--color-background-dark);
+    color: var(--color-text-dark);
+    font-size: var(--text-small-font-size);
+    line-height: var(--text-small-line-height);
+    border-radius: 0 0 0 var(--sizing-xs);
+}
+
+.ProposalItem .actions {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: var(--sizing-m) var(--sizing-b);
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--color-background-light);
+    box-shadow: 0 -20px 20px var(--color-background) ;
+    font-size: var(--text-small-font-size);
+    line-height: var(--text-small-line-height);
+    text-transform: uppercase;
+}
+
+.ProposalItem .description {
+    margin-top: var(--sizing-s);
+    max-height: 200px;
+    min-height: 120px;
+    overflow-y: scroll;
+}
+.ProposalItem.pending {
+    border: 4px dotted var(--color-primary);
+    background-color: var(--color-background-light);
+}
+.ProposalItem.pending .status{
+    background-color: var(--color-primary);
+}
+
+.ProposalItem.archived {
+    border: 4px solid var( --color-orange-400);
+    background-color: var( --color-orange-100);
+}
+.ProposalItem.archived .status {
+    background-color: var(--color-orange-400);
+    color: var(--color-text);
+    opacity: 1 !important;
+}
+.ProposalItem.archived * {
+    opacity: .75;
 }
 
 /* Tablet and Smaller Desktop */

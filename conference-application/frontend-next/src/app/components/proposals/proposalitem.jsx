@@ -12,15 +12,15 @@ function ProposalItem({title, author, id, status, approved, email, description, 
 
     return (
       
-      <div className={`${styles.ProposalItem}  ${status==='PENDING' ? styles.pending : ''}   ${status==='REJECT' ? styles.rejected : ''}   ${status==='APPROVE' ? styles.approved : ''}  ${status==='ARCHIVE' ? styles.archived : ''}` }>
+      <div className={`${styles.ProposalItem}  ${status==='PENDING' ? styles.pending : ''}   ${status==='DECIDED' ? styles.decided : ''}  ${status==='REJECT' ? styles.rejected : ''}   ${status==='APPROVE' ? styles.approved : ''}  ${status==='ARCHIVED' ? styles.archived : ''}` }>
         <div className="ProposalItem__header">
           <h4>{title}</h4>
           <div>{author} {email}</div>
-          <div className="ProposalItem__status">
+          <div className={styles.status}>
             {status}
           </div>
         </div>
-        <div className="ProposalItem__description">
+        <div className={styles.description}>
           <p className="p --s">{description}</p>
         </div>
         {false && (
@@ -30,7 +30,7 @@ function ProposalItem({title, author, id, status, approved, email, description, 
         )}
         
         {status && status==="PENDING" && (
-          <div className="ProposalItem__actions">
+          <div className={styles.actions}>
             <div >
               <Button clickHandler={() => handleAction(id, status,"APPROVE")}>Approve</Button>
             </div>
@@ -44,7 +44,7 @@ function ProposalItem({title, author, id, status, approved, email, description, 
         )}
         
         {status && status==="DECIDED" && (
-          <div className="ProposalItem__status-info">
+          <div className={styles.actions}>
 
               {approved === true  && (
                 <div className="ProposalItem__badge --approved">Approved</div>
@@ -58,7 +58,7 @@ function ProposalItem({title, author, id, status, approved, email, description, 
           </div>
         )}
         {status && status==="ARCHIVED" && (
-          <div className="ProposalItem__status-info">
+          <div className={styles.actions}>
                 <div className="ProposalItem__badge --approved">Archived</div>
           </div>
         )}
