@@ -9,6 +9,7 @@ import EventsList from '../components/events/eventlist'
 
 import { Tab, Tabs, TabList, TabPanel } from 'react-tabs';
 import AgendaList from '../components/agenda/agendalist'
+import Debug from '../components/debug/debug'
 
 
 
@@ -36,7 +37,7 @@ export default function Backoffice() {
               <Tab>Agenda Items</Tab>
               <Tab>Notifications</Tab>
               <Tab>Events</Tab>
-              
+              <Tab>Debug</Tab>
             </TabList>
 
             <TabPanel>
@@ -50,6 +51,9 @@ export default function Backoffice() {
             </TabPanel>
             <TabPanel>
               <EventsList />
+            </TabPanel>
+            <TabPanel>
+              <Debug/>
             </TabPanel>
           </Tabs>
           </div>
