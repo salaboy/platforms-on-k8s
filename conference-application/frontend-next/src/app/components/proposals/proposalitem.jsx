@@ -47,10 +47,10 @@ function ProposalItem({title, author, id, status, approved, email, description, 
           <div className={styles.actions}>
 
               {approved === true  && (
-                <div className="ProposalItem__badge --approved">Approved</div>
+                <div className={`${styles.statusTag}  ${styles.approved}`} >Approved</div>
               )}
               {approved === false  && (
-                <div className="ProposalItem__badge --rejected">Rejected</div>
+                <div className={`${styles.statusTag}  ${styles.rejected}`} >Rejected</div>
               )}
               <div>
               <Button clickHandler={() => handleAction(id, status,"ARCHIVE")}>Archive</Button>
