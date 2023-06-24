@@ -1,0 +1,36 @@
+services:
+  registry: salaboy
+  frontend: 
+    image: frontend-go-1739aa83b5e69d4ccb8a5615830ae66c@sha256
+    tag: 7dfb686980875bb9354bd8924babacd50637790652b2de53a89949ef7ff99738 
+  agenda: 
+    image: agenda-service-0967b907d9920c99918e2b91b91937b3@sha256
+    tag: 91bea41a9c119fd61c168014ebbac73a25b21fad82550e704f03fc3d17432f3e
+  c4p: 
+    image: c4p-service-a3dc0474cbfa348afcdf47a8eee70ba9@sha256
+    tag: ebec5d52a6f8fd8b4a98ee1e7791560ac5c56ff89f5df73337817f1ccf037c02
+  notifications: 
+    image: notifications-service-0e27884e01429ab7e350cb5dff61b525@sha256
+    tag: 39b87a47933a90eef3198b775ae41a4cdfc482a8d99bb0806cbc8f4fca0d73b8  
+install:
+  infrastructure: true
+  ingress: true
+postgresql:
+  image:
+    debug: true
+  primary: 
+    initdb:
+      user: postgres
+      password: postgres
+      scriptsConfigMap: c4p-init-sql
+  global:
+    postgresql:
+      auth: 
+        postgresPassword: postgres
+redis: 
+  architecture: standalone
+kafka: 
+  provisioning:
+    topics:
+    - name: events-topic
+      partitions: 1

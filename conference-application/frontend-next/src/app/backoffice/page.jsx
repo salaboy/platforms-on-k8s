@@ -33,22 +33,23 @@ export default function Backoffice() {
           <Tabs>
             <TabList>
               <Tab>Review Proposals</Tab>
+              <Tab>Agenda Items</Tab>
               <Tab>Notifications</Tab>
               <Tab>Events</Tab>
-              <Tab>Agenda Items</Tab>
+              
             </TabList>
 
             <TabPanel>
               <ProposalList></ProposalList>
             </TabPanel>
             <TabPanel>
+              <AgendaList admin="true" />
+            </TabPanel>
+            <TabPanel>
               <NotificationList />
             </TabPanel>
             <TabPanel>
               <EventsList />
-            </TabPanel>
-            <TabPanel>
-              <AgendaList admin="true" />
             </TabPanel>
           </Tabs>
           </div>

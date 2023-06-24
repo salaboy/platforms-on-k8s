@@ -8,9 +8,8 @@ import Button from '../components/forms/button/button';
 import toast, { Toaster } from "react-hot-toast";
 import Cloud from '../components/cloud/cloud'
 
-export default function Proposals() {
-
-
+export default function Proposals(props) {
+  const {isReadOnly} = props;
   const [title, setTitle] = useState();
   const [author, setAuthor] = useState();
   const [email, setEmail] = useState();
@@ -21,6 +20,27 @@ export default function Proposals() {
   const [sended, setSended] = useState(false);
   const [data, setData] = useState(null);
 
+
+  const proposals = [
+    {
+      "title": "my proposal title",
+      "author": "salaboy",
+      "description": "this will be an awesome presentation",
+      "email": "salaboy@mail.com"
+    },
+    {
+      "title": "my proposal title",
+      "author": "salaboy",
+      "description": "this will be an awesome presentation",
+      "email": "salaboy@mail.com"
+    },
+    {
+      "title": "my proposal title",
+      "author": "salaboy",
+      "description": "this will be an awesome presentation",
+      "email": "salaboy@mail.com"
+    } 
+  ];
 
   const handleSubmit = () => {
     setLoading(true);
@@ -114,7 +134,7 @@ export default function Proposals() {
           {!generated && (  
               <Button main clickHandler={generate} disabled={generated}>Generate</Button>
           )}
-          {generated && (
+          {(generated || isReadOnly) && (
           <Button type="submit" clickHandler={handleSubmit} >Send Proposal</Button>
           )}
           </div>

@@ -1,9 +1,8 @@
 import styles from '@/app/styles/about.module.css'
 
 import Button from '../components/forms/button/button'
-import Image from 'next/image'
 import Cloud from '../components/cloud/cloud'
-
+import ExportedImage from "next-image-export-optimizer"
 export default async function About() {
   
   
@@ -38,7 +37,7 @@ export default async function About() {
                 <p>This application is fully covered by the <a target="_blank" href="http://mng.bz/jjKP">Plaform Engineering on Kubernetes Book</a>.</p>
               </div>
             <div>
-            <Image
+            <ExportedImage
               src="/images/book.jpeg"
               width={554}
               height={694}
@@ -53,9 +52,8 @@ export default async function About() {
         <div className="grid content">
           <div className="col half">
             <h4>Developed and maintained by</h4>
-            <div>
-            https://twitter.com/salaboy
-            <Image
+            <h5>Mauricio Salatino - https://www.salaboy.com</h5>
+            <ExportedImage
               src="/images/salaboy.png"
               width={100}
               height={100}
@@ -63,8 +61,9 @@ export default async function About() {
             />
             </div>
             <div>
-            https://salatino.me
-            <Image
+            <h5>Ezequiel Salatino - https://salatino.me</h5>
+            
+            <ExportedImage
               src="/images/esala.png"
               width={100}
               height={100}
@@ -72,8 +71,8 @@ export default async function About() {
             />
             </div>
             <div>
-            https://twitter.com/mcruzdev1
-            <Image
+            <h5>Matheus Cruz - https://twitter.com/mcruzdev1</h5>
+            <ExportedImage
               src="/images/matheus.jpg"
               width={100}
               height={100}
@@ -90,13 +89,7 @@ export default async function About() {
             <br/>
             <Button  external link="https://twitter.com/salaboy">Drop me a message</Button>
           </div>
-        </div> 
         
-        
-      
-      
-
-       
     </main>
   )
 }
