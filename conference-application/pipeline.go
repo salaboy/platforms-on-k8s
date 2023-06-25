@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
+	"strings"
 
 	"dagger.io/dagger"
 	platformFormat "github.com/containerd/containerd/platforms"
@@ -15,22 +17,19 @@ var platforms = []dagger.Platform{
 }
 
 // the container registry for the multi-platform image
-const imageRepo = "ttl.sh/marcostest:1h"
+const imageRepo = "ttl.sh/marcostest"
 
 // util that returns the architecture of the provided platform
 func architectureOf(platform dagger.Platform) string {
 	return platformFormat.MustParse(string(platform)).Architecture
 }
 
-func main() {
-	ctx := context.Background()
-	client, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stderr))
-	if err != nil {
-		panic(err)
-	}
+func buildAndPublishService(ctx context.Context, dir, tag string) {
+	client := getDaggerClient(ctx)
+
 	defer client.Close()
 
-	srcDir := client.Host().Directory(".")
+	srcDir := client.Host().Directory(dir)
 
 	platformVariants := make([]*dagger.Container, 0, len(platforms))
 	for _, platform := range platforms {
@@ -62,7 +61,7 @@ func main() {
 		ctr = ctr.WithWorkdir("/src")
 		ctr = ctr.WithExec([]string{
 			"go", "build",
-			"-o", "/output/agenda-service",
+			"-o", "/output/app",
 			".",
 		})
 		// select the output directory
@@ -72,7 +71,7 @@ func main() {
 		// with the platform
 		binaryCtr := client.
 			Container(dagger.ContainerOpts{Platform: platform}).
-			WithEntrypoint([]string{"./agenda-service"}).
+			WithEntrypoint([]string{"./app"}).
 			WithRootfs(outputDir)
 		platformVariants = append(platformVariants, binaryCtr)
 	}
@@ -82,11 +81,76 @@ func main() {
 	// option with the containers built before.
 	imageDigest, err := client.
 		Container().
-		Publish(ctx, imageRepo, dagger.ContainerPublishOpts{
+		Publish(ctx, fmt.Sprintf("%s:%s", imageRepo, tag), dagger.ContainerPublishOpts{
 			PlatformVariants: platformVariants,
 		})
 	if err != nil {
 		panic(err)
 	}
 	fmt.Println("published multi-platform image with digest", imageDigest)
+}
+
+func main() {
+	var err error
+	ctx := context.Background()
+
+	if len(os.Args) < 2 {
+		panic(fmt.Errorf("invalid number of arguments: expected command (build, publish-image, helm-package)"))
+	}
+
+	switch os.Args[1] {
+	case "build":
+		if len(os.Args) < 4 {
+			err = fmt.Errorf("invalid number of arguments: expected service path and tag")
+			break
+		}
+		buildAndPublishService(ctx, os.Args[2], os.Args[3])
+
+	case "helm-publish":
+		if len(os.Args) < 3 {
+			err = fmt.Errorf("invalid number of arguments: expected chart tag")
+			break
+		}
+		err = helmPublish(ctx, os.Args[2])
+
+	default:
+		log.Fatalln("invalid command specified")
+	}
+
+	if err != nil {
+		panic(err)
+	}
+}
+
+func getDaggerClient(ctx context.Context) *dagger.Client {
+	c, err := dagger.Connect(ctx, dagger.WithLogOutput(os.Stderr))
+	if err != nil {
+		panic(err)
+	}
+
+	return c
+}
+
+func helmPublish(ctx context.Context, tag string) error {
+	c := getDaggerClient(ctx)
+	defer c.Close()
+
+	chartDir := c.Host().Directory("./helm/conference-app")
+
+	helm := c.Container().From("alpine/helm:3.12.1").
+		WithMountedDirectory(".", chartDir).
+		WithExec([]string{"registry", "login", "-u", "salaboy", "ghcr.io", "--password-stdin"}, dagger.ContainerWithExecOpts{Stdin: os.Getenv("HELM_REGISTRY_PASSWORD")}).
+		WithExec([]string{"package", "-u", "."})
+
+	chartOut, err := helm.Stdout(ctx)
+	if err != nil {
+		return err
+	}
+
+	chartPackagePath := strings.TrimSpace(strings.Split(chartOut, ":")[1])
+
+	_, err = helm.WithExec([]string{"push", chartPackagePath, "oci://ghcr.io/salaboy"}).
+		ExitCode(ctx)
+
+	return err
 }
