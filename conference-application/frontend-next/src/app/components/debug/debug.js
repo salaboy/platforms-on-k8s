@@ -1,5 +1,6 @@
 'use client'
 import ServiceInfo from './serviceinfo'
+import styles from '@/app/styles/debug.module.css'
 
 import { useState, useEffect } from 'react'
 
@@ -90,7 +91,7 @@ function Debug() {
     }, [])
 
     return (
-        <div>
+        <div className={styles.DebugList}>
             <ServiceInfo
                 name={frontendServiceInfo.Name}
                 version={frontendServiceInfo.Version}

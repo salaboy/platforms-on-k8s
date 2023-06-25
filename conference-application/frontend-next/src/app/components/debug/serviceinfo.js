@@ -1,5 +1,5 @@
 'use client'
-
+import styles from '@/app/styles/debug.module.css'
 
 function ServiceInfo({key, name, version, source, podName, nodeName, namespace, healthy}) {
    
@@ -8,29 +8,28 @@ function ServiceInfo({key, name, version, source, podName, nodeName, namespace, 
 
     return (
       
-      <div>
+      <div className={styles.ServiceInfo}>
         
-        <div className="AgendaItem__date">
-          <div className="AgendaItem__day">
-            {name}
+        <div>
+          <div className={styles.header}>
+            <h4>
+              {name}
+            </h4>
+            <h5>
+              {version}
+            </h5>
           </div>
-          <div className="AgendaItem__time">
-            {version}
-          </div>
-          <div className="AgendaItem__time">
+          <div className={styles.description}>
             {source}
-          </div>
-          <div className="AgendaItem__time">
+         
             {podName}
-          </div>
-          <div className="AgendaItem__time">
+         
             {nodeName}
-          </div>
-          <div className="AgendaItem__time">
+         
             {namespace}
           </div>
-          <div className="AgendaItem__time">
-            {healthy != null && (healthy.toString())}
+          <div  className={`${styles.statusTag}  ${healthy != null ? styles.healthy : ' '}`}>
+            {healthy != null && <>Healthy</>}
           </div>
         </div>
        

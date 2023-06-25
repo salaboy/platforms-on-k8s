@@ -11,9 +11,8 @@ function NotificationItem({id, title, emailTo,  emailSubject, emailBody, approve
     }else {
       setOpen(true);
     }
-
-
   }
+  
     return (
       
       <div onClick={() => handleOpen()} className={`${styles.NotificationItem}  ${open ? styles.open : ' '} ` }>
