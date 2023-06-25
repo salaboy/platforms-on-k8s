@@ -13,6 +13,8 @@ spec:
         - image: ko://github.com/salaboy/platforms-on-k8s/conference-application/frontend-go
           name: user-container
           env: 
+          - name: FEATURE_DEBUG_ENABLED
+            value: "true"
           - name: KAFKA_URL
             value: kafka.default.svc.cluster.local:9092
           livenessProbe:

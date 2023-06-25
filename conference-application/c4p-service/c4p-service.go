@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -39,12 +40,13 @@ type ProposalRef struct {
 }
 
 type AgendaItem struct {
-	Id       string
-	Proposal ProposalRef
-	Title    string
-	Author   string
-	Day      string
-	Time     string
+	Id          string
+	Proposal    ProposalRef
+	Title       string
+	Author      string
+	Description string
+	Day         string
+	Time        string
 }
 
 type DecisionResponse struct {
@@ -108,7 +110,7 @@ func getAllProposalsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer rows.Close()
-	var proposals []Proposal
+	proposals := []Proposal{}
 	for rows.Next() {
 
 		var proposal Proposal
@@ -172,9 +174,10 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 				Proposal: ProposalRef{
 					Id: proposal.Id,
 				},
-				Author: proposal.Author,
-				Day:    "",
-				Time:   "",
+				Description: proposal.Description,
+				Author:      proposal.Author,
+				Day:         "",
+				Time:        "",
 			}
 			agendaItemJson, err := json.Marshal(agendaItem)
 			if err != nil {
@@ -402,6 +405,12 @@ func main() {
 
 	log.Printf("Connected to PostgreSQL.")
 
+	kafkaAlive := isKafkaAlive(KAFKA_URL, KAFKA_TOPIC)
+	if !kafkaAlive {
+		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
+		return
+	}
+
 	log.Printf("Connecting to Kafka Instance: %s, topic: %s.", KAFKA_URL, KAFKA_TOPIC)
 	//https://github.com/segmentio/kafka-go/blob/main/examples/producer-api/main.go
 	kafkaWriter := getKafkaWriter(KAFKA_URL, KAFKA_TOPIC)
@@ -445,4 +454,28 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
+}
+
+func isKafkaAlive(kafkaURL string, topic string) bool {
+	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer conn.Close()
+
+	brokers, err := conn.Brokers()
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for _, b := range brokers {
+		log.Printf("Available Broker: %s", b)
+	}
+	if len(brokers) > 0 {
+		return true
+	} else {
+		return false
+	}
+
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -40,7 +41,7 @@ var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
 var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
 var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
 
-var notifications []Notification
+var notifications = []Notification{}
 
 func getAllNotificationsHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, notifications)
@@ -139,6 +140,12 @@ func main() {
 
 	log.Printf("Starting Notifications Service in Port: %s", appPort)
 
+	kafkaAlive := isKafkaAlive(KAFKA_URL, KAFKA_TOPIC)
+	if !kafkaAlive {
+		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
+		return
+	}
+
 	log.Printf("Connecting to Kafka Instance: %s, topic: %s.", KAFKA_URL, KAFKA_TOPIC)
 	//https://github.com/segmentio/kafka-go/blob/main/examples/producer-api/main.go
 	kafkaWriter := getKafkaWriter(KAFKA_URL, KAFKA_TOPIC)
@@ -181,4 +188,28 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
+}
+
+func isKafkaAlive(kafkaURL string, topic string) bool {
+	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer conn.Close()
+
+	brokers, err := conn.Brokers()
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for _, b := range brokers {
+		log.Printf("Available Broker: %s", b)
+	}
+	if len(brokers) > 0 {
+		return true
+	} else {
+		return false
+	}
+
 }

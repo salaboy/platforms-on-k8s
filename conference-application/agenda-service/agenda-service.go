@@ -22,11 +22,12 @@ type Proposal struct {
 }
 
 type AgendaItem struct {
-	Id       string
-	Proposal Proposal
-	Title    string
-	Author   string
-	Archived bool
+	Id          string
+	Proposal    Proposal
+	Title       string
+	Description string
+	Author      string
+	Archived    bool
 }
 
 type ServiceInfo struct {
@@ -100,8 +101,7 @@ func getAllAgendaItemsHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		panic(err)
 	}
-	var agendaItems []AgendaItem
-
+	agendaItems := []AgendaItem{}
 	for _, ai := range agendaItemsHashs {
 		var agendaItem AgendaItem
 		err = json.Unmarshal([]byte(ai), &agendaItem)
@@ -151,7 +151,7 @@ func archiveAgendaItemHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWri
 		log.Printf("Agenda Item retrieved from Database: %s", agendaItem)
 		agendaItem.Archived = true
 
-		err = rdb.HSetNX(ctx, KEY, agendaItem.Id, agendaItem).Err()
+		err = rdb.HSet(ctx, KEY, agendaItem.Id, agendaItem).Err()
 		if err != nil {
 			panic(err)
 		}
@@ -262,6 +262,13 @@ func main() {
 
 	log.Printf("Connecting to Kafka Instance: %s, topic: %s.", KAFKA_URL, KAFKA_TOPIC)
 	//https://github.com/segmentio/kafka-go/blob/main/examples/producer-api/main.go
+
+	kafkaAlive := isKafkaAlive(KAFKA_URL, KAFKA_TOPIC)
+	if !kafkaAlive {
+		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
+		return
+	}
+
 	kafkaWriter := getKafkaWriter(KAFKA_URL, KAFKA_TOPIC)
 
 	log.Printf("Connected to Kafka.")
@@ -330,4 +337,28 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
+}
+
+func isKafkaAlive(kafkaURL string, topic string) bool {
+	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer conn.Close()
+
+	brokers, err := conn.Brokers()
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for _, b := range brokers {
+		log.Printf("Available Broker: %s", b)
+	}
+	if len(brokers) > 0 {
+		return true
+	} else {
+		return false
+	}
+
 }

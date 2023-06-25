@@ -68,36 +68,48 @@ nodes:
 
 Once we have our cluster and our Ingress Controller installed and configured we can move ahead and install our application.
 
-## Registering new Helm Chart repositories
-
-For this example, I've published the Chart into my own Helm Chart repository that you need to add to your local Helm setup. To do this you need to run: 
-
-```
-helm repo add platforms-on-k8s https://salaboy.github.io/helm/
-```
-
-Once the repository is added locally, you need to run the following command to fetch the description of all the avialable Helm Charts in that repository: 
-
-```
-helm repo update
-```
-
-Running `helm search repo conference-app` should now return the chart for the conference application. 
-
-```
-helm repo search conference-app
-```
-You should see something like this: 
-```
-```
 
 ## Installing the Conference Application
 
-To install a new instance of the application in your Kubernetes Cluster you can run: 
+From Helm 3.7+, we can use OCI images to publish, download and install Helm Charts. This approach uses Docker Hub as a Helm Chart registry and to install the Conference Application you only need to run the following command:
 
 ```
-helm install conference platforms-on-k8s/conference-app
+helm install conference oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0
 ```
+
+You can also run the following command to see the details of the chart: 
+
+```
+helm show all oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0
+```
+
+
+
+## Important !!! READ!!
+
+Because the Conference Application is installing PostgreSQL, Redis and Kafka, if you want to remove and install the application again you need to make sure to delete the associated PersistenceVolumeClaims (PVCs). These PVCs are the volumes uses to store the data from the databases and Kafka, failing to delete these PVCs in between installations will cause the services to use old credentials to connect to the new provisioned databases. 
+
+You can delete all PVCs by listing them with:
+
+```
+kubectl get pvc
+```
+
+You should see:
+
+```
+NAME                                   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
+data-conference-kafka-0                Bound    pvc-2c3ccdbe-a3a5-4ef1-a69a-2b1022818278   8Gi        RWO            standard       8m13s
+data-conference-postgresql-0           Bound    pvc-efd1a785-e363-462d-8447-3e48c768ae33   8Gi        RWO            standard       8m13s
+redis-data-conference-redis-master-0   Bound    pvc-5c2a96b1-b545-426d-b800-b8c71d073ca0   8Gi        RWO            standard       8m13s
+```
+
+And then delete with: 
+```
+kubectl delete pvc  data-conference-kafka-0 data-conference-postgresql-0 redis-data-conference-redis-master-0
+```
+
+The name of the PVCs will change based on the Helm Release name that you used when installing the chart.
 
 
 

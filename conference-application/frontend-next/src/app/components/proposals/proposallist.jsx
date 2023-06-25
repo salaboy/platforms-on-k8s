@@ -7,7 +7,7 @@ import styles from '@/app/styles/proposals.module.css'
 function ProposalList() {
   const [loading, setLoading] = useState(false);
   const [isError, setIsError] = useState(false);
-  const [statusFilter, setStatusFilter] = useState(false)
+  const [statusFilter, setStatusFilter] = useState("PENDING")
   const [proposalItems, setProposalItems] = useState([]) // state hook
 
   const handleApproval = (id, approved) => {

@@ -11,6 +11,7 @@ import (
 	"net/http/httputil"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	kafka "github.com/segmentio/kafka-go"
@@ -38,7 +39,7 @@ type ServiceInfo struct {
 	PodNodeName  string
 }
 
-var events []Event
+var events = []Event{}
 
 type Event struct {
 	Id      int64
@@ -47,14 +48,19 @@ type Event struct {
 }
 
 type Features struct {
-	DEBUG_ENABLED string
+	DEBUG_ENABLED     string
+	GENERATE_PROPOSAL string
 }
 
 var FEATURE_DEBUG_ENABLED = getEnv("FEATURE_DEBUG_ENABLED", "false")
 
+// values: PUBLIC (no filters), GENERATE (Read Only Form - Generate Proposal), GENERATE_ONLY (No Submit until Generated Proposal is created)
+var FEATURE_GENERATE_PROPOSAL = getEnv("FEATURE_DEBUG_ENABLED", "GENERATE")
+
 func featureHandler(w http.ResponseWriter, r *http.Request) {
 	var features = Features{
-		DEBUG_ENABLED: FEATURE_DEBUG_ENABLED,
+		DEBUG_ENABLED:     FEATURE_DEBUG_ENABLED,
+		GENERATE_PROPOSAL: FEATURE_GENERATE_PROPOSAL,
 	}
 	respondWithJSON(w, http.StatusOK, features)
 }
@@ -77,15 +83,41 @@ func notificationServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 	brokers := strings.Split(kafkaURL, ",")
+
 	return kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  brokers,
-		GroupID:  groupID,
-		Topic:    topic,
-		MinBytes: 10e3, // 10KB
-		MaxBytes: 10e6, // 10MB
+		Brokers:     brokers,
+		GroupID:     groupID,
+		Topic:       topic,
+		MinBytes:    5,    // 5B
+		MaxBytes:    10e6, // 10MB
+		StartOffset: kafka.FirstOffset,
+		MaxWait:     3 * time.Second,
 	})
 }
 
+func isKafkaAlive(kafkaURL string, topic string) bool {
+	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer conn.Close()
+
+	brokers, err := conn.Brokers()
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for _, b := range brokers {
+		log.Printf("Available Broker: %s", b)
+	}
+	if len(brokers) > 0 {
+		return true
+	} else {
+		return false
+	}
+
+}
 func proxyRequest(serviceName string, serviceUrl string, w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -185,6 +217,12 @@ func main() {
 	log.Printf("Connecting to Kafka Instance: %s, topic: %s., group: %s", KAFKA_URL, KAFKA_TOPIC, KAFKA_GROUP_ID)
 	reader := getKafkaReader(KAFKA_URL, KAFKA_TOPIC, KAFKA_GROUP_ID)
 
+	kafkaAlive := isKafkaAlive(KAFKA_URL, KAFKA_TOPIC)
+	if !kafkaAlive {
+		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
+		return
+	}
+
 	go consumeFromKafka(reader)
 
 	defer reader.Close()
@@ -216,6 +254,7 @@ func getEnv(key, fallback string) string {
 
 func consumeFromKafka(reader *kafka.Reader) {
 	fmt.Println("Consuming Events ...")
+
 	for {
 		m, err := reader.ReadMessage(context.Background())
 		if err != nil {

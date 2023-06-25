@@ -45,7 +45,6 @@ function AgendaItem({key, id, name, day, time, author, description, admin, handl
          
             <div className={styles.description} >
               <p>{description}</p>
-              <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Autem nam sit minus quibusdam nisi voluptatem earum eum ipsam sunt consequuntur odit neque libero, modi ut officiis, dignissimos rerum at facere!</p>
             </div>
          
         </div>
