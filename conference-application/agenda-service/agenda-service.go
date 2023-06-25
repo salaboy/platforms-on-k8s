@@ -31,21 +31,25 @@ type AgendaItem struct {
 }
 
 type ServiceInfo struct {
-	Name         string
-	Version      string
-	Source       string
-	PodId        string
-	PodNamespace string
-	PodNodeName  string
+	Name              string
+	Version           string
+	Source            string
+	PodName           string
+	PodNamespace      string
+	PodNodeName       string
+	PodIp             string
+	PodServiceAccount string
 }
 
 var rdb *redis.Client
 var KEY = "AGENDAITEMS"
 var VERSION = getEnv("VERSION", "1.0.0")
 var SOURCE = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/agenda-service")
-var POD_ID = getEnv("POD_ID", "N/A")
+var POD_NAME = getEnv("POD_NAME", "N/A")
 var POD_NAMESPACE = getEnv("POD_NAMESPACE", "N/A")
 var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
+var POD_IP = getEnv("POD_IP", "N/A")
+var POD_SERVICE_ACCOUNT = getEnv("POD_SERVICE_ACCOUNT", "N/A")
 var REDIS_HOST = getEnv("REDIS_HOST", "localhost")
 var REDIS_PORT = getEnv("REDIS_PORT", "6379")
 var REDIS_PASSOWRD = getEnv("REDIS_PASSWORD", "")
@@ -291,11 +295,14 @@ func main() {
 
 	r.HandleFunc("/service/info", func(w http.ResponseWriter, r *http.Request) {
 		var info ServiceInfo = ServiceInfo{
-			Name:         "AGENDA",
-			Version:      VERSION,
-			Source:       SOURCE,
-			PodId:        POD_ID,
-			PodNamespace: POD_NODENAME,
+			Name:              "AGENDA",
+			Version:           VERSION,
+			Source:            SOURCE,
+			PodName:           POD_NAME,
+			PodNodeName:       POD_NODENAME,
+			PodNamespace:      POD_NAMESPACE,
+			PodIp:             POD_IP,
+			PodServiceAccount: POD_SERVICE_ACCOUNT,
 		}
 		json.NewEncoder(w).Encode(info)
 	})

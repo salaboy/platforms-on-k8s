@@ -17,6 +17,8 @@ function Debug() {
         "PodId": "N/A",
         "PodNamespace": "N/A",
         "PodNodeName": "N/A",
+        "PodIp": "N/A",
+        "ServiceAccount": "N/A",
         "Source": "N/A",
         "Version": "N/A",
         "Healthy": false
@@ -97,9 +99,11 @@ function Debug() {
                 version={frontendServiceInfo.Version}
                 key="frontend"
                 source={frontendServiceInfo.Source}
+                podIp = {frontendServiceInfo.PodIp}
                 podName={frontendServiceInfo.PodName}
-                nodeName={frontendServiceInfo.NodeName}
-                namespace={frontendServiceInfo.Namespace}
+                nodeName={frontendServiceInfo.PodNodeName}
+                namespace={frontendServiceInfo.PodNamespace}
+                serviceAccount={frontendServiceInfo.PodServiceAccount}
                 healthy={frontendServiceInfo.Healthy}
             />
 
@@ -109,8 +113,10 @@ function Debug() {
                 key="c4p"
                 source={c4pServiceInfo.Source}
                 podName={c4pServiceInfo.PodName}
-                nodeName={c4pServiceInfo.NodeName}
-                namespace={c4pServiceInfo.Namespace}
+                podIp = {c4pServiceInfo.PodIp}
+                nodeName={c4pServiceInfo.PodNodeName}
+                namespace={c4pServiceInfo.PodNamespace}
+                serviceAccount={c4pServiceInfo.PodServiceAccount}
                 healthy={c4pServiceInfo.Healthy}
             />
             <ServiceInfo
@@ -118,9 +124,11 @@ function Debug() {
                 version={agendaServiceInfo.Version}
                 key="agenda"
                 source={agendaServiceInfo.Source}
+                podIp = {agendaServiceInfo.PodIp}
                 podName={agendaServiceInfo.PodName}
-                nodeName={agendaServiceInfo.NodeName}
-                namespace={agendaServiceInfo.Namespace}
+                nodeName={agendaServiceInfo.PodNodeName}
+                namespace={agendaServiceInfo.PodNamespace}
+                serviceAccount={agendaServiceInfo.PodServiceAccount}
                 healthy={agendaServiceInfo.Healthy}
             />
             <ServiceInfo
@@ -128,9 +136,11 @@ function Debug() {
                 version={notificationsServiceInfo.Version}
                 key="notifications"
                 source={notificationsServiceInfo.Source}
+                podIp = {notificationsServiceInfo.PodIp}
                 podName={notificationsServiceInfo.PodName}
-                nodeName={notificationsServiceInfo.NodeName}
-                namespace={notificationsServiceInfo.Namespace}
+                nodeName={notificationsServiceInfo.PodNodeName}
+                namespace={notificationsServiceInfo.PodNamespace}
+                serviceAccount={notificationsServiceInfo.PodServiceAccount}
                 healthy={notificationsServiceInfo.Healthy}
             />
         </div>

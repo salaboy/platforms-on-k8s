@@ -19,9 +19,11 @@ import (
 
 var VERSION = getEnv("VERSION", "1.0.0")
 var SOURCE = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/frontend-go")
-var POD_ID = getEnv("POD_ID", "N/A")
+var POD_NAME = getEnv("POD_NAME", "N/A")
 var POD_NAMESPACE = getEnv("POD_NAMESPACE", "N/A")
 var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
+var POD_IP = getEnv("POD_IP", "N/A")
+var POD_SERVICE_ACCOUNT = getEnv("POD_SERVICE_ACCOUNT", "N/A")
 var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
 var C4P_SERVICE_URL = getEnv("C4P_SERVICE_URL", "http://c4p-service.default.svc.cluster.local")
 var NOTIFICATION_SERVICE_URL = getEnv("NOTIFICATION_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
@@ -31,12 +33,14 @@ var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
 var KAFKA_GROUP_ID = getEnv("KAFKA_GROUP_ID", "app")
 
 type ServiceInfo struct {
-	Name         string
-	Version      string
-	Source       string
-	PodId        string
-	PodNamespace string
-	PodNodeName  string
+	Name              string
+	Version           string
+	Source            string
+	PodName           string
+	PodNamespace      string
+	PodNodeName       string
+	PodIp             string
+	PodServiceAccount string
 }
 
 var events = []Event{}
@@ -203,11 +207,14 @@ func main() {
 
 	r.HandleFunc("/service/info", func(w http.ResponseWriter, r *http.Request) {
 		var info ServiceInfo = ServiceInfo{
-			Name:         "FRONTEND",
-			Version:      VERSION,
-			Source:       SOURCE,
-			PodId:        POD_ID,
-			PodNamespace: POD_NODENAME,
+			Name:              "FRONTEND",
+			Version:           VERSION,
+			Source:            SOURCE,
+			PodName:           POD_NAME,
+			PodNodeName:       POD_NODENAME,
+			PodNamespace:      POD_NAMESPACE,
+			PodIp:             POD_IP,
+			PodServiceAccount: POD_SERVICE_ACCOUNT,
 		}
 		json.NewEncoder(w).Encode(info)
 	})
