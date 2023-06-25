@@ -12,6 +12,8 @@ function Debug() {
     const [agendaServiceInfo, setAgendaServiceInfo] = useState('') // state hook
     const [notificationsServiceInfo, setNotificationsServiceInfo] = useState('') // state hook
 
+    const [check, setCheck] = useState(0)
+
     const mockServiceInfo = {
         "Name": "N/A",
         "PodId": "N/A",
@@ -23,6 +25,18 @@ function Debug() {
         "Version": "N/A",
         "Healthy": false
     }
+
+    useEffect(() => {
+        const id = setInterval(() => {
+            setLoading(true)
+            fetchFrontendServiceInfo()
+            fetchAgendaServiceInfo()
+            fetchC4PServiceInfo()
+            fetchNotificationsServiceInfo()
+
+        }, 3000);
+        return () => clearInterval(id);
+    }, [check])
 
     const fetchFrontendServiceInfo = () => {
         setLoading(true);
@@ -99,7 +113,7 @@ function Debug() {
                 version={frontendServiceInfo.Version}
                 key="frontend"
                 source={frontendServiceInfo.Source}
-                podIp = {frontendServiceInfo.PodIp}
+                podIp={frontendServiceInfo.PodIp}
                 podName={frontendServiceInfo.PodName}
                 nodeName={frontendServiceInfo.PodNodeName}
                 namespace={frontendServiceInfo.PodNamespace}
@@ -113,7 +127,7 @@ function Debug() {
                 key="c4p"
                 source={c4pServiceInfo.Source}
                 podName={c4pServiceInfo.PodName}
-                podIp = {c4pServiceInfo.PodIp}
+                podIp={c4pServiceInfo.PodIp}
                 nodeName={c4pServiceInfo.PodNodeName}
                 namespace={c4pServiceInfo.PodNamespace}
                 serviceAccount={c4pServiceInfo.PodServiceAccount}
@@ -124,7 +138,7 @@ function Debug() {
                 version={agendaServiceInfo.Version}
                 key="agenda"
                 source={agendaServiceInfo.Source}
-                podIp = {agendaServiceInfo.PodIp}
+                podIp={agendaServiceInfo.PodIp}
                 podName={agendaServiceInfo.PodName}
                 nodeName={agendaServiceInfo.PodNodeName}
                 namespace={agendaServiceInfo.PodNamespace}
@@ -136,7 +150,7 @@ function Debug() {
                 version={notificationsServiceInfo.Version}
                 key="notifications"
                 source={notificationsServiceInfo.Source}
-                podIp = {notificationsServiceInfo.PodIp}
+                podIp={notificationsServiceInfo.PodIp}
                 podName={notificationsServiceInfo.PodName}
                 nodeName={notificationsServiceInfo.PodNodeName}
                 namespace={notificationsServiceInfo.PodNamespace}

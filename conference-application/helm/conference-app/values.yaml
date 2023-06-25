@@ -2,16 +2,16 @@ services:
   registry: salaboy
   frontend: 
     image: frontend-go-1739aa83b5e69d4ccb8a5615830ae66c@sha256
-    tag: 996e290f3860502096b9a145f5f972a4bac8e7f55195a979d0f6f0b390e01dfe
+    tag: df6f60b22ffd64b23ae92e89170692db6014b95b335f990cb2023bd9cc7a8d93
   agenda: 
     image: agenda-service-0967b907d9920c99918e2b91b91937b3@sha256
-    tag: 5337e1d3b32ab2602879258dc77d04729168c95aba21710580056174857f4e2b
+    tag: ce9ce8293e4e062404226993b469a7d8dd28bd42431127d38fec5cb2da626b7d
   c4p: 
     image: c4p-service-a3dc0474cbfa348afcdf47a8eee70ba9@sha256
-    tag: 5bdfc57951cc671053a79710713aabc50ff1b29e2fd767bab0c85c8b8b26af15
+    tag: b44504fcc345e2ea7bc5b0bce93192c7b58a5fe69cc986e27c1a2d77e6a5c8a3
   notifications: 
     image: notifications-service-0e27884e01429ab7e350cb5dff61b525@sha256
-    tag: a630fa2533868017486228bec2f5518367bfcc346c60961b27fd002489a51871  
+    tag: 799c35f9f306e54a3b20a85adf83fa91dfc976665fbca7fe6ffabd314636094f
 install:
   infrastructure: true
   ingress: true

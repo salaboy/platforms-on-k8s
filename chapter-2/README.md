@@ -47,6 +47,15 @@ We need NGINGX Ingress Controller to route traffic from our laptop to the servic
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
 ```
 
+Check that the pods inside the `ingress-nginx` are started correctly before proceeding: 
+```
+> kubectl get pods -n ingress-nginx
+NAME                                        READY   STATUS      RESTARTS   AGE
+ingress-nginx-admission-create-cflcl        0/1     Completed   0          62s
+ingress-nginx-admission-patch-sb64q         0/1     Completed   0          62s
+ingress-nginx-controller-5bb6b499dc-7chfm   0/1     Running     0          62s
+```
+
 This allows you to route traffic from http://localhost to services running inside the cluster. Notice that for KinD to work in this way, when we created the cluster we provided extra parameters and labels for the control plane node:
 ```
 nodes:
@@ -82,6 +91,27 @@ You can also run the following command to see the details of the chart:
 ```
 helm show all oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0
 ```
+
+Check that all the application pods are up and running. Notice that if your internet connection is slow it might take a while for the application to start. Since the application's services depend on some infrastructure components (Redis, Kafka, PostgreSQL), these components needs to start and be ready for the services to connect.
+
+Eventually you should see something like this: 
+
+```
+kubect get pods
+NAME                                                           READY   STATUS    RESTARTS      AGE
+conference-agenda-service-deployment-7cc9f58875-k7s2x          1/1     Running   4 (45s ago)   2m2s
+conference-c4p-service-deployment-54f754b67c-br9dg             1/1     Running   4 (65s ago)   2m2s
+conference-frontend-deployment-74cf86495-jthgr                 1/1     Running   4 (56s ago)   2m2s
+conference-kafka-0                                             1/1     Running   0             2m2s
+conference-notifications-service-deployment-7cbcb8677b-rz8bf   1/1     Running   4 (47s ago)   2m2s
+conference-postgresql-0                                        1/1     Running   0             2m2s
+conference-redis-master-0                                      1/1     Running   0             2m2s
+```
+
+The Pod restarts show that maybe Kafka was slow and the service was started first by Kubernetes, hence it needed to be restarted to wait for Kafka to be ready. 
+
+
+Now you can point your browser to [http://localhost](http://localhost) to see the application. 
 
 
 

@@ -126,7 +126,7 @@ export default function Proposals(props) {
             <Textarea label="Description" id="description" name="description" value={description}  />  
             
             <Textfield label="Author" id="author" name="author" value={author} />
-            <Textfield label="Email" id="email" name="email" value={author} />
+            <Textfield label="Email" id="email" name="email" value={email} />
             
 
           {isError && <small className="mt-3 d-inline-block text-danger">Something went wrong. Please try again later.</small>}
