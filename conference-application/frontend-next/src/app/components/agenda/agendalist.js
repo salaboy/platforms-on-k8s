@@ -62,7 +62,7 @@ function AgendaList(props) {
 
     return (
         <div>
-            <div className={styles.agendaList}>
+            <div className={`${styles.agendaList}  ${admin ? styles.backoffice : ' '} ` }>
                 {agendaItems && agendaItems.length > 0 && agendaItems.map((item, index) => (
 
                     <AgendaItem
