@@ -16,6 +16,7 @@
 .ProposalList_Filters .filterLabel{
     text-transform: none;
     margin-right: var(--sizing-xs);
+    opacity: .5;
 }
 
 .ProposalList_Filters .filter{
@@ -27,10 +28,8 @@
     text-decoration: underline;
 }
 .ProposalList_Filters .filter.inactive {
-    
     opacity: 1;
     font-weight: 700;
-    
     color: var(--color-white);
     background-color: var(--color-primary);
     padding: 0 var(--sizing-s);

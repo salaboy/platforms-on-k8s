@@ -1,20 +1,39 @@
 
 'use client'
-
+import styles from '@/app/styles/events.module.css'
+import { useState } from 'react'
 
 function EventItem({id, type, payload}) {
+  const [open, setOpen] = useState(false) // state hook
+  const handleOpen = () => {
+    if(open){
+      setOpen(false);
+    }else {
+      setOpen(true);
+    }
+  }
 
     return (
       
-      <div>
-        <div className="ProposalItem__header">
-          <h3>{id}</h3>
-          <h5>{type}</h5>
-          {/* Maybe render using: https://www.npmjs.com/package/react-json-pretty */}
-          <div className="ProposalItem__status">
-            {payload}
-          </div>
+      <div onClick={() => handleOpen()} className={`${styles.EventItem}  ${open ? styles.open : ' '} ` }>
+        <div className={styles.openTag}>
+          {!open && (
+            <>Click for details</>
+          )}
+          {open && (
+            <>Close</>
+          )}
         </div>
+        <div className={styles.header}>
+          <h5><span>#{id}</span>  {type}</h5>
+        </div>
+          {/* Maybe render using: https://www.npmjs.com/package/react-json-pretty */}
+          <div className={styles.description}>
+            <div className={styles.codeContainer}>
+             {payload}
+            </div>
+          </div>
+        
         
         
       </div>

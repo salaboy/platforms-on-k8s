@@ -35,6 +35,7 @@
     border-bottom: 4px solid var(--color-text);
     display: flex;
     justify-content: space-between;
+    cursor: pointer;
 }
 .NotificationItem .header h5 {
     margin: 0;
@@ -77,7 +78,7 @@
 }
 
 .NotificationItem .description .descriptionTo {
-    padding:  var(--sizing-s) var(--sizing-m);
+    padding:  var(--sizing-xs) var(--sizing-m);
     border-bottom: 1px solid var(--color-text);
 }
 
@@ -87,7 +88,7 @@
 }
 
 .NotificationItem .description .descriptionSubject {
-    padding:  var(--sizing-s) var(--sizing-m);
+    padding:  var(--sizing-xs) var(--sizing-m);
     border-bottom: 1px solid var(--color-text);
 }
 
@@ -99,4 +100,7 @@
 .NotificationItem .description .descriptionBody {
     padding:   var(--sizing-m);
 
+}
+.NotificationItem .description .descriptionBody p {
+    max-width: 900px;
 }

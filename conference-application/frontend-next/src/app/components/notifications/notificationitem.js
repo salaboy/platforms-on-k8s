@@ -46,7 +46,9 @@ function NotificationItem({id, title, emailTo,  emailSubject, emailBody, approve
             <span> Subject:</span> {emailSubject}
           </div>
           <div className={styles.descriptionBody}>
-            {emailBody}
+            <p>
+             {emailBody}
+            </p>
           </div>
       
         </div>
