@@ -46,6 +46,19 @@ type Event struct {
 	Payload string
 }
 
+type Features struct {
+	DEBUG_ENABLED string
+}
+
+var FEATURE_DEBUG_ENABLED = getEnv("FEATURE_DEBUG_ENABLED", "false")
+
+func featureHandler(w http.ResponseWriter, r *http.Request) {
+	var features = Features{
+		DEBUG_ENABLED: FEATURE_DEBUG_ENABLED,
+	}
+	respondWithJSON(w, http.StatusOK, features)
+}
+
 func eventsHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, events)
 }
@@ -150,7 +163,7 @@ func main() {
 	r.PathPrefix("/api/c4p/").HandlerFunc(c4PServiceHandler)
 	r.PathPrefix("/api/notifications/").HandlerFunc(notificationServiceHandler)
 	r.PathPrefix("/api/events/").HandlerFunc(eventsHandler)
-
+	r.PathPrefix("/api/features/").HandlerFunc(featureHandler)
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})

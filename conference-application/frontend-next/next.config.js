@@ -58,6 +58,10 @@ module.exports = {
           source: '/service/info',
           destination: 'http://frontend-go.default.74.220.17.238.sslip.io/service/info',
         },
+        {
+          source: '/api/features',
+          destination: 'http://frontend-go.default.74.220.17.238.sslip.io/api/features/',
+        },
       ]
     },
   }
