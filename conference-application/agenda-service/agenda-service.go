@@ -8,100 +8,100 @@ import (
 	"net/http"
 	"os"
 
-	"math/rand"
-
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 	"github.com/redis/go-redis/v9"
 	kafka "github.com/segmentio/kafka-go"
-	"golang.org/x/exp/slices"
+)
+
+var (
+	KEY                 = "AGENDAITEMS"
+	VERSION             = getEnv("VERSION", "1.0.0")
+	SOURCE              = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/agenda-service")
+	POD_NAME            = getEnv("POD_NAME", "N/A")
+	POD_NAMESPACE       = getEnv("POD_NAMESPACE", "N/A")
+	POD_NODENAME        = getEnv("POD_NODENAME", "N/A")
+	POD_IP              = getEnv("POD_IP", "N/A")
+	POD_SERVICE_ACCOUNT = getEnv("POD_SERVICE_ACCOUNT", "N/A")
+	REDIS_HOST          = getEnv("REDIS_HOST", "localhost")
+	REDIS_PORT          = getEnv("REDIS_PORT", "6379")
+	REDIS_PASSWORD      = getEnv("REDIS_PASSWORD", "")
+	KAFKA_URL           = getEnv("KAFKA_URL", "localhost:9094")
+	KAFKA_TOPIC         = getEnv("KAFKA_TOPIC", "events-topic")
+)
+
+const (
+	ApplicationJson = "application/json"
+	ContentType     = "Content-Type"
 )
 
 type Proposal struct {
-	Id string
+	Id string `json:"id"`
 }
 
 type AgendaItem struct {
-	Id          string
-	Proposal    Proposal
-	Title       string
-	Description string
-	Author      string
-	Archived    bool
+	Id          string   `json:"id"`
+	Proposal    Proposal `json:"proposal"`
+	Title       string   `json:"title"`
+	Description string   `json:"description"`
+	Author      string   `json:"author"`
+	Archived    bool     `json:"archived"`
 }
 
 type ServiceInfo struct {
-	Name              string
-	Version           string
-	Source            string
-	PodName           string
-	PodNamespace      string
-	PodNodeName       string
-	PodIp             string
-	PodServiceAccount string
+	Name              string `json:"name"`
+	Version           string `json:"version"`
+	Source            string `json:"source"`
+	PodName           string `json:"podName"`
+	PodNamespace      string `json:"podNamespace"`
+	PodNodeName       string `json:"podNodeName"`
+	PodIp             string `json:"podIp"`
+	PodServiceAccount string `json:"podServiceAccount"`
 }
 
-var rdb *redis.Client
-var KEY = "AGENDAITEMS"
-var VERSION = getEnv("VERSION", "1.0.0")
-var SOURCE = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/agenda-service")
-var POD_NAME = getEnv("POD_NAME", "N/A")
-var POD_NAMESPACE = getEnv("POD_NAMESPACE", "N/A")
-var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
-var POD_IP = getEnv("POD_IP", "N/A")
-var POD_SERVICE_ACCOUNT = getEnv("POD_SERVICE_ACCOUNT", "N/A")
-var REDIS_HOST = getEnv("REDIS_HOST", "localhost")
-var REDIS_PORT = getEnv("REDIS_PORT", "6379")
-var REDIS_PASSOWRD = getEnv("REDIS_PASSWORD", "")
-var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
-var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
+func main() {
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
 
-func getHighlightsHandler(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
-	agendaItemsHashs, err := rdb.HGetAll(ctx, KEY).Result()
-	if err != nil {
-		panic(err)
+	r.Mount("/", Handler(NewServer()))
+
+	// Add OpenAPI Handler
+	OpenAPI(r)
+
+	appPort := getEnv("APP_PORT", "8080")
+	err := http.ListenAndServe(":"+appPort, r)
+	if err != http.ErrServerClosed {
+		log.Panic(err)
 	}
-
-	higlights := 4
-	min := 0
-	max := len(agendaItemsHashs)
-
-	var chosenOnes []int
-	counter := 0
-	for {
-		if len(chosenOnes) == higlights {
-			break
-		}
-		random := rand.Intn(max-min) + min
-		if !slices.Contains(chosenOnes, random) {
-			chosenOnes = append(chosenOnes, random)
-		}
-
-	}
-	log.Printf("Chosen ones: %d", chosenOnes)
-
-	counter = 0
-	var agendaItems []AgendaItem
-	for _, ai := range agendaItemsHashs {
-		if slices.Contains(chosenOnes, counter) {
-			var agendaItem AgendaItem
-			err = json.Unmarshal([]byte(ai), &agendaItem)
-			if err != nil {
-				log.Printf("There was an error decoding the AgendaItem into the struct: %v", err)
-			}
-			agendaItems = append(agendaItems, agendaItem)
-		}
-		counter++
-	}
-
-	respondWithJSON(w, http.StatusOK, agendaItems)
-
 }
 
-func getAllAgendaItemsHandler(w http.ResponseWriter, r *http.Request) {
+// getEnv returns the value of an environment variable, or a fallback value if
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
+	}
+	return value
+}
+
+// respondWithJSON is a helper function to write a JSON response
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+	w.Header().Set(ContentType, ApplicationJson)
+	w.WriteHeader(code)
+	w.Write(response)
+}
+
+type server struct {
+	KafkaWriter *kafka.Writer
+	RedisClient *redis.Client
+}
+
+// Get all Agenda Items
+func (s server) GetAgendaItems(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
-	agendaItemsHashs, err := rdb.HGetAll(ctx, KEY).Result()
+	agendaItemsHashs, err := s.RedisClient.HGetAll(ctx, KEY).Result()
 	if err != nil {
 		panic(err)
 	}
@@ -118,14 +118,91 @@ func getAllAgendaItemsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Agenda Items retrieved from Database: %d", len(agendaItems))
 	respondWithJSON(w, http.StatusOK, agendaItems)
-
 }
 
-func getAgendaItemByIdHandler(w http.ResponseWriter, r *http.Request) {
+// Create an Agenda Item
+func (s server) CreateAgendaItem(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
-	agendaItemId := mux.Vars(r)["id"]
+
+	var agendaItem AgendaItem
+	err := json.NewDecoder(r.Body).Decode(&agendaItem)
+	if err != nil {
+		log.Printf("There was an error decoding the request body into the struct: %v", err)
+	}
+
+	// @TODO: write fail scenario (check for fail string in title return 500)
+	agendaItem.Id = uuid.New().String()
+
+	err = s.RedisClient.HSetNX(ctx, KEY, agendaItem.Id, agendaItem).Err()
+	if err != nil {
+		panic(err)
+	}
+
+	log.Printf("Agenda Item Stored in Database: %v", agendaItem)
+
+	agendaItemJson, err := json.Marshal(agendaItem)
+	if err != nil {
+		log.Printf("An error occured while marshalling the agenda item to json: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	msg := kafka.Message{
+		Key:   []byte(fmt.Sprintf("new-agenda-item-%s", agendaItem.Id)),
+		Value: agendaItemJson,
+	}
+	err = s.KafkaWriter.WriteMessages(r.Context(), msg)
+
+	if err != nil {
+		log.Printf("An error occured while writing the message to Kafka: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+	log.Printf("New Agenda Item Event emitted to Kafka: %v", agendaItem)
+
+	// @TODO avoid doing two marshals to json
+	respondWithJSON(w, http.StatusOK, agendaItem)
+}
+
+// Get an Agenda Item by ID
+func (s server) GetAgendaItemById(w http.ResponseWriter, r *http.Request, id string) {
+	ctx := context.Background()
+	agendaItemId := chi.URLParam(r, "id")
 	log.Printf("Fetching Agenda Item By Id: %s", agendaItemId)
-	agendaItemById, err := rdb.HGet(ctx, KEY, agendaItemId).Result()
+	agendaItemById, err := s.RedisClient.HGet(ctx, KEY, agendaItemId).Result()
+	if err != nil {
+		panic(err)
+	}
+	var agendaItem AgendaItem
+	err = json.Unmarshal([]byte(agendaItemById), &agendaItem)
+	if err != nil {
+		log.Printf("There was an error decoding the request body into the struct: %v", err)
+	}
+	log.Printf("Agenda Item retrieved from Database: %v", agendaItem)
+	respondWithJSON(w, http.StatusOK, agendaItem)
+}
+
+// Get Service Info
+func (s server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
+	var info ServiceInfo = ServiceInfo{
+		Name:              "AGENDA",
+		Version:           VERSION,
+		Source:            SOURCE,
+		PodName:           POD_NAME,
+		PodNodeName:       POD_NODENAME,
+		PodNamespace:      POD_NAMESPACE,
+		PodIp:             POD_IP,
+		PodServiceAccount: POD_SERVICE_ACCOUNT,
+	}
+	json.NewEncoder(w).Encode(info)
+}
+
+// Archive an Agenda Item by ID
+func (s server) ArchiveAgendaItemById(w http.ResponseWriter, r *http.Request, id string) {
+	ctx := context.Background()
+	agendaItemId := chi.URLParam(r, "id")
+	log.Printf("Fetching Agenda Item By Id: %s", agendaItemId)
+	agendaItemById, err := s.RedisClient.HGet(ctx, KEY, agendaItemId).Result()
 	if err != nil {
 		panic(err)
 	}
@@ -135,112 +212,45 @@ func getAgendaItemByIdHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("There was an error decoding the request body into the struct: %v", err)
 	}
 	log.Printf("Agenda Item retrieved from Database: %s", agendaItem)
+	agendaItem.Archived = true
+
+	err = s.RedisClient.HSet(ctx, KEY, agendaItem.Id, agendaItem).Err()
+	if err != nil {
+		panic(err)
+	}
+
+	log.Printf("Agenda Item Archived in Database: %s", agendaItem)
+
+	agendaItemJson, err := json.Marshal(agendaItem)
+	if err != nil {
+		log.Printf("An error occured while marshalling the agenda item to json: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	msg := kafka.Message{
+		Key:   []byte(fmt.Sprintf("agenda-item-archived-%s", agendaItem.Id)),
+		Value: agendaItemJson,
+	}
+	err = s.KafkaWriter.WriteMessages(r.Context(), msg)
+
+	if err != nil {
+		log.Printf("An error occured while writing the message to Kafka: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+	log.Printf("Agenda Item Archived Event emitted to Kafka: %s", agendaItem)
+
 	respondWithJSON(w, http.StatusOK, agendaItem)
 }
 
-func archiveAgendaItemHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWriter, r *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.Background()
-		agendaItemId := mux.Vars(r)["id"]
-		log.Printf("Fetching Agenda Item By Id: %s", agendaItemId)
-		agendaItemById, err := rdb.HGet(ctx, KEY, agendaItemId).Result()
-		if err != nil {
-			panic(err)
-		}
-		var agendaItem AgendaItem
-		err = json.Unmarshal([]byte(agendaItemById), &agendaItem)
-		if err != nil {
-			log.Printf("There was an error decoding the request body into the struct: %v", err)
-		}
-		log.Printf("Agenda Item retrieved from Database: %s", agendaItem)
-		agendaItem.Archived = true
-
-		err = rdb.HSet(ctx, KEY, agendaItem.Id, agendaItem).Err()
-		if err != nil {
-			panic(err)
-		}
-
-		log.Printf("Agenda Item Archived in Database: %s", agendaItem)
-
-		agendaItemJson, err := json.Marshal(agendaItem)
-		if err != nil {
-			log.Printf("An error occured while marshalling the agenda item to json: %v", err)
-			respondWithJSON(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		msg := kafka.Message{
-			Key:   []byte(fmt.Sprintf("agenda-item-archived-%s", agendaItem.Id)),
-			Value: agendaItemJson,
-		}
-		err = kafkaWriter.WriteMessages(r.Context(), msg)
-
-		if err != nil {
-			log.Printf("An error occured while writing the message to Kafka: %v", err)
-			respondWithJSON(w, http.StatusInternalServerError, err)
-			return
-		}
-		log.Printf("Agenda Item Archived Event emitted to Kafka: %s", agendaItem)
-
-		respondWithJSON(w, http.StatusOK, agendaItem)
-	})
-}
-
-func newAgendaItemHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWriter, r *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.Background()
-
-		var agendaItem AgendaItem
-		err := json.NewDecoder(r.Body).Decode(&agendaItem)
-		if err != nil {
-			log.Printf("There was an error decoding the request body into the struct: %v", err)
-		}
-
-		// @TODO: write fail scenario (check for fail string in title return 500)
-
-		agendaItem.Id = uuid.New().String()
-
-		err = rdb.HSetNX(ctx, KEY, agendaItem.Id, agendaItem).Err()
-		if err != nil {
-			panic(err)
-		}
-
-		log.Printf("Agenda Item Stored in Database: %s", agendaItem)
-
-		agendaItemJson, err := json.Marshal(agendaItem)
-		if err != nil {
-			log.Printf("An error occured while marshalling the agenda item to json: %v", err)
-			respondWithJSON(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		msg := kafka.Message{
-			Key:   []byte(fmt.Sprintf("new-agenda-item-%s", agendaItem.Id)),
-			Value: agendaItemJson,
-		}
-		err = kafkaWriter.WriteMessages(r.Context(), msg)
-
-		if err != nil {
-			log.Printf("An error occured while writing the message to Kafka: %v", err)
-			respondWithJSON(w, http.StatusInternalServerError, err)
-			return
-		}
-		log.Printf("New Agenda Item Event emitted to Kafka: %s", agendaItem)
-
-		// @TODO avoid doing two marshals to json
-		respondWithJSON(w, http.StatusOK, agendaItem)
-	})
-}
-
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(response)
-}
-
-func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
+// NewKafkaWriter creates a new Kafka writer.
+func NewKafkaWriter(kafkaURL, topic string) *kafka.Writer {
+	kafkaAlive := isKafkaAlive(KAFKA_URL, KAFKA_TOPIC)
+	if !kafkaAlive {
+		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
+		panic("Cannot connect to Kafka")
+	}
 	return &kafka.Writer{
 		Addr:     kafka.TCP(kafkaURL),
 		Topic:    topic,
@@ -248,104 +258,32 @@ func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	}
 }
 
-func main() {
-	appPort := os.Getenv("APP_PORT")
-	if appPort == "" {
-		appPort = "8080"
-	}
-
-	log.Printf("Starting Agenda Service in Port: %s", appPort)
-
-	rdb = redis.NewClient(&redis.Options{
-		Addr:     REDIS_HOST + ":" + REDIS_PORT,
-		Password: REDIS_PASSOWRD, // no password set
-		DB:       0,              // use default DB
+// NewRedisClient creates a new Redis client.
+func NewRedisClient(redisHost, redisPort, redisPass string) *redis.Client {
+	defaultDB := 0
+	return redis.NewClient(&redis.Options{
+		Addr:     redisHost + ":" + redisPort,
+		Password: redisPass,
+		DB:       defaultDB,
 	})
+}
 
-	log.Printf("Connected to Redis.")
-
-	log.Printf("Connecting to Kafka Instance: %s, topic: %s.", KAFKA_URL, KAFKA_TOPIC)
-	//https://github.com/segmentio/kafka-go/blob/main/examples/producer-api/main.go
-
-	kafkaAlive := isKafkaAlive(KAFKA_URL, KAFKA_TOPIC)
-	if !kafkaAlive {
-		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
-		return
-	}
-
-	kafkaWriter := getKafkaWriter(KAFKA_URL, KAFKA_TOPIC)
-
-	log.Printf("Connected to Kafka.")
-	defer kafkaWriter.Close()
-
-	r := mux.NewRouter()
-
-	r.HandleFunc("/", newAgendaItemHandler(kafkaWriter)).Methods("POST")
-	r.HandleFunc("/", getAllAgendaItemsHandler).Methods("GET")
-
-	r.HandleFunc("/{id}", getAgendaItemByIdHandler).Methods("GET")
-	r.HandleFunc("/{id}", archiveAgendaItemHandler(kafkaWriter)).Methods("DELETE")
-	// r.HandleFunc("/", deleteAllHandler).Methods("DELETE")
-	r.HandleFunc("/highlights", getHighlightsHandler).Methods("GET")
-
-	// Add handlers for readiness and liveness endpoints
-	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
-	})
-
-	r.HandleFunc("/service/info", func(w http.ResponseWriter, r *http.Request) {
-		var info ServiceInfo = ServiceInfo{
-			Name:              "AGENDA",
-			Version:           VERSION,
-			Source:            SOURCE,
-			PodName:           POD_NAME,
-			PodNodeName:       POD_NODENAME,
-			PodNamespace:      POD_NAMESPACE,
-			PodIp:             POD_IP,
-			PodServiceAccount: POD_SERVICE_ACCOUNT,
-		}
-		json.NewEncoder(w).Encode(info)
-	})
-
-	// Start the server; this is a blocking call
-	err := http.ListenAndServe(":"+appPort, r)
-	if err != http.ErrServerClosed {
-		log.Panic(err)
+// NewServer creates a new server.
+func NewServer() ServerInterface {
+	return server{
+		KafkaWriter: NewKafkaWriter(KAFKA_URL, KAFKA_TOPIC),
+		RedisClient: NewRedisClient(REDIS_HOST, REDIS_PORT, REDIS_PASSWORD),
 	}
 }
 
-func (p Proposal) MarshalBinary() ([]byte, error) {
-	return json.Marshal(p)
+// OpenAPIHandler returns a handler that serves the OpenAPI spec as JSON.
+func OpenAPI(r *chi.Mux) {
+	dir := http.Dir("docs")
+	fs := http.FileServer(dir)
+	r.Handle("/openapi/*", http.StripPrefix("/openapi/", fs))
 }
 
-func (p Proposal) UnmarshalBinary(data []byte) error {
-	if err := json.Unmarshal(data, &p); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (ai AgendaItem) MarshalBinary() ([]byte, error) {
-	return json.Marshal(ai)
-}
-
-func (ai AgendaItem) UnmarshalBinary(data []byte) error {
-	if err := json.Unmarshal(data, &ai); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func getEnv(key, fallback string) string {
-	value, exists := os.LookupEnv(key)
-	if !exists {
-		value = fallback
-	}
-	return value
-}
-
+// isKafkaAlive checks if Kafka is alive.
 func isKafkaAlive(kafkaURL string, topic string) bool {
 	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
 	if err != nil {
@@ -367,5 +305,4 @@ func isKafkaAlive(kafkaURL string, topic string) bool {
 	} else {
 		return false
 	}
-
 }
