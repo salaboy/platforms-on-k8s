@@ -1,0 +1,153 @@
+openapi: 3.0.3
+info:
+  title: Agenda Service
+  description: Agenda Service
+  version: 1.0.0
+  contact:
+    email: salaboy@salaboy.com
+    name: Mauricio Salatino
+    url: https://salaboy.com
+servers:
+  - url: "http://localhost:8080"
+paths:
+  /agenda-items:
+    post:
+      summary: Create an Agenda Item
+      operationId: createAgendaItem
+      tags:
+        - agenda-items
+      responses:
+        '201':
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AgendaItem'
+    get:
+      summary: Get all Agenda Items
+      operationId: getAgendaItems
+      tags:
+        - agenda-items
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgendaItem'
+  /agenda-items/{id}:
+    get:
+      summary: Get an Agenda Item by ID
+      operationId: getAgendaItemById
+      tags:
+        - agenda-items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Agenda Item ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AgendaItem'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AgendaItem'
+    delete:
+      summary: Archive an Agenda Item by ID
+      operationId: archiveAgendaItemById
+      tags:
+        - agenda-items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Agenda Item ID
+          schema:
+            type: string
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/AgendaItem'
+
+  /service/info:
+    get:
+      summary: Get Service Info
+      operationId: getServiceInfo
+      tags:
+        - service
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ServiceInfo'
+components:
+  schemas:
+    AgendaItem:
+      properties:
+        id:
+          type: string
+          title: Agenda Item ID
+        title: 
+          type: string
+          description: Agenda Item Title
+        author:
+          type: string
+          description: Agenda Item Author
+        day:
+          type: string
+          description: Agenda Item Day
+        time:
+          type: string
+          description: Agenda Item Time
+    ServiceInfo:
+      properties:
+        name:
+          type: string
+          description: Service Name
+        version: 
+          type: string
+          description: Service Version
+        source:
+          type: string
+          description: Service Source
+        podId: 
+          type: string
+          description: Service Pod ID
+        podNamespace:
+          type: string
+          description: Service Pod Namespace
+        podNodeName:
+          type: string
+          description: Service Pod Node Name
+        
+
+        
+  
