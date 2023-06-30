@@ -14,6 +14,12 @@
 
 ### OpenAPI documentation
 
+We used [oapi-codegen](https://github.com/deepmap/oapi-codegen) to generate all `http.HandlerFunc` from the [openapi.yaml](docs/openapi.yaml) file:
+
+```shell
+oapi-codegen -generate chi-server -package main docs/openapi.yaml > api/api.go      
+```
+
 Execute the application:
 
 ```shell
@@ -30,7 +36,7 @@ http://localhost:8080/openapi/
 To execute all tests, run the following command:
 
 ```shell
-go test ./...
+go test ./... -v
 ```
 
 To see the code coverage while running tests, execute the following command:
