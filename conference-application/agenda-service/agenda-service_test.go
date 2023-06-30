@@ -62,15 +62,7 @@ func Test_API(t *testing.T) {
 	t.Run("It should return 201 when the POST request to '/agenda-items' is executed successfully", func(t *testing.T) {
 
 		// arrange
-		agendaItem := AgendaItem{
-			Proposal: Proposal{
-				Id: uuid.NewString(),
-			},
-			Title:       "Platform Engineering on K8S",
-			Author:      "Mauricio Salatino",
-			Description: "Platform Engineering on K8S",
-			Archived:    false,
-		}
+		agendaItem := agendaItemFake()
 
 		data, _ := json.Marshal(agendaItem)
 
@@ -100,15 +92,7 @@ func Test_API(t *testing.T) {
 
 	t.Run("It should return 200 when a GET request to '/agenda-items/{id}' is executed successfully", func(t *testing.T) {
 		// arrange
-		agendaItem := AgendaItem{
-			Proposal: Proposal{
-				Id: uuid.NewString(),
-			},
-			Title:       "Platform Engineering on K8S",
-			Author:      "Mauricio Salatino",
-			Description: "Platform Engineering on K8S",
-			Archived:    false,
-		}
+		agendaItem := agendaItemFake()
 
 		agendaItemAsBytes, _ := agendaItem.MarshalBinary()
 
@@ -141,15 +125,7 @@ func Test_API(t *testing.T) {
 
 	t.Run("It should return 200 when a DELETE request to '/agenda-items/{id}' is executed successfully", func(t *testing.T) {
 		// arrange
-		agendaItem := AgendaItem{
-			Proposal: Proposal{
-				Id: uuid.NewString(),
-			},
-			Title:       "Platform Engineering on K8S",
-			Author:      "Mauricio Salatino",
-			Description: "Platform Engineering on K8S",
-			Archived:    false,
-		}
+		agendaItem := agendaItemFake()
 
 		agendaItemAsBytes, _ := agendaItem.MarshalBinary()
 
@@ -176,4 +152,16 @@ func Test_API(t *testing.T) {
 
 	})
 
+}
+
+func agendaItemFake() AgendaItem {
+	return AgendaItem{
+		Proposal: Proposal{
+			Id: uuid.NewString(),
+		},
+		Title:       "Platform Engineering on K8S",
+		Author:      "Mauricio Salatino",
+		Description: "Creating a platform on top of Kubernetes to run our services",
+		Archived:    false,
+	}
 }
