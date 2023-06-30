@@ -3,7 +3,6 @@ module github.com/salaboy/platforms-on-k8s/conference-application/agenda-service
 go 1.19
 
 require (
-	github.com/cloudflare/cfssl v1.4.1
 	github.com/deepmap/oapi-codegen v1.13.0
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/google/uuid v1.3.0
