@@ -40,10 +40,12 @@ const (
 	ContentType     = "Content-Type"
 )
 
+// Proposal is a struct to represent a Proposal.
 type Proposal struct {
 	Id string `json:"id"`
 }
 
+// AgendaItem is a struct to represent an Agenda Item.
 type AgendaItem struct {
 	Id          string   `json:"id,omitempty"`
 	Proposal    Proposal `json:"proposal"`
@@ -53,10 +55,12 @@ type AgendaItem struct {
 	Archived    bool     `json:"archived"`
 }
 
+// MarshalBinary is a custom marshaler for AgendaItem.
 func (s AgendaItem) MarshalBinary() ([]byte, error) {
 	return json.Marshal(s)
 }
 
+// ServiceInfo is a struct to represent a Service Info describing the service and the pod it is running on.
 type ServiceInfo struct {
 	Name              string `json:"name"`
 	Version           string `json:"version"`
@@ -68,6 +72,7 @@ type ServiceInfo struct {
 	PodServiceAccount string `json:"podServiceAccount"`
 }
 
+// main is the entrypoint of the application.
 func main() {
 	chiServer := NewChiServer()
 	err := http.ListenAndServe(":"+APP_PORT, chiServer)
@@ -76,7 +81,7 @@ func main() {
 	}
 }
 
-// getEnv returns the value of an environment variable, or a fallback value if
+// getEnv returns the value of an environment variable, or a fallback value if it is not set.
 func getEnv(key, fallback string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
@@ -85,7 +90,7 @@ func getEnv(key, fallback string) string {
 	return value
 }
 
-// respondWithJSON is a helper function to write a JSON response
+// respondWithJSON is a helper function to write a JSON response.
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 	w.Header().Set(ContentType, ApplicationJson)
@@ -93,7 +98,7 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
-// badRequest is a helper function to write a JSON error response
+// errorHandler is a helper function to write an error response.
 func errorHandler(w http.ResponseWriter, statusCode int, message string) {
 	mapResponse := map[string]interface{}{
 		"message": message,
@@ -101,13 +106,13 @@ func errorHandler(w http.ResponseWriter, statusCode int, message string) {
 	respondWithJSON(w, statusCode, mapResponse)
 }
 
-// server is the API server struct that implements api.ServerInterface
+// server is the API server struct that implements api.ServerInterface.
 type server struct {
 	KafkaWriter *kafka.Writer
 	RedisClient *redis.Client
 }
 
-// Get all Agenda Items
+// GetAgendaItems is a handler to get all Agenda Items.
 func (s server) GetAgendaItems(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	agendaItemsHashs, err := s.RedisClient.HGetAll(ctx, KEY).Result()
@@ -129,7 +134,7 @@ func (s server) GetAgendaItems(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, agendaItems)
 }
 
-// Create an Agenda Item
+// CreateAgendaItem is a handler to create an Agenda Item.
 func (s server) CreateAgendaItem(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
@@ -177,7 +182,7 @@ func (s server) CreateAgendaItem(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, agendaItem)
 }
 
-// Get an Agenda Item by ID
+// GetAgendaItemById is a handler to get an Agenda Item by ID.
 func (s server) GetAgendaItemById(w http.ResponseWriter, r *http.Request, id string) {
 	ctx := context.Background()
 	agendaItemId := chi.URLParam(r, "id")
@@ -206,7 +211,7 @@ func (s server) GetAgendaItemById(w http.ResponseWriter, r *http.Request, id str
 	respondWithJSON(w, http.StatusOK, agendaItem)
 }
 
-// Get Service Info
+// GetServiceInfo is a handler to get service info.
 func (s server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 	var info ServiceInfo = ServiceInfo{
 		Name:              "AGENDA",
@@ -221,7 +226,7 @@ func (s server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(info)
 }
 
-// Archive an Agenda Item by ID
+// ArchiveAgendaItemById is a handler to archive an Agenda Item by ID.
 func (s server) ArchiveAgendaItemById(w http.ResponseWriter, r *http.Request, id string) {
 	ctx := context.Background()
 	agendaItemId := chi.URLParam(r, "id")
@@ -268,7 +273,7 @@ func (s server) ArchiveAgendaItemById(w http.ResponseWriter, r *http.Request, id
 	respondWithJSON(w, http.StatusNoContent, agendaItem)
 }
 
-// NewKafkaWriter creates a new Kafka writer.
+// NewKafkaWriter creates a new *kafka.Write.
 func NewKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	kafkaAlive := isKafkaAlive(KAFKA_URL, KAFKA_TOPIC)
 	if !kafkaAlive {
@@ -282,7 +287,7 @@ func NewKafkaWriter(kafkaURL, topic string) *kafka.Writer {
 	}
 }
 
-// NewRedisClient creates a new Redis client.
+// NewRedisClient creates a new *redis.Client.
 func NewRedisClient(redisHost, redisPort, redisPass string) *redis.Client {
 	defaultDB := 0
 	return redis.NewClient(&redis.Options{
@@ -292,7 +297,7 @@ func NewRedisClient(redisHost, redisPort, redisPass string) *redis.Client {
 	})
 }
 
-// NewServer creates a new server.
+// NewServer creates a new api.ServerInterface.
 func NewServer() api.ServerInterface {
 	return &server{
 		KafkaWriter: NewKafkaWriter(KAFKA_URL, KAFKA_TOPIC),
@@ -300,7 +305,7 @@ func NewServer() api.ServerInterface {
 	}
 }
 
-// NewChiServer creates a new Chi server.
+// NewChiServer creates a new *chi.Mux server.
 func NewChiServer() *chi.Mux {
 	// create new router
 	r := chi.NewRouter()
@@ -325,7 +330,7 @@ func NewChiServer() *chi.Mux {
 	return r
 }
 
-// OpenAPIHandler returns a handler that serves the OpenAPI spec as JSON.
+// OpenAPIHandler returns a handler that serves the OpenAPI documentation.
 func OpenAPI(r *chi.Mux) {
 	dir := http.Dir("openapi")
 	fs := http.FileServer(dir)
