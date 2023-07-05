@@ -1,16 +1,12 @@
 # Agenda Service
 
-## Endpoints
+## Build from source
 
-- `/` POST 
-- `/` GET
-- `/` DELETE
-- `/{id}` GET
-- `/{id}` DELETE
-- `/highlights` GET
-- `/day/{day}` GET
-- `/health/readiness` GET
-- `/health/liveness` GET
+To build the application, run the following command:
+
+```shell
+go build -o agenda-service cmd/main.go
+```
 
 ### OpenAPI documentation
 
@@ -44,7 +40,5 @@ To see the code coverage while running tests, execute the following command:
 ```shell
 go test ./...  -coverpkg=./... -coverprofile ./coverage.out
 ```
-
-## Build from source
 
 ## Create Container
