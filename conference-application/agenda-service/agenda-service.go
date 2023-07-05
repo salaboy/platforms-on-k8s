@@ -40,12 +40,12 @@ const (
 	ContentType     = "Content-Type"
 )
 
-// Proposal is a struct to represent a proposal.
+// Proposal is a struct to represent a Proposal.
 type Proposal struct {
 	Id string `json:"id"`
 }
 
-// AgendaItem is a struct to represent an agenda item.
+// AgendaItem is a struct to represent an Agenda Item.
 type AgendaItem struct {
 	Id          string   `json:"id,omitempty"`
 	Proposal    Proposal `json:"proposal"`
@@ -60,7 +60,7 @@ func (s AgendaItem) MarshalBinary() ([]byte, error) {
 	return json.Marshal(s)
 }
 
-// ServiceInfo is a struct to represent service info.
+// ServiceInfo is a struct to represent a Service Info describing the service and the pod it is running on.
 type ServiceInfo struct {
 	Name              string `json:"name"`
 	Version           string `json:"version"`
