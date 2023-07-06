@@ -59,7 +59,7 @@ function NotificationList() {
                 emailTo={item.EmailTo}
                 emailBody={item.EmailBody}
                 emailSubject={item.EmailSubject}
-                approved={item.Approved}
+                approved={item.Accepted}
               />
 
           ))

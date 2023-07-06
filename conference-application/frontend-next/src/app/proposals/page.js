@@ -10,10 +10,10 @@ import Cloud from '../components/cloud/cloud'
 
 export default function Proposals(props) {
   const {isReadOnly} = props;
-  const [title, setTitle] = useState();
-  const [author, setAuthor] = useState();
-  const [email, setEmail] = useState();
-  const [description, setDescription] = useState();
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [email, setEmail] = useState("");
+  const [description, setDescription] = useState("");
   const [generated, setGenerated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isError, setIsError] = useState(false);
@@ -42,14 +42,17 @@ export default function Proposals(props) {
     } 
   ];
 
+  
+
   const handleSubmit = () => {
     setLoading(true);
     setIsError(false);
+
     const data = {
-      title: title,
-      author: author,
-      email: email,
-      description: description,
+      title: document.getElementById("title").value,
+      author: document.getElementById("author").value,
+      email: document.getElementById("email").value,
+      description: document.getElementById("description").value,
     }
 
     console.log("Sending Post!" + JSON.stringify(data))
@@ -122,21 +125,21 @@ export default function Proposals(props) {
         {!sended && (
         <div>
           
-            <Textfield label="Title" id="title" name="title" value={title} />
-            <Textarea label="Description" id="description" name="description" value={description}  />  
+            <Textfield label="Title" id="title" name="title"   />
+            <Textarea label="Description" id="description" name="description"   />  
             
-            <Textfield label="Author" id="author" name="author" value={author} />
-            <Textfield label="Email" id="email" name="email" value={email} />
+            <Textfield label="Author" id="author" name="author"   />  
+            <Textfield label="Email" id="email" name="email"  />   
             
 
           {isError && <small className="mt-3 d-inline-block text-danger">Something went wrong. Please try again later.</small>}
 
-          {!generated && (  
+          {/* {!generated && (  
               <Button main clickHandler={generate} disabled={generated}>Generate</Button>
           )}
-          {(generated || isReadOnly) && (
+          {(generated || isReadOnly) && ( */}
           <Button type="submit" clickHandler={handleSubmit} >Send Proposal</Button>
-          )}
+          {/* )} */}
           </div>
           )}
           {sended && (

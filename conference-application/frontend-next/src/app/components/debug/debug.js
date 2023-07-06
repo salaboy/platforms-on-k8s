@@ -14,12 +14,48 @@ function Debug() {
 
     const [check, setCheck] = useState(0)
 
-    const mockServiceInfo = {
-        "Name": "N/A",
+    const mockFrontendServiceInfo = {
+        "Name": "FRONTEND",
         "PodId": "N/A",
         "PodNamespace": "N/A",
         "PodNodeName": "N/A",
-        "PodIp": "N/A",
+        "PodName": "N/A",
+        "PodServiceAccount": "N/A",
+        "Source": "N/A",
+        "Version": "N/A",
+        "Healthy": false
+    }
+
+    const mockAgendaServiceInfo = {
+        "Name": "AGENDA",
+        "PodId": "N/A",
+        "PodNamespace": "N/A",
+        "PodNodeName": "N/A",
+        "PodName": "N/A",
+        "PodServiceAccount": "N/A",
+        "Source": "N/A",
+        "Version": "N/A",
+        "Healthy": false
+    }
+
+    const mockC4PServiceInfo = {
+        "Name": "C4P",
+        "PodId": "N/A",
+        "PodNamespace": "N/A",
+        "PodNodeName": "N/A",
+        "PodName": "N/A",
+        "PodServiceAccount": "N/A",
+        "Source": "N/A",
+        "Version": "N/A",
+        "Healthy": false
+    }
+
+    const mockNotificationsServiceInfo = {
+        "Name": "NOTIFICATIONS",
+        "PodId": "N/A",
+        "PodNamespace": "N/A",
+        "PodNodeName": "N/A",
+        "PodName": "N/A",
         "ServiceAccount": "N/A",
         "Source": "N/A",
         "Version": "N/A",
@@ -41,14 +77,14 @@ function Debug() {
     const fetchFrontendServiceInfo = () => {
         setLoading(true);
         console.log("Querying service/info")
-        fetch('service/info')
+        fetch('/service/info')
             .then((res) => res.json())
             .then((data) => {
                 data.Healthy = true;
                 setFrontendServiceInfo(data)
                 setLoading(false)
             }).catch((error) => {
-                setFrontendServiceInfo(mockServiceInfo)
+                setFrontendServiceInfo(mockFrontendServiceInfo)
                 console.log(error)
             })
     };
@@ -63,7 +99,7 @@ function Debug() {
                 setAgendaServiceInfo(data)
                 setLoading(false)
             }).catch((error) => {
-                setAgendaServiceInfo(mockServiceInfo)
+                setAgendaServiceInfo(mockAgendaServiceInfo)
                 console.log(error)
             })
     };
@@ -78,7 +114,7 @@ function Debug() {
                 setC4pServiceInfo(data)
                 setLoading(false)
             }).catch((error) => {
-                setC4pServiceInfo(mockServiceInfo)
+                setC4pServiceInfo(mockC4PServiceInfo)
                 console.log(error)
             })
     };
@@ -92,7 +128,7 @@ function Debug() {
                 setNotificationsServiceInfo(data)
                 setLoading(false)
             }).catch((error) => {
-                setNotificationsServiceInfo(mockServiceInfo)
+                setNotificationsServiceInfo(mockNotificationsServiceInfo)
                 console.log(error)
             })
     };

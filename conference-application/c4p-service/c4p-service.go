@@ -15,6 +15,8 @@ import (
 
 	"github.com/gorilla/mux"
 	kafka "github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
 )
 
 type Proposal struct {
@@ -45,8 +47,6 @@ type AgendaItem struct {
 	Title       string
 	Author      string
 	Description string
-	Day         string
-	Time        string
 }
 
 type DecisionResponse struct {
@@ -94,10 +94,12 @@ var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
 
 var db *sql.DB
 
+var tracer = otel.Tracer("github.com/salaboy/platforms-on-k8s/conference-application/c4p-service")
+
 func getAllProposalsHandler(w http.ResponseWriter, r *http.Request) {
 
 	status := r.URL.Query().Get("status")
-	var query = "SELECT * FROM Proposals p"
+	var query = "SELECT id, title, description, email, author, approved, status FROM Proposals p"
 	if status != "" {
 		query = fmt.Sprintf("%s where p.status=$1", query)
 	}
@@ -150,7 +152,7 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 			log.Printf("There was an error executing the update query: %v", err)
 		}
 
-		rows, err := db.Query(`SELECT * FROM Proposals where id=$1`, proposalId)
+		rows, err := db.Query(`SELECT id, title, description, email, author, approved, status FROM Proposals where id=$1`, proposalId)
 
 		if err != nil {
 			log.Printf("There was an error executing the query: %v", err)
@@ -180,8 +182,6 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 				},
 				Description: proposal.Description,
 				Author:      proposal.Author,
-				Day:         "",
-				Time:        "",
 			}
 			agendaItemJson, err := json.Marshal(agendaItem)
 			if err != nil {
@@ -234,8 +234,8 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 		notification := Notification{
 			ProposalId:   decisionResponse.ProposalId,
 			AgendaItemId: decisionResponse.AgendaItem.Id,
-			Title:        decisionResponse.AgendaItem.Title,
-			EmailTo:      decisionResponse.AgendaItem.Author,
+			Title:        decisionResponse.Proposal.Title,
+			EmailTo:      decisionResponse.Proposal.Email,
 			Accepted:     decisionResponse.Proposal.Approved,
 		}
 
@@ -424,7 +424,10 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", newProposalHandler(kafkaWriter)).Methods("POST")
+	//https://opentelemetry.io/docs/instrumentation/go/libraries/
+	newProposalWrappedHandler := otelhttp.NewHandler(newProposalHandler(kafkaWriter), "new-proposal")
+
+	r.HandleFunc("/", newProposalWrappedHandler).Methods("POST")
 	r.HandleFunc("/", getAllProposalsHandler).Methods("GET")
 	r.HandleFunc("/{id}", archiveProposaldHandler(kafkaWriter)).Methods("DELETE")
 	r.HandleFunc("/{id}/decide", decideProposaldHandler(kafkaWriter)).Methods("POST")

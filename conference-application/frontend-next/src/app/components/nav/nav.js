@@ -12,7 +12,7 @@ export default function Nav() {
     return (
         <nav className={styles.nav}>
             <div className="grid">
-                {pathname === "/backoffice" && (
+                {pathname === "/backoffice/" && (
                     <>
                     <div className="col third">
                             <ul className={styles.logos}>
@@ -33,7 +33,7 @@ export default function Nav() {
                     </>
                 )}
 
-                {pathname !== "/backoffice" && (
+                {pathname !== "/backoffice/" && (
                     <>
                         <div className="col third">
                             <ul className={styles.logos}>

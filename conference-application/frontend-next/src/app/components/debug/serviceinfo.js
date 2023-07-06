@@ -58,8 +58,9 @@ function ServiceInfo({ key, name, version, source, podName, nodeName, namespace,
           </div>
 
         </div>
-        <div className={`${styles.statusTag}  ${healthy != null ? styles.healthy : ' '}`}>
-          {healthy != null && <>Healthy</>}
+        <div className={`${styles.statusTag}  ${(healthy != null && healthy) ? styles.healthy : styles.unhealthy }`}>
+          {healthy != null && healthy && <>Healthy</>}
+          {healthy != null && !healthy && <>Unhealthy</>}
         </div>
       </div>
 

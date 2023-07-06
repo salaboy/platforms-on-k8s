@@ -35,6 +35,10 @@
     background-color: var(--color-green-500);
 }
 
+.ServiceInfo .statusTag.unhealthy {
+    background-color: var(--color-red-500);
+}
+
 .ServiceInfo .header {
     margin-bottom: var(--sizing-s);
  

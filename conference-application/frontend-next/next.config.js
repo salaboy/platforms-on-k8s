@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
+    trailingSlash: true,
     output: 'export', //-> this is to get static files
     images: {
       loader: "custom",
