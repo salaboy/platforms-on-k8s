@@ -17,7 +17,7 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Install portman
-      run: npm install -g portman  
+      run: npm install -g @apideck/portman
     - name: Install newman
       run: npm install -g newman
     - name: run portman gen  
