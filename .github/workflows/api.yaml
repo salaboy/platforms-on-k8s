@@ -26,6 +26,6 @@ jobs:
       run: docker-compose -f conference-application/notifications-service/tests/docker-compose-api.yaml up -d
    
     - name: run newman tests
-      run: newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://127.0.0.1:8080"
+      run: newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://notifications-service:8080"
     - name: stop containers 
       run: docker-compose down
