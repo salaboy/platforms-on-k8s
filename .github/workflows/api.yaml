@@ -23,8 +23,7 @@ jobs:
     - name: run portman gen  
       run: portman -l conference-application/notifications-service/docs/openapi.yaml -o api/postman/notifications.postman.json
     - name: start notification service and infra
-      run: docker-compose -f conference-application/notifications-service/tests/docker-compose-api.yaml up -d
-   
+      run: docker-compose -f conference-application/notifications-service/tests/docker-compose-api.yaml up
     - name: run newman tests
       run: newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://notifications-service:8080"
     - name: stop containers 
