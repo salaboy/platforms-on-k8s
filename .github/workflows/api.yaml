@@ -25,7 +25,7 @@ jobs:
     - name: start notification service infra
       run: docker-compose -f conference-application/notifications-service/docker-compose.yaml up -d
     - name: start notification service
-      run:  docker run salaboy/notifications-service -p 8080:8080  
+      run:  docker run salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525@sha256 -p 8080:8080  
     - name: run newman tests
       run: newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://127.0.0.1:8080"
     - name: stop containers 
