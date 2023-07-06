@@ -1,0 +1,32 @@
+name: postman-pull-request
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [12.x]
+  steps:
+  - name: Check out Git repositor
+    uses: actions/checkout@v1
+  - name: Set up Node.js
+    uses: actions/setup-node@v1
+    with:
+      node-version: ${{ matrix.node-version }}
+      registry-url: https://registry.npmjs.org/
+  - name: Install dependencies
+    run: npm install
+  - name: Install portman
+    run: npm install -g portman  
+  - name: Install newman
+    run: npm install -g newman
+  - name: run portman gen  
+    run: portman -l conference-application/notifications-service/docs/openapi.yaml -o api/postman/notifications.postman.json
+  - name: start notification service infra
+    run: docker-compose -f conference-application/notifications-service/docker-compose.yaml up -d
+  - name: start notification service
+    run:  docker run salaboy/notifications-service -p 8080:8080  
+  - name: run newman tests
+    run: newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://127.0.0.1:8080"
+  - name: stop containers 
+    run: docker-compose down
