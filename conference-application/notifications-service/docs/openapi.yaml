@@ -1,14 +1,14 @@
 openapi: 3.0.3
 info:
-  title: Agenda Service
-  description: Agenda Service
+  title: Notifications Service
+  description: Notifications Service
   version: 1.0.0
   contact:
-    email: salaboy@salaboy.com
+    email: salaboy@gmail.com
     name: Mauricio Salatino
     url: https://salaboy.com
 servers:
-  - url: "http://localhost:8080"
+  - url: http://localhost:8080
 paths:
   /notifications:
     post:
