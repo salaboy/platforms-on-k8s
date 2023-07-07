@@ -1,6 +1,12 @@
 version: "3.8"
 services:
+  notifications-services:
+    container_name: notifications-services
+    image: salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525
+    ports: 
+    - "8080:8080"      
   kafka:
+    container_name: kafka
     image: docker.io/bitnami/kafka:3.4
     ports:
       - "9092:9092"
@@ -27,11 +33,6 @@ services:
       echo -e 'Successfully created the following topics:'
       kafka-topics.sh --bootstrap-server kafka:9092 --list
       "
-  notifications-service:
-    image: salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525
-    depends_on: [kafka, init-kafka]
-    ports: 
-    - "8080:8080"    
 volumes:
   kafka_data:
     driver: local            
