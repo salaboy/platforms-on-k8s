@@ -1,0 +1,29 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: service-pipeline-run-1
+spec:
+  params:
+  - name: target-registry
+    value: salaboy
+  - name: target-name
+    value: agenda-service
+  - name: target-version 
+    value: 1.0.0-from-pipeline-run
+  - name: context
+    value: conference-application/agenda-service/
+  workspaces:
+    - name: sources
+      volumeClaimTemplate: 
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi 
+    - name: dockerconfig
+      secret:  
+        secretName: regcred
+  pipelineRef:
+    name: conference-app-service-pipeline
+  

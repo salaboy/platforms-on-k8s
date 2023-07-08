@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import EventItem from './eventitem'
+import styles from '@/app/styles/events.module.css'
 
 
 
@@ -46,7 +47,7 @@ function EventsList() {
         <div>
 
 
-            <div>
+            <div className={styles.EventsList}>
                 {
                     events && events.map((item, index) => (
                         <EventItem

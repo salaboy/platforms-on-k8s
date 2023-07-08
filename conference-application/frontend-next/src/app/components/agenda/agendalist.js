@@ -12,11 +12,10 @@ function AgendaList(props) {
     const [isLoading, setLoading] = useState(false)
     
     const mockAgendaItems = [{
-        "title": "Cached Entry",
-        "author": "Cached Author",
-        "time": "1pm",
-        "day": "Monday",
-        "description": "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Id officia doloribus, molestiae, mollitia quia maiores velit consequuntur dolorem labore beatae, porro aliquam quis! Quasi commodi aperiam, assumenda rem molestiae porro."
+        "Id": "ABC-123",
+        "Title": "Cached Entry",
+        "Author": "Cached Author",
+        "Description": "Cached Content"
     }]
     
     const fetchData = () => {
@@ -27,9 +26,9 @@ function AgendaList(props) {
             setAgendaItems(data)
             setLoading(false)
         }).catch((error) => {    
-                    setAgendaItems(mockAgendaItems)
-                    console.log(error)
-            })
+            setAgendaItems(mockAgendaItems)
+            console.log(error)
+        })
     };
 
     const handleArchive = (id) => {
@@ -62,12 +61,11 @@ function AgendaList(props) {
 
     return (
         <div>
-            <div className={styles.agendaList}>
+            <div className={`${styles.agendaList}  ${admin ? styles.backoffice : ' '} ` }>
                 {agendaItems && agendaItems.length > 0 && agendaItems.map((item, index) => (
 
                     <AgendaItem
                         name={item.Title}
-                        time={item.Time}
                         key={index}
                         id={item.Id}
                         description={item.Description}

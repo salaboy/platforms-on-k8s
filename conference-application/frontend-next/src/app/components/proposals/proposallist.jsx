@@ -7,7 +7,7 @@ import styles from '@/app/styles/proposals.module.css'
 function ProposalList() {
   const [loading, setLoading] = useState(false);
   const [isError, setIsError] = useState(false);
-  const [statusFilter, setStatusFilter] = useState(false)
+  const [statusFilter, setStatusFilter] = useState("PENDING")
   const [proposalItems, setProposalItems] = useState([]) // state hook
 
   const handleApproval = (id, approved) => {
@@ -117,11 +117,12 @@ function ProposalList() {
 
       <div className={styles.ProposalList_Filters}>
         <div className={styles.container}>
-          Filter By: 
-          <Button  state={statusFilter == "" ? "inactive" : "active"} clickHandler={() => AllFilter()}>All</Button>
-          <Button  state={statusFilter == "PENDING" ? "active" : "inactive"} clickHandler={() => PendingFilter()}>Pending</Button>
-          <Button  state={statusFilter == "DECIDED" ? "active" : "inactive"} clickHandler={() => DecidedFilter()}>Decided</Button>
-          <Button  state={statusFilter == "ARCHIVED" ? "active" : "inactive"} clickHandler={() => ArchivedFilter()}>Archived</Button>
+          <div className={styles.filterLabel}>Filter By: </div>
+          
+          <div className={`${statusFilter == "" ? styles.inactive : styles.active}  ${ styles.filter }` }  onClick={() => AllFilter()}>All</div>
+          <div className={`${statusFilter == "PENDING" ? styles.inactive : styles.active}   ${ styles.filter }` }  onClick={() => PendingFilter()}>Pending</div>
+          <div className={`${statusFilter == "DECIDED" ? styles.inactive : styles.active}   ${ styles.filter }` }  onClick={() => DecidedFilter()}>Decided</div>
+          <div className={`${statusFilter == "ARCHIVED" ? styles.inactive : styles.active}   ${ styles.filter }` }  onClick={() => ArchivedFilter()}>Archived</div>
         </div>
       </div>
 

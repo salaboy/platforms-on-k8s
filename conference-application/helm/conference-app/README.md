@@ -9,14 +9,22 @@ This chart doesn't depend on anything to be installed in the target Kubernetes C
 
 
 ```
-helm add repo platforms-on-k8s 
-helm install conference-app platforms-on-k8s/conference-app-k8s -n chapter02
+helm install conference oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0 -n chapter02
 ```
 
 Chart parameters: 
 
 - install.infrastructure: true 
 - install.ingress: false
+
+
+## Packaging and distributing the chart
+
+```
+helm dependency build
+helm package .
+helm push conference-app-v1.0.0.tgz oci://registry-1.docker.io/salaboy/
+```
 
 ## Interacting with the application
 

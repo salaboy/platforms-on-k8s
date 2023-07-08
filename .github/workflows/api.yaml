@@ -1,0 +1,66 @@
+name: postman-pull-request
+on:
+  push:
+  pull_request:
+
+jobs:
+  api-compliance-test:
+    runs-on: ubuntu-latest
+    # services: 
+    #   kafka: 
+    #     image: docker.io/bitnami/kafka:3.4
+    #     ports: 
+    #     - "9092:9092"
+    #     - "9094:9094"
+    #     env: 
+    #       "ALLOW_PLAINTEXT_LISTENER": "yes"
+    #       "KAFKA_CFG_LISTENERS": "PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094"
+    #       "KAFKA_CFG_ADVERTISED_LISTENERS": "PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094"
+    #       "KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP": "CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT"
+    #     volumes:
+    #     - "kafka_data:/bitnami" 
+    #   init-kafka:
+    #     image: docker.io/bitnami/kafka:3.4
+    #     # needs:
+    #       # - kafka
+    #     entrypoint: [ '/bin/sh', '-c' ]
+    #     command: |
+    #       "
+    #       # blocks until kafka is reachable
+    #       kafka-topics.sh --bootstrap-server kafka:9092 --list
+    #       echo -e 'Creating kafka topics'
+    #       kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic events-topic --replication-factor 1 --partitions 1
+
+    #       echo -e 'Successfully created the following topics:'
+    #       kafka-topics.sh --bootstrap-server kafka:9092 --list
+    #       "
+    #   notifications-service:
+    #     # needs: [kafka, init-kafka]
+    #     image: salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525
+    #     ports: 
+    #     - "8080:8080"      
+    #   volumes:
+    #     kafka_data:
+    #       driver: local  
+    steps:
+    - name: Check out Git repositor
+      uses: actions/checkout@v1
+    - name: Build the stack
+      run: docker-compose -f conference-application/notifications-service/tests/docker-compose.yaml up -d
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+        registry-url: https://registry.npmjs.org/
+    - name: Install dependencies
+      run: npm install
+    - name: Install portman
+      run: npm install -g @apideck/portman
+    - name: Install newman
+      run: npm install -g newman
+    - name: run portman gen  
+      run: portman -l conference-application/notifications-service/docs/openapi.yaml -o api/postman/notifications.postman.json
+    - name: run newman tests
+      run: newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://notifications-service:8080"
+    - name: Shutdown the stack
+      run: docker-compose down 

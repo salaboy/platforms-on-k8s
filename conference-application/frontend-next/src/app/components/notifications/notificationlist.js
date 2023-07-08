@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import NotificationItem from './notificationitem'
+import styles from "@/app/styles/notifications.module.css"
 
 
 
@@ -43,12 +44,12 @@ function NotificationList() {
 
 
     return (
-      <div>
+      <div >
 
             
         
 
-        <div>
+        <div className={styles.NotificationList}>
         {
         notifications && notifications.map((item,index)=>(
               <NotificationItem
@@ -58,7 +59,7 @@ function NotificationList() {
                 emailTo={item.EmailTo}
                 emailBody={item.EmailBody}
                 emailSubject={item.EmailSubject}
-                approved={item.Approved}
+                approved={item.Accepted}
               />
 
           ))

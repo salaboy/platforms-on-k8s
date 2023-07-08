@@ -19,6 +19,16 @@
 
 .logosItem {
     padding: 10px;
+    position: relative;
+}
+
+.logosItem .logosArrow {
+    height: var(--sizing-x5);
+    display: inline-block;
+    overflow: visible; 
+    position: relative;
+    top: 0;
+    margin-right: var(--sizing-x2);
 }
 
 .logosItem:first-child {
@@ -36,8 +46,24 @@
 .menu  a:hover, .logos a:hover{
     color: var(--nav-color-text-hover);
 }
+
+.menu  a:hover svg path, .logos a:hover  svg path{
+    fill: var(--nav-color-text-hover);
+}
+
 .menuItem {
     padding: 10px;
+}
+
+.menuItem.icon {
+    height: var(--sizing-x5);
+    overflow: visible; 
+    position: relative;
+    top: calc(0px - var(--sizing-x));
+}
+
+.menuItem.icon svg path {
+    fill: var(--nav-color-text);
 }
 
 .menuItem:last-child {

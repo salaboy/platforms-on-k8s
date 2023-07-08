@@ -1,0 +1,64 @@
+.EventsList {
+
+}
+
+.EventItem {
+  
+    background-color: var(--color-background-light);
+    margin-bottom: var(--sizing-s);
+    border: 4px solid var(--color-text);
+    position: relative;
+
+}
+
+.EventItem .openTag {
+    position: absolute;
+    top: calc(0px - var(--sizing-s));
+    right: calc(0px - var(--sizing-s));
+    font-size: var(--text-small-font-size);
+    line-height: var(--text-small-line-height);
+    opacity: 0;
+    text-transform: uppercase;
+    background-color: var(--color-primary);
+    color: var(--color-white);
+    padding: 0 var(--sizing-s);
+    border-radius: var(--sizing-s);
+    border: 4px solid  var(--color-text);
+
+}
+.EventItem:hover .openTag {
+    opacity: 1;
+}
+
+.EventItem .header {
+    padding: var(--sizing-m);
+    border-bottom: 4px solid var(--color-text);
+    display: flex;
+    justify-content: space-between;
+    cursor: pointer;
+}
+.EventItem .header h5 {
+    margin: 0;
+}
+.EventItem .header h5 span {
+    text-transform: none;
+    opacity: .5;
+}
+
+.EventItem .description {
+    display: none;
+    padding:   var(--sizing-m);
+}
+
+.EventItem.open .description{
+    display: block;
+    
+}
+
+.EventItem.open .description .codeContainer{
+    background-color: var(--color-blue-300);
+    padding:   var(--sizing-m);
+    font-family: 'Courier New', Courier, monospace;
+    border-radius: var(--sizing-m);
+    font-weight: bold;
+}

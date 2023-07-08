@@ -1,0 +1,57 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: conference-app-service-pipeline
+  annotations:
+    description: |
+      Build the artifacts for the Conference application's services
+spec:
+  params:
+    - name: gitRepository
+      description: The git repository that hosts the source code of the service
+      default: https://github.com/salaboy/platforms-on-k8s/
+    - name: gitRevision
+      description: The git revision to build
+      default: main
+    - name: context
+      description: The path to the docker context in the sources workspace
+      default: /
+    - name: target-registry
+      description: The target container registry and path where to build the image
+      default: salaboy
+    - name: target-name
+      description: Name of the image to publish
+      default: your-service
+    - name: target-version
+      description: the target version to build
+      default: 1.0.0-service-pipeline
+  workspaces:
+    - name: sources
+      description: Workspace where the git repo is prepared for building
+    - name: dockerconfig
+      description: Docker config secret
+  tasks:
+    - name: clone-repo
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.gitRepository)
+        - name: revision
+          value: main
+      workspaces:
+        - name: output
+          workspace: sources
+    - name: build-publish
+      runAfter: 
+      - clone-repo
+      taskRef: 
+        name: ko
+      params: 
+        - name: KO_DOCKER_REPO
+          value: $(params.target-registry)  
+        - name: main
+          value: $(params.context)  
+      workspaces:
+        - name: source
+          workspace: sources

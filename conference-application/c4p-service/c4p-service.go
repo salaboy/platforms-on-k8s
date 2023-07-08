@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -14,6 +15,8 @@ import (
 
 	"github.com/gorilla/mux"
 	kafka "github.com/segmentio/kafka-go"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel"
 )
 
 type Proposal struct {
@@ -39,12 +42,11 @@ type ProposalRef struct {
 }
 
 type AgendaItem struct {
-	Id       string
-	Proposal ProposalRef
-	Title    string
-	Author   string
-	Day      string
-	Time     string
+	Id          string
+	Proposal    ProposalRef
+	Title       string
+	Author      string
+	Description string
 }
 
 type DecisionResponse struct {
@@ -63,19 +65,23 @@ type Notification struct {
 }
 
 type ServiceInfo struct {
-	Name         string
-	Version      string
-	Source       string
-	PodId        string
-	PodNamespace string
-	PodNodeName  string
+	Name              string
+	Version           string
+	Source            string
+	PodName           string
+	PodNamespace      string
+	PodNodeName       string
+	PodIp             string
+	PodServiceAccount string
 }
 
 var VERSION = getEnv("VERSION", "1.0.0")
 var SOURCE = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/c4p-service")
-var POD_ID = getEnv("POD_ID", "N/A")
+var POD_NAME = getEnv("POD_NAME", "N/A")
 var POD_NAMESPACE = getEnv("POD_NAMESPACE", "N/A")
 var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
+var POD_IP = getEnv("POD_IP", "N/A")
+var POD_SERVICE_ACCOUNT = getEnv("POD_SERVICE_ACCOUNT", "N/A")
 var POSTGRESQL_HOST = getEnv("POSTGRES_HOST", "localhost")
 var POSTGRESQL_PORT = getEnv("POSTGRES_PORT", "5432")
 var POSTGRESQL_USERNAME = getEnv("POSTGRES_USERNAME", "postgres")
@@ -88,10 +94,12 @@ var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
 
 var db *sql.DB
 
+var tracer = otel.Tracer("github.com/salaboy/platforms-on-k8s/conference-application/c4p-service")
+
 func getAllProposalsHandler(w http.ResponseWriter, r *http.Request) {
 
 	status := r.URL.Query().Get("status")
-	var query = "SELECT * FROM Proposals p"
+	var query = "SELECT id, title, description, email, author, approved, status FROM Proposals p"
 	if status != "" {
 		query = fmt.Sprintf("%s where p.status=$1", query)
 	}
@@ -108,7 +116,7 @@ func getAllProposalsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer rows.Close()
-	var proposals []Proposal
+	proposals := []Proposal{}
 	for rows.Next() {
 
 		var proposal Proposal
@@ -144,7 +152,7 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 			log.Printf("There was an error executing the update query: %v", err)
 		}
 
-		rows, err := db.Query(`SELECT * FROM Proposals where id=$1`, proposalId)
+		rows, err := db.Query(`SELECT id, title, description, email, author, approved, status FROM Proposals where id=$1`, proposalId)
 
 		if err != nil {
 			log.Printf("There was an error executing the query: %v", err)
@@ -172,9 +180,8 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 				Proposal: ProposalRef{
 					Id: proposal.Id,
 				},
-				Author: proposal.Author,
-				Day:    "",
-				Time:   "",
+				Description: proposal.Description,
+				Author:      proposal.Author,
 			}
 			agendaItemJson, err := json.Marshal(agendaItem)
 			if err != nil {
@@ -227,8 +234,8 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 		notification := Notification{
 			ProposalId:   decisionResponse.ProposalId,
 			AgendaItemId: decisionResponse.AgendaItem.Id,
-			Title:        decisionResponse.AgendaItem.Title,
-			EmailTo:      decisionResponse.AgendaItem.Author,
+			Title:        decisionResponse.Proposal.Title,
+			EmailTo:      decisionResponse.Proposal.Email,
 			Accepted:     decisionResponse.Proposal.Approved,
 		}
 
@@ -402,6 +409,12 @@ func main() {
 
 	log.Printf("Connected to PostgreSQL.")
 
+	kafkaAlive := isKafkaAlive(KAFKA_URL, KAFKA_TOPIC)
+	if !kafkaAlive {
+		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
+		return
+	}
+
 	log.Printf("Connecting to Kafka Instance: %s, topic: %s.", KAFKA_URL, KAFKA_TOPIC)
 	//https://github.com/segmentio/kafka-go/blob/main/examples/producer-api/main.go
 	kafkaWriter := getKafkaWriter(KAFKA_URL, KAFKA_TOPIC)
@@ -411,7 +424,10 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/", newProposalHandler(kafkaWriter)).Methods("POST")
+	//https://opentelemetry.io/docs/instrumentation/go/libraries/
+	newProposalWrappedHandler := otelhttp.NewHandler(newProposalHandler(kafkaWriter), "new-proposal")
+
+	r.HandleFunc("/", newProposalWrappedHandler).Methods("POST")
 	r.HandleFunc("/", getAllProposalsHandler).Methods("GET")
 	r.HandleFunc("/{id}", archiveProposaldHandler(kafkaWriter)).Methods("DELETE")
 	r.HandleFunc("/{id}/decide", decideProposaldHandler(kafkaWriter)).Methods("POST")
@@ -423,11 +439,14 @@ func main() {
 
 	r.HandleFunc("/service/info", func(w http.ResponseWriter, r *http.Request) {
 		var info ServiceInfo = ServiceInfo{
-			Name:         "C4P",
-			Version:      VERSION,
-			Source:       SOURCE,
-			PodId:        POD_ID,
-			PodNamespace: POD_NODENAME,
+			Name:              "C4P",
+			Version:           VERSION,
+			Source:            SOURCE,
+			PodName:           POD_NAME,
+			PodNodeName:       POD_NODENAME,
+			PodNamespace:      POD_NAMESPACE,
+			PodIp:             POD_IP,
+			PodServiceAccount: POD_SERVICE_ACCOUNT,
 		}
 		json.NewEncoder(w).Encode(info)
 	})
@@ -445,4 +464,28 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
+}
+
+func isKafkaAlive(kafkaURL string, topic string) bool {
+	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
+	if err != nil {
+		panic(err.Error())
+	}
+	defer conn.Close()
+
+	brokers, err := conn.Brokers()
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	for _, b := range brokers {
+		log.Printf("Available Broker: %s", b)
+	}
+	if len(brokers) > 0 {
+		return true
+	} else {
+		return false
+	}
+
 }
