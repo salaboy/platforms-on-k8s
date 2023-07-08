@@ -2,6 +2,8 @@ apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
   name: service-pipeline-run-1
+  annotations:
+    kubernetes.io/ssh-auth: kubernetes.io/dockerconfigjson
 spec:
   params:
   - name: target-registry
