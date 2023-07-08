@@ -60,9 +60,6 @@ spec:
             script: |
               #!/bin/sh
               set -ex 
-              helm version 
-              helm env
-              helm registry login -u salaboy
               cd $(workspaces.sources.path)
               helm repo add bitnami https://charts.bitnami.com/bitnami
               helm repo update

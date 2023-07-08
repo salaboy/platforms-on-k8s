@@ -22,4 +22,6 @@ spec:
         secretName: regcred
   pipelineRef:
     name: conference-app-helm-chart-pipeline
+  taskRunTemplate:
+    serviceAccountName: pipelines-sa    
   

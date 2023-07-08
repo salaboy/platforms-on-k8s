@@ -26,4 +26,6 @@ spec:
         secretName: regcred
   pipelineRef:
     name: conference-app-service-pipeline
+  taskRunTemplate:
+    serviceAccountName: pipelines-sa  
   
