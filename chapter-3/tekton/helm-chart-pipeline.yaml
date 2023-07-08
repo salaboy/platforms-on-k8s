@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: conference-app-service-pipeline
+  name: conference-app-helm-chart-pipeline
   annotations:
     description: |
       Build the artifacts for the Conference application's services
@@ -42,19 +42,30 @@ spec:
       workspaces:
         - name: output
           workspace: sources
-    - name: build-publish
-      runAfter: 
-      - clone-repo
-      taskRef: 
-        name: ko
-      params: 
-        - name: KO_DOCKER_REPO
-          value: $(params.target-registry)  
-        - name: main
-          value: $(params.context)  
+    - name: helm-package
+      runAfter: [clone-repo]
       workspaces:
-        - name: source
-          workspace: sources
-          subPath: "conference-application/notifications-service/"
         - name: dockerconfig
           workspace: dockerconfig  
+        - name: sources
+          workspace: sources
+          subPath: "conference-application/helm/conference-app/"
+      taskSpec:
+        workspaces:
+          - name: sources
+          - name: dockerconfig
+        steps:
+          - name: package
+            image: alpine/helm:3.11.1
+            script: |
+              #!/bin/sh
+              set -ex 
+              helm version 
+              helm env
+              helm registry login -u salaboy
+              cd $(workspaces.sources.path)
+              helm repo add bitnami https://charts.bitnami.com/bitnami
+              helm repo update
+              helm dependency build
+              helm package .
+              helm push conference-app-v1.0.0.tgz oci://docker.io/salaboy/

@@ -1,15 +1,11 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: service-pipeline-run-1
+  name: helm-chart-pipeline-run-1
 spec:
   params:
   - name: target-registry
     value: salaboy
-  - name: target-name
-    value: notifications-service
-  - name: target-version 
-    value: 1.0.0-from-pipeline-run
   - name: context
     value: "."
   workspaces:
@@ -25,5 +21,5 @@ spec:
       secret:  
         secretName: regcred
   pipelineRef:
-    name: conference-app-service-pipeline
+    name: conference-app-helm-chart-pipeline
   

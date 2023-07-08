@@ -37,15 +37,11 @@ kubectl apply -f https://api.hub.tekton.dev/v1/resource/tekton/task/ko/0.1/raw
 ```
 ## Creating a secret to publish the container images to a registry
 
+For more documentation about this step check the [official Tekton Docs](https://tekton.dev/docs/how-to-guides/kaniko-build-push/#container-registry-authentication)
 ```
-kubectl create secret docker-registry regcred --docker-server=https://index.docker.io/v1/ --docker-username=DOCKER_USERNAME --docker-password=DOCKER_PASSWORD --docker-email DOCKER_EMAIL
+kubectl create secret docker-registry regcred --docker-server=https://index.docker.io/v2/ --docker-username=DOCKER_USERNAME --docker-password=DOCKER_PASSWORD --docker-email DOCKER_EMAIL
 ```
 
-Then we need to create a service account to point to that secret: 
-
-```
-kubectl apply -f service-account.yaml
-```
 
 ## Let's run our Service Pipeline
 
