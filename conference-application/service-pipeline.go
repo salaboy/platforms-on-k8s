@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strings"
 
 	"dagger.io/dagger"
 	platformFormat "github.com/containerd/containerd/platforms"
@@ -16,15 +15,18 @@ var platforms = []dagger.Platform{
 	"linux/arm64", // a.k.a. aarch64
 }
 
-// the container registry for the multi-platform image
-const imageRepo = "ttl.sh/marcostest"
+var (
+	// the container registry for the multi-platform image
+	CONTAINER_REGISTRY      = getEnv("CONTAINER_REGISTRY", "docker.io")
+	CONTAINER_REGISTRY_USER = getEnv("CONTAINER_REGISTRY_USER", "salaboy")
+)
 
 // util that returns the architecture of the provided platform
 func architectureOf(platform dagger.Platform) string {
 	return platformFormat.MustParse(string(platform)).Architecture
 }
 
-func buildAndPublishService(ctx context.Context, dir, tag string) {
+func buildService(ctx context.Context, dir string) ([]*dagger.Container, error) {
 	client := getDaggerClient(ctx)
 
 	defer client.Close()
@@ -75,19 +77,31 @@ func buildAndPublishService(ctx context.Context, dir, tag string) {
 			WithRootfs(outputDir)
 		platformVariants = append(platformVariants, binaryCtr)
 	}
+	return platformVariants, nil
+}
 
+func testService(ctx context.Context, dir string) error {
+	// run docker compose up and then run go test from inside each service directory
+	return nil
+}
+
+func publishService(ctx context.Context, dir string, platformVariants []*dagger.Container, tag string) error {
 	// publishing the final image uses the same API as single-platform
 	// images, but now additionally specify the `PlatformVariants`
 	// option with the containers built before.
-	imageDigest, err := client.
-		Container().
-		Publish(ctx, fmt.Sprintf("%s:%s", imageRepo, tag), dagger.ContainerPublishOpts{
+	client := getDaggerClient(ctx)
+
+	defer client.Close()
+
+	imageDigest, err := client.Container().
+		Publish(ctx, fmt.Sprintf("%s/%s/%s:%s", CONTAINER_REGISTRY, CONTAINER_REGISTRY_USER, dir, tag), dagger.ContainerPublishOpts{
 			PlatformVariants: platformVariants,
 		})
 	if err != nil {
-		panic(err)
+		return err
 	}
 	fmt.Println("published multi-platform image with digest", imageDigest)
+	return nil
 }
 
 func main() {
@@ -100,26 +114,46 @@ func main() {
 
 	switch os.Args[1] {
 	case "build":
-		if len(os.Args) < 4 {
+		if len(os.Args) < 3 {
 			err = fmt.Errorf("invalid number of arguments: expected service path and tag")
 			break
 		}
-		buildAndPublishService(ctx, os.Args[2], os.Args[3])
-
-	case "helm-publish":
-		if len(os.Args) < 3 {
-			err = fmt.Errorf("invalid number of arguments: expected chart tag")
-			break
+		_, err = buildService(ctx, os.Args[2])
+		if err != nil {
+			panic(err)
 		}
-		err = helmPublish(ctx, os.Args[2])
-
+	case "test":
+		err = testService(ctx, os.Args[2])
+		if err != nil {
+			panic(err)
+		}
+	case "publish":
+		pv, err := buildService(ctx, os.Args[2])
+		if err != nil {
+			panic(err)
+		}
+		err = publishService(ctx, os.Args[2], pv, os.Args[3])
+		if err != nil {
+			panic(err)
+		}
+	case "all":
+		pv, err := buildService(ctx, os.Args[2])
+		if err != nil {
+			panic(err)
+		}
+		err = testService(ctx, os.Args[2])
+		if err != nil {
+			panic(err)
+		}
+		err = publishService(ctx, os.Args[2], pv, os.Args[3])
+		if err != nil {
+			panic(err)
+		}
 	default:
 		log.Fatalln("invalid command specified")
+
 	}
 
-	if err != nil {
-		panic(err)
-	}
 }
 
 func getDaggerClient(ctx context.Context) *dagger.Client {
@@ -131,26 +165,11 @@ func getDaggerClient(ctx context.Context) *dagger.Client {
 	return c
 }
 
-func helmPublish(ctx context.Context, tag string) error {
-	c := getDaggerClient(ctx)
-	defer c.Close()
-
-	chartDir := c.Host().Directory("./helm/conference-app")
-
-	helm := c.Container().From("alpine/helm:3.12.1").
-		WithMountedDirectory(".", chartDir).
-		WithExec([]string{"registry", "login", "-u", "salaboy", "ghcr.io", "--password-stdin"}, dagger.ContainerWithExecOpts{Stdin: os.Getenv("HELM_REGISTRY_PASSWORD")}).
-		WithExec([]string{"package", "-u", "."})
-
-	chartOut, err := helm.Stdout(ctx)
-	if err != nil {
-		return err
+// getEnv returns the value of an environment variable, or a fallback value if it is not set.
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
 	}
-
-	chartPackagePath := strings.TrimSpace(strings.Split(chartOut, ":")[1])
-
-	_, err = helm.WithExec([]string{"push", chartPackagePath, "oci://ghcr.io/salaboy"}).
-		ExitCode(ctx)
-
-	return err
+	return value
 }
