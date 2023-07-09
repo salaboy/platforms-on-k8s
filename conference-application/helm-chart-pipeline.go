@@ -42,7 +42,7 @@ func main() {
 			err = fmt.Errorf("invalid number of arguments: expected chart tag")
 			break
 		}
-		chart, err = helmPackage(ctx, os.Args[2])
+		chart, err := helmPackage(ctx, os.Args[2])
 
 	case "test":
 		if len(os.Args) < 3 {
@@ -55,10 +55,11 @@ func main() {
 			err = fmt.Errorf("invalid number of arguments: expected chart tag")
 			break
 		}
-		err = helmPublish(ctx, os.Args[2])
+		chart, err := helmPackage(ctx, os.Args[2])
+		err = helmPublish(ctx, chart)
 
 	case "all":
-		chart, err = helmPackage(ctx, os.Args[2])
+		chart, err := helmPackage(ctx, os.Args[2])
 		if err != nil {
 			panic(err)
 		}

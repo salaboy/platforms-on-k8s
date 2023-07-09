@@ -77,6 +77,7 @@ func buildService(ctx context.Context, dir string) ([]*dagger.Container, error) 
 			WithRootfs(outputDir)
 		platformVariants = append(platformVariants, binaryCtr)
 	}
+	fmt.Println("Artifacts built: %s ", platformVariants)
 	return platformVariants, nil
 }
 
@@ -98,6 +99,7 @@ func publishService(ctx context.Context, dir string, platformVariants []*dagger.
 			PlatformVariants: platformVariants,
 		})
 	if err != nil {
+		fmt.Println("Publishing error: %v ", err)
 		return err
 	}
 	fmt.Println("published multi-platform image with digest", imageDigest)
