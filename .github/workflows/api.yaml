@@ -45,8 +45,6 @@ jobs:
     steps:
     - name: Check out Git repositor
       uses: actions/checkout@v1
-    - name: Build the stack
-      run: docker-compose -f conference-application/notifications-service/tests/docker-compose.yaml up -d
     - name: Set up Node.js
       uses: actions/setup-node@v1
       with:
@@ -58,9 +56,11 @@ jobs:
       run: npm install -g @apideck/portman
     - name: Install newman
       run: npm install -g newman
-    - name: run portman gen  
-      run: portman -l conference-application/notifications-service/docs/openapi.yaml -o api/postman/notifications.postman.json
-    - name: run newman tests
-      run: newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://notifications-service:8080"
+    - name: Build the stack
+      run: |
+        portman -l conference-application/notifications-service/docs/openapi.yaml -o api/postman/notifications.postman.json
+        docker-compose -f conference-application/notifications-service/tests/docker-compose.yaml up -d  
+        sleep 10000
+        newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://notifications-service:8080"
     - name: Shutdown the stack
       run: docker-compose down 
