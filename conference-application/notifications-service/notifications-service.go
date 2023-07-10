@@ -242,7 +242,7 @@ func (s *server) CreateNotification(w http.ResponseWriter, r *http.Request) {
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return
 	}
-	log.Printf("Notification Sent Event emitted to Kafka: %v", notification)
+	log.Printf("Notification Sent - Event emitted to Kafka: %v", notification)
 
 	// @TODO avoid doing two marshals to json
 	respondWithJSON(w, http.StatusOK, notification)
