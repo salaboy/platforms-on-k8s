@@ -132,7 +132,7 @@ func NewChiServer() *chi.Mux {
 	//https://github.com/segmentio/kafka-go/blob/main/examples/producer-api/main.go
 	kafkaWriter := getKafkaWriter(KAFKA_URL, KAFKA_TOPIC)
 
-	log.Printf("Connected to Kafka.")
+	log.Printf("Connected to Kafka Instance: %s, topic: %s.", KAFKA_URL, KAFKA_TOPIC)
 
 	// create new router
 	r := chi.NewRouter()

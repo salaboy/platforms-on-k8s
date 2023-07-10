@@ -6,7 +6,7 @@ on:
 
 jobs:
   publish:
-    name: Publish
+    name: Notifications Service - Service Pipeline 
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-go@v2
