@@ -62,4 +62,4 @@ jobs:
         docker-compose -f conference-application/notifications-service/tests/docker-compose.yaml up -d  
         newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://localhost:8080"
     - name: Shutdown the stack
-      run: docker-compose down 
+      run: docker-compose -f conference-application/notifications-service/tests/docker-compose.yaml down 
