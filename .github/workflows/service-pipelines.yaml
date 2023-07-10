@@ -1,0 +1,24 @@
+name: Notifications Service - Service Pipeline
+
+on:
+  push:
+    branches: ['main']
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    steps:
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            src:
+              - 'conference-application/notifications-service/**'
+      - uses: actions/setup-go@v2
+        with:
+          go-version: '1.20.x'
+      - uses: actions/checkout@v2
+      - uses: ko-build/setup-ko@v0.6
+      - if: steps.changes.outputs.src == 'true'
+        run: cd conference-application/notifications-service && ko build
