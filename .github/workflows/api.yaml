@@ -60,7 +60,6 @@ jobs:
       run: |
         portman -l conference-application/notifications-service/docs/openapi.yaml -o api/postman/notifications.postman.json
         docker-compose -f conference-application/notifications-service/tests/docker-compose.yaml up -d  
-        sleep 10000
         newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://notifications-service:8080"
     - name: Shutdown the stack
       run: docker-compose down 
