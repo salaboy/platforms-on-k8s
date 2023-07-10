@@ -60,10 +60,6 @@ jobs:
       run: |
         portman -l conference-application/notifications-service/docs/openapi.yaml -o api/postman/notifications.postman.json
         docker-compose -f conference-application/notifications-service/tests/docker-compose.yaml up -d  
-        echo "Pinging notification-service:8080"
-        curl http://notifications-service:8080/service/info || true
-        echo "Pinging localhost:8080"
-        curl http://localhost:8080/service/info || true
-        newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://notifications-service:8080"
+        newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://localhost:8080"
     - name: Shutdown the stack
       run: docker-compose down 
