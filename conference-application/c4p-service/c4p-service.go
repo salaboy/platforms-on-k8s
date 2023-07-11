@@ -15,8 +15,6 @@ import (
 
 	"github.com/gorilla/mux"
 	kafka "github.com/segmentio/kafka-go"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-	"go.opentelemetry.io/otel"
 )
 
 type Proposal struct {
@@ -93,8 +91,6 @@ var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
 var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
 
 var db *sql.DB
-
-var tracer = otel.Tracer("github.com/salaboy/platforms-on-k8s/conference-application/c4p-service")
 
 func getAllProposalsHandler(w http.ResponseWriter, r *http.Request) {
 
@@ -424,10 +420,7 @@ func main() {
 
 	r := mux.NewRouter()
 
-	//https://opentelemetry.io/docs/instrumentation/go/libraries/
-	newProposalWrappedHandler := otelhttp.NewHandler(newProposalHandler(kafkaWriter), "new-proposal")
-
-	r.HandleFunc("/", newProposalWrappedHandler).Methods("POST")
+	r.HandleFunc("/", newProposalHandler(kafkaWriter)).Methods("POST")
 	r.HandleFunc("/", getAllProposalsHandler).Methods("GET")
 	r.HandleFunc("/{id}", archiveProposaldHandler(kafkaWriter)).Methods("DELETE")
 	r.HandleFunc("/{id}/decide", decideProposaldHandler(kafkaWriter)).Methods("POST")

@@ -42,8 +42,10 @@ func main() {
 			err = fmt.Errorf("invalid number of arguments: expected chart tag")
 			break
 		}
-		chart, err := helmPackage(ctx, os.Args[2])
-
+		_, err := helmPackage(ctx, os.Args[2])
+		if err != nil {
+			fmt.Println("Packaging error: %v ", err)
+		}
 	case "test":
 		if len(os.Args) < 3 {
 			err = fmt.Errorf("invalid number of arguments: expected chart tag")
@@ -56,8 +58,13 @@ func main() {
 			break
 		}
 		chart, err := helmPackage(ctx, os.Args[2])
+		if err != nil {
+			fmt.Println("Packaging error: %v ", err)
+		}
 		err = helmPublish(ctx, chart)
-
+		if err != nil {
+			fmt.Println("Publishing error: %v ", err)
+		}
 	case "all":
 		chart, err := helmPackage(ctx, os.Args[2])
 		if err != nil {
@@ -96,6 +103,8 @@ func helmPackage(ctx context.Context, tag string) (string, error) {
 
 	chartDir := c.Host().Directory("./helm/conference-app")
 
+	updateYAML(ctx, tag, "values.yaml")
+
 	helm := c.Container().From("alpine/helm:3.12.1").
 		WithMountedDirectory(".", chartDir).
 		WithExec([]string{"package", "-u", "."})
@@ -119,8 +128,8 @@ func helmPublish(ctx context.Context, chart string) error {
 	helm := c.Container().From("alpine/helm:3.12.1").
 		WithExec([]string{"registry", "login", "-u", CONTAINER_REGISTRY_USER, CONTAINER_REGISTRY, "--password-stdin"}, dagger.ContainerWithExecOpts{Stdin: CONTAINER_REGISTRY_PASSWORD}).
 		WithExec([]string{"push", chartPackagePath, fmt.Sprintf("%s%s/%s", "oci://", CONTAINER_REGISTRY, CONTAINER_REGISTRY_USER)})
-	_, err := helm.Stdout(ctx)
-
+	out, err := helm.Stdout(ctx)
+	fmt.Println("Publish oiut: %s ", out)
 	return err
 }
 
@@ -131,4 +140,31 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
+}
+
+func updateYAML(ctx context.Context, expr, file string) (bool, error) {
+	if isAnyEmpty(expr, file) {
+		return false, fmt.Errorf("expression and file are required to update YAML")
+	}
+
+	c := getDaggerClient(ctx)
+	defer c.Close()
+
+	hostFile := c.Host().Directory(".").File(file)
+
+	return c.Container().From("mikefarah/yq:4").
+		WithUser("root"). // have to make this root or we'd get invalid permissions
+		WithFile(file, hostFile).
+		WithExec([]string{"-i", expr, file}). // runs in-place edit
+		File(file).Export(ctx, file)
+}
+
+func isAnyEmpty(vals ...string) bool {
+	for _, v := range vals {
+		if len(v) == 0 {
+			return true
+		}
+	}
+
+	return false
 }
