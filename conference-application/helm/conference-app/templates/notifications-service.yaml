@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: notifications-service
-        image: "{{ .Values.services.registry }}/{{ .Values.services.notifications.image }}:{{ .Values.services.notifications.tag }}"
+        image: "{{ .Values.services.registry }}/{{ .Values.services.notifications.image }}:{{ .Values.services.tag }}"
         env:
         - name: KAFKA_URL
           value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local

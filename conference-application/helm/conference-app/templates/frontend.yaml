@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: "{{ .Values.services.registry }}/{{ .Values.services.frontend.image }}:{{ .Values.services.frontend.tag }}"
+        image: "{{ .Values.services.registry }}/{{ .Values.services.frontend.image }}:{{ .Values.services.tag }}"
         env: 
         - name: AGENDA_SERVICE_URL
           value: http://agenda-service.{{ .Release.Namespace }}.svc.cluster.local

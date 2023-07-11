@@ -38,26 +38,14 @@ func main() {
 
 	switch os.Args[1] {
 	case "package":
-		if len(os.Args) < 3 {
-			err = fmt.Errorf("invalid number of arguments: expected chart tag")
-			break
-		}
-		_, err := helmPackage(ctx, os.Args[2])
+		_, err := helmPackage(ctx)
 		if err != nil {
 			fmt.Println("Packaging error: %v ", err)
 		}
 	case "test":
-		if len(os.Args) < 3 {
-			err = fmt.Errorf("invalid number of arguments: expected chart tag")
-			break
-		}
-		err = helmTest(ctx, os.Args[2])
+		err = helmTest(ctx)
 	case "publish":
-		if len(os.Args) < 3 {
-			err = fmt.Errorf("invalid number of arguments: expected chart tag")
-			break
-		}
-		chart, err := helmPackage(ctx, os.Args[2])
+		chart, err := helmPackage(ctx)
 		if err != nil {
 			fmt.Println("Packaging error: %v ", err)
 		}
@@ -66,11 +54,11 @@ func main() {
 			fmt.Println("Publishing error: %v ", err)
 		}
 	case "all":
-		chart, err := helmPackage(ctx, os.Args[2])
+		chart, err := helmPackage(ctx)
 		if err != nil {
 			panic(err)
 		}
-		err = helmTest(ctx, os.Args[2])
+		err = helmTest(ctx)
 		if err != nil {
 			panic(err)
 		}
@@ -97,16 +85,16 @@ func getDaggerClient(ctx context.Context) *dagger.Client {
 	return c
 }
 
-func helmPackage(ctx context.Context, tag string) (string, error) {
+func helmPackage(ctx context.Context) (string, error) {
 	c := getDaggerClient(ctx)
 	defer c.Close()
 
 	chartDir := c.Host().Directory("./helm/conference-app")
 
-	updateYAML(ctx, tag, "values.yaml")
-
 	helm := c.Container().From("alpine/helm:3.12.1").
 		WithMountedDirectory(".", chartDir).
+		WithExec([]string{"repo", "add", "bitnami", "https://charts.bitnami.com/bitnami"}).
+		WithExec([]string{"dependency", "build"}).
 		WithExec([]string{"package", "-u", "."})
 
 	chartOut, err := helm.Stdout(ctx)
@@ -116,7 +104,7 @@ func helmPackage(ctx context.Context, tag string) (string, error) {
 	return chartOut, nil
 }
 
-func helmTest(ctx context.Context, tag string) error {
+func helmTest(ctx context.Context) error {
 	// run helm test
 	return nil
 }
@@ -129,7 +117,7 @@ func helmPublish(ctx context.Context, chart string) error {
 		WithExec([]string{"registry", "login", "-u", CONTAINER_REGISTRY_USER, CONTAINER_REGISTRY, "--password-stdin"}, dagger.ContainerWithExecOpts{Stdin: CONTAINER_REGISTRY_PASSWORD}).
 		WithExec([]string{"push", chartPackagePath, fmt.Sprintf("%s%s/%s", "oci://", CONTAINER_REGISTRY, CONTAINER_REGISTRY_USER)})
 	out, err := helm.Stdout(ctx)
-	fmt.Println("Publish oiut: %s ", out)
+	fmt.Sprintln("Publish out: %s ", out)
 	return err
 }
 
@@ -140,31 +128,4 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
-}
-
-func updateYAML(ctx context.Context, expr, file string) (bool, error) {
-	if isAnyEmpty(expr, file) {
-		return false, fmt.Errorf("expression and file are required to update YAML")
-	}
-
-	c := getDaggerClient(ctx)
-	defer c.Close()
-
-	hostFile := c.Host().Directory(".").File(file)
-
-	return c.Container().From("mikefarah/yq:4").
-		WithUser("root"). // have to make this root or we'd get invalid permissions
-		WithFile(file, hostFile).
-		WithExec([]string{"-i", expr, file}). // runs in-place edit
-		File(file).Export(ctx, file)
-}
-
-func isAnyEmpty(vals ...string) bool {
-	for _, v := range vals {
-		if len(v) == 0 {
-			return true
-		}
-	}
-
-	return false
 }

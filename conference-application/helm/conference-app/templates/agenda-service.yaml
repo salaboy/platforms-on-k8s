@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: agenda-service
-        image: "{{ .Values.services.registry }}/{{ .Values.services.agenda.image }}:{{ .Values.services.agenda.tag }}"
+        image: "{{ .Values.services.registry }}/{{ .Values.services.agenda.image }}:{{ .Values.services.tag  }}"
         env:
         - name: KAFKA_URL
           value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local

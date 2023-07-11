@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: c4p-service
-        image: "{{ .Values.services.registry }}/{{ .Values.services.c4p.image }}:{{ .Values.services.c4p.tag }}"
+        image: "{{ .Values.services.registry }}/{{ .Values.services.c4p.image }}:{{ .Values.services.tag }}"
         env:
         - name: AGENDA_SERVICE_URL
           value: http://agenda-service.{{ .Release.Namespace }}.svc.cluster.local
