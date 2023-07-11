@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -21,24 +22,27 @@ func testServer() *httptest.Server {
 	return httptest.NewServer(chiServer)
 }
 
+var disableTC = flag.Bool("disableTC", false, "disable testcontainers")
+
 func Test_API(t *testing.T) {
+	if !*disableTC {
+		// testcontainers
+		compose, err := tc.NewDockerCompose("docker-compose.yaml")
+		assert.NoError(t, err, "NewDockerComposeAPI()")
 
-	// testcontainers
-	compose, err := tc.NewDockerCompose("docker-compose.yaml")
-	assert.NoError(t, err, "NewDockerComposeAPI()")
+		t.Cleanup(func() {
+			assert.NoError(t, compose.Down(context.Background()), tc.RemoveOrphans(true))
+		})
 
-	t.Cleanup(func() {
-		assert.NoError(t, compose.Down(context.Background()), tc.RemoveOrphans(true))
-	})
+		ctx, cancel := context.WithCancel(context.Background())
+		t.Cleanup(cancel)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	t.Cleanup(cancel)
+		err = compose.
+			WaitForService("kafka", wait.ForListeningPort("9094")).
+			Up(ctx, tc.Wait(true))
 
-	err = compose.
-		WaitForService("kafka", wait.ForListeningPort("9094")).
-		Up(ctx, tc.Wait(true))
-
-	assert.NoError(t, err, "compose.Up()")
+		assert.NoError(t, err, "compose.Up()")
+	}
 
 	// test server
 	ts := testServer()
@@ -110,7 +114,6 @@ func Test_API(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 		assert.True(t, len(notifications) > 0)
 	})
-
 }
 
 func notificationFake(accepted bool) Notification {
