@@ -73,7 +73,6 @@ func buildService(ctx context.Context, client *dagger.Client, dir string) ([]*da
 			WithRootfs(outputDir)
 		platformVariants = append(platformVariants, binaryCtr)
 	}
-	fmt.Println("Artifacts built: %s ", platformVariants)
 	return platformVariants, nil
 }
 

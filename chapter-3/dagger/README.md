@@ -17,25 +17,23 @@ Because all the services are very similar, the same pipeline definition can be u
 
 You can clone this repository and from the [Confernece Application directory](../../conference-application/) and run the pipelines locally.  
 
-
-You can run any defined task inside the `pipeline.go` file:
+You can run any defined task inside the `service-pipeline.go` file:
 
 ```
 go mod tidy
-go run pipeline.go <TASK>
+go run service-pipeline.go build notifications-service 
 ```
 
 The following tasks are defined for all the services: 
 - `build` will build the service source code and create a container for it. This doesn't require any arguments. 
-- `publish-image` publish the created container image to a container registry. This requires you to be logged in to the container registry and to provide the name of the container image as it will be published. For example: `salaboy/fmtok8s-agenda-service:0.1.0-dagger`. Notice that you need to include the org/username of where the image will be published.
-- `helm-package` creates the Helm Chart ready to be distributed. 
-- `publish-helm` uploads the Helm Chart to a Chart Repository. This require you to have the right credentials to connect and push to a Chart repository. 
+- `test` will test the service, but first it will start all the service dependencies
+- `publish` publish the created container image to a container registry. This requires you to be logged in to the container registry and to provide the name of the container image as it will be published. 
 
-If you run `go run pipeline.go full` all the tasks will be executed. Before being able to run all the tasks you will need to make sure that you have all the pre-requisites set, as for pushing to a Container Registry you will need to provide appropriate credentials. 
+If you run `go run service-pipeline.go all notifications-service v1.0.0-dagger` all the tasks will be executed. Before being able to run all the tasks you will need to make sure that you have all the pre-requisites set, as for pushing to a Container Registry you will need to provide appropriate credentials. 
 
-You can safely run `go run pipeline.go build` which doesn't require you to set any credentials. 
+You can safely run `go run service-pipeline.go build notifications-service` which doesn't require you to set any credentials. 
 
-Now, for development purposes, this is quite convinient, because you can now build your service code in the same way that your CI (Continupis Integration) system will do. But you don't want to run in production container images that were created in your developer's laptop right? 
+Now, for development purposes, this is quite convinient, because you can now build your service code in the same way that your CI (Continuous Integration) system will do. But you don't want to run in production container images that were created in your developer's laptop right? 
 The next section shows a simple setup of running Dagger pipelines remotely inside a Kubernetes Cluster. 
 
 ## Running your pipelines remotely on Kubernetes
