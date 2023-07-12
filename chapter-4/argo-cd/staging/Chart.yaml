@@ -7,4 +7,4 @@ appVersion: "1.0"
 dependencies:
 - name: conference-app
   version: v1.0.0
-  repository: oci://docker.io/salaboy/  
+  repository: oci://docker.io/salaboy  

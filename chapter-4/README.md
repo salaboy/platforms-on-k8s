@@ -164,10 +164,10 @@ Hit the **"+ New App"** button and use the following details to configure your p
 Here are the Create Application inputs that I've used: 
 - Application Name: "staging-environment"
 - Project: "default"
-- Sync Policy: "Manual"
-- Source Repository: [https://github.com/salaboy/from-monolith-to-k8s](https://github.com/salaboy/from-monolith-to-k8s) (here you can point to your fork)
+- Sync Policy: "Automatic"
+- Source Repository: [https://github.com/salaboy/platforms-on-k8s](https://github.com/salaboy/platforms-on-k8s) (here you can point to your fork)
 - Revision: "HEAD"
-- Path: "argocd/staging/"
+- Path: "chapter-4/argo-cd/staging/"
 - Cluster: "https://kubernetes.default.svc" 
 - Namespace: "staging"
 
@@ -175,17 +175,13 @@ Here are the Create Application inputs that I've used:
 
 And left the other values to their default ones, hit **Create** on the top 
 
-Once the App is created, you need to manually syncronize the changes, hit the **Sync** button on the Application box. We selected this option (`Sync Policy: Manual`), so we can manually decide when to apply the changes.
-
-<img src="imgs/argocd-sync.png" width="400">
-
-In the side panel hit **Synchronize**.
+Once the App is created, it will automatically syncronize the changes, as we selected the **Automatic** mode.
 
 
 If you are running in a local environment, you can always access the application using `port-forward`, in a **new terminal** run:
 
 ```
-kubectl port-forward svc/fmtok8s-frontend -n staging 8081:80
+kubectl port-forward svc/frontend -n staging 8081:80
 ```
 
 Wait for the applicatons pod to be up and running and then you can access the application pointing your browser to [http://localhost:8081](http://localhost:8081).
