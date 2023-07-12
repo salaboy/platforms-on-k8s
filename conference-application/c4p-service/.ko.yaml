@@ -1,1 +1,3 @@
-defaultBaseImage: ubuntu 
+defaultPlatforms:
+- linux/arm64
+- linux/amd64

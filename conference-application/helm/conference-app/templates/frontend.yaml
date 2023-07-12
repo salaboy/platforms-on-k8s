@@ -16,9 +16,9 @@ spec:
       - name: frontend
         image: "{{ .Values.services.registry }}/{{ .Values.services.frontend.image }}:{{ .Values.services.tag }}"
         env: 
-{{- if .Values.services.frontend.debug }}
+{{- if eq .Values.services.frontend.debug true }}
         - name: FEATURE_DEBUG_ENABLED
-          value: true
+          value: "true"
 {{- end }}
         - name: AGENDA_SERVICE_URL
           value: http://agenda-service.{{ .Release.Namespace }}.svc.cluster.local

@@ -223,6 +223,7 @@ func (s server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 		PodIp:             POD_IP,
 		PodServiceAccount: POD_SERVICE_ACCOUNT,
 	}
+	w.Header().Set(ContentType, ApplicationJson)
 	json.NewEncoder(w).Encode(info)
 }
 

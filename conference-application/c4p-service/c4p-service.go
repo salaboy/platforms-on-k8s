@@ -17,6 +17,11 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
+const (
+	ApplicationJson = "application/json"
+	ContentType     = "Content-Type"
+)
+
 type Proposal struct {
 	Id          string
 	Title       string
@@ -63,14 +68,14 @@ type Notification struct {
 }
 
 type ServiceInfo struct {
-	Name              string
-	Version           string
-	Source            string
-	PodName           string
-	PodNamespace      string
-	PodNodeName       string
-	PodIp             string
-	PodServiceAccount string
+	Name              string `json:"name"`
+	Version           string `json:"version"`
+	Source            string `json:"source"`
+	PodName           string `json:"podName"`
+	PodNamespace      string `json:"podNamespace"`
+	PodNodeName       string `json:"podNodeName"`
+	PodIp             string `json:"podIp"`
+	PodServiceAccount string `json:"podServiceAccount"`
 }
 
 var VERSION = getEnv("VERSION", "1.0.0")
@@ -441,6 +446,7 @@ func main() {
 			PodIp:             POD_IP,
 			PodServiceAccount: POD_SERVICE_ACCOUNT,
 		}
+		w.Header().Set(ContentType, ApplicationJson)
 		json.NewEncoder(w).Encode(info)
 	})
 

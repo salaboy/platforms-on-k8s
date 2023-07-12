@@ -13,10 +13,10 @@
     "eslint": "8.42.0",
     "eslint-config-next": "13.4.5",
     "lorem-ipsum": "^2.0.8",
-    "next": "13.4.5",
+    "next": "^13.4.9",
     "next-image-export-optimizer": "^1.8.1",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
     "react-tabs": "^6.0.1"
   },

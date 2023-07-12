@@ -15,51 +15,51 @@ function Debug() {
     const [check, setCheck] = useState(0)
 
     const mockFrontendServiceInfo = {
-        "Name": "FRONTEND",
-        "PodId": "N/A",
-        "PodNamespace": "N/A",
-        "PodNodeName": "N/A",
-        "PodName": "N/A",
-        "PodServiceAccount": "N/A",
-        "Source": "N/A",
-        "Version": "N/A",
-        "Healthy": false
+        "name": "FRONTEND",
+        "podId": "N/A",
+        "podNamespace": "N/A",
+        "podNodeName": "N/A",
+        "podName": "N/A",
+        "podServiceAccount": "N/A",
+        "source": "N/A",
+        "version": "N/A",
+        "healthy": false
     }
 
     const mockAgendaServiceInfo = {
-        "Name": "AGENDA",
-        "PodId": "N/A",
-        "PodNamespace": "N/A",
-        "PodNodeName": "N/A",
-        "PodName": "N/A",
-        "PodServiceAccount": "N/A",
-        "Source": "N/A",
-        "Version": "N/A",
-        "Healthy": false
+        "name": "AGENDA",
+        "podId": "N/A",
+        "podNamespace": "N/A",
+        "podNodeName": "N/A",
+        "podName": "N/A",
+        "podServiceAccount": "N/A",
+        "source": "N/A",
+        "version": "N/A",
+        "healthy": false
     }
 
     const mockC4PServiceInfo = {
-        "Name": "C4P",
-        "PodId": "N/A",
-        "PodNamespace": "N/A",
-        "PodNodeName": "N/A",
-        "PodName": "N/A",
-        "PodServiceAccount": "N/A",
-        "Source": "N/A",
-        "Version": "N/A",
-        "Healthy": false
+        "name": "C4P",
+        "podId": "N/A",
+        "podNamespace": "N/A",
+        "podNodeName": "N/A",
+        "podName": "N/A",
+        "podServiceAccount": "N/A",
+        "source": "N/A",
+        "version": "N/A",
+        "healthy": false
     }
 
     const mockNotificationsServiceInfo = {
-        "Name": "NOTIFICATIONS",
-        "PodId": "N/A",
-        "PodNamespace": "N/A",
-        "PodNodeName": "N/A",
-        "PodName": "N/A",
-        "ServiceAccount": "N/A",
-        "Source": "N/A",
-        "Version": "N/A",
-        "Healthy": false
+        "name": "NOTIFICATIONS",
+        "podId": "N/A",
+        "podNamespace": "N/A",
+        "podNodeName": "N/A",
+        "podName": "N/A",
+        "serviceAccount": "N/A",
+        "source": "N/A",
+        "version": "N/A",
+        "healthy": false
     }
 
     useEffect(() => {
@@ -145,53 +145,53 @@ function Debug() {
     return (
         <div className={styles.DebugList}>
             <ServiceInfo
-                name={frontendServiceInfo.Name}
-                version={frontendServiceInfo.Version}
+                name={frontendServiceInfo.name}
+                version={frontendServiceInfo.version}
                 key="frontend"
-                source={frontendServiceInfo.Source}
-                podIp={frontendServiceInfo.PodIp}
-                podName={frontendServiceInfo.PodName}
-                nodeName={frontendServiceInfo.PodNodeName}
-                namespace={frontendServiceInfo.PodNamespace}
-                serviceAccount={frontendServiceInfo.PodServiceAccount}
-                healthy={frontendServiceInfo.Healthy}
+                source={frontendServiceInfo.source}
+                podIp={frontendServiceInfo.podIp}
+                podName={frontendServiceInfo.podName}
+                nodeName={frontendServiceInfo.podNodeName}
+                namespace={frontendServiceInfo.podNamespace}
+                serviceAccount={frontendServiceInfo.podServiceAccount}
+                healthy={frontendServiceInfo.healthy}
             />
 
             <ServiceInfo
-                name={c4pServiceInfo.Name}
-                version={c4pServiceInfo.Version}
+                name={c4pServiceInfo.name}
+                version={c4pServiceInfo.version}
                 key="c4p"
-                source={c4pServiceInfo.Source}
-                podName={c4pServiceInfo.PodName}
-                podIp={c4pServiceInfo.PodIp}
-                nodeName={c4pServiceInfo.PodNodeName}
-                namespace={c4pServiceInfo.PodNamespace}
-                serviceAccount={c4pServiceInfo.PodServiceAccount}
-                healthy={c4pServiceInfo.Healthy}
+                source={c4pServiceInfo.source}
+                podName={c4pServiceInfo.podName}
+                podIp={c4pServiceInfo.podIp}
+                nodeName={c4pServiceInfo.podNodeName}
+                namespace={c4pServiceInfo.podNamespace}
+                serviceAccount={c4pServiceInfo.podServiceAccount}
+                healthy={c4pServiceInfo.healthy}
             />
             <ServiceInfo
-                name={agendaServiceInfo.Name}
-                version={agendaServiceInfo.Version}
+                name={agendaServiceInfo.name}
+                version={agendaServiceInfo.version}
                 key="agenda"
-                source={agendaServiceInfo.Source}
-                podIp={agendaServiceInfo.PodIp}
-                podName={agendaServiceInfo.PodName}
-                nodeName={agendaServiceInfo.PodNodeName}
-                namespace={agendaServiceInfo.PodNamespace}
-                serviceAccount={agendaServiceInfo.PodServiceAccount}
-                healthy={agendaServiceInfo.Healthy}
+                source={agendaServiceInfo.source}
+                podIp={agendaServiceInfo.podIp}
+                podName={agendaServiceInfo.podName}
+                nodeName={agendaServiceInfo.podNodeName}
+                namespace={agendaServiceInfo.podNamespace}
+                serviceAccount={agendaServiceInfo.podServiceAccount}
+                healthy={agendaServiceInfo.healthy}
             />
             <ServiceInfo
-                name={notificationsServiceInfo.Name}
-                version={notificationsServiceInfo.Version}
+                name={notificationsServiceInfo.name}
+                version={notificationsServiceInfo.version}
                 key="notifications"
-                source={notificationsServiceInfo.Source}
-                podIp={notificationsServiceInfo.PodIp}
-                podName={notificationsServiceInfo.PodName}
-                nodeName={notificationsServiceInfo.PodNodeName}
-                namespace={notificationsServiceInfo.PodNamespace}
-                serviceAccount={notificationsServiceInfo.PodServiceAccount}
-                healthy={notificationsServiceInfo.Healthy}
+                source={notificationsServiceInfo.source}
+                podIp={notificationsServiceInfo.podIp}
+                podName={notificationsServiceInfo.podName}
+                nodeName={notificationsServiceInfo.podNodeName}
+                namespace={notificationsServiceInfo.podNamespace}
+                serviceAccount={notificationsServiceInfo.podServiceAccount}
+                healthy={notificationsServiceInfo.healthy}
             />
         </div>
     );

@@ -32,15 +32,20 @@ var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
 var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
 var KAFKA_GROUP_ID = getEnv("KAFKA_GROUP_ID", "app")
 
+const (
+	ApplicationJson = "application/json"
+	ContentType     = "Content-Type"
+)
+
 type ServiceInfo struct {
-	Name              string
-	Version           string
-	Source            string
-	PodName           string
-	PodNamespace      string
-	PodNodeName       string
-	PodIp             string
-	PodServiceAccount string
+	Name              string `json:"name"`
+	Version           string `json:"version"`
+	Source            string `json:"source"`
+	PodName           string `json:"podName"`
+	PodNamespace      string `json:"podNamespace"`
+	PodNodeName       string `json:"podNodeName"`
+	PodIp             string `json:"podIp"`
+	PodServiceAccount string `json:"podServiceAccount"`
 }
 
 var events = []Event{}
@@ -216,6 +221,7 @@ func main() {
 			PodIp:             POD_IP,
 			PodServiceAccount: POD_SERVICE_ACCOUNT,
 		}
+		w.Header().Set(ContentType, ApplicationJson)
 		json.NewEncoder(w).Encode(info)
 	})
 

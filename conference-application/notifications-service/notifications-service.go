@@ -16,6 +16,11 @@ import (
 	kafka "github.com/segmentio/kafka-go"
 )
 
+const (
+	ApplicationJson = "application/json"
+	ContentType     = "Content-Type"
+)
+
 type ServiceInfo struct {
 	Name              string `json:"name"`
 	Version           string `json:"version"`
@@ -260,6 +265,6 @@ func (s *server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 		PodIp:             POD_IP,
 		PodServiceAccount: POD_SERVICE_ACCOUNT,
 	}
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(ContentType, ApplicationJson)
 	json.NewEncoder(w).Encode(info)
 }

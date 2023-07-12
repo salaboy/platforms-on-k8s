@@ -199,20 +199,21 @@ You should see something like this:
 
 ```
 > kubectl get pods -n staging
-NAME                                                          READY   STATUS    RESTARTS        AGE
-staging-environment-fmtok8s-agenda-service-5fcdd586cc-xqxgw   1/1     Running   1 (62s ago)     3m6s
-staging-environment-fmtok8s-c4p-service-5db567999f-lzv49      1/1     Running   1 (2m42s ago)   3m6s
-staging-environment-fmtok8s-email-service-6cd4576f5b-7568c    1/1     Running   0               3m6s
-staging-environment-fmtok8s-frontend-55dd7f7b67-wflr7         1/1     Running   0               3m6s
-staging-environment-postgresql-0                              1/1     Running   0               3m5s
-staging-environment-redis-master-0                            1/1     Running   0               3m5s
+NAME                                                              READY   STATUS    RESTARTS        AGE
+stating-environment-agenda-service-deployment-6c9cbb9695-xj99z    1/1     Running   5 (6m ago)      8m4s
+stating-environment-c4p-service-deployment-69d485ffd8-q96z4       1/1     Running   5 (5m52s ago)   8m4s
+stating-environment-frontend-deployment-cd76bdc8c-58vzr           1/1     Running   5 (6m3s ago)    8m4s
+stating-environment-kafka-0                                       1/1     Running   0               8m4s
+stating-environment-notifications-service-deployment-5c9b5bzb5p   1/1     Running   5 (6m13s ago)   8m4s
+stating-environment-postgresql-0                                  1/1     Running   0               8m4s
+stating-environment-redis-master-0                                1/1     Running   0               8m4s
 ```
 
-**Note**: a few restarts are OK (RESTARTS column), as some services needs to wait for the databases (Redis and PostgreSQL) to be up before them being healthy.
+**Note**: a few restarts are OK (RESTARTS column), as some services needs to wait for the infrastructure (Redis, PostgreSQL, Kafka) to be up before them being healthy.
 
 ## Changing the Application's configuration in the Staging Environment
 
-To update version of configurations of your services, you can update the files located in the [Chart.yaml](staging/Chart.yaml) file or [values.yaml](staging/values.yaml) file located inside the [staging](staging/) directory.
+To update version of configurations of your services, you can update the files located in the [Chart.yaml](argo-cd/staging/Chart.yaml) file or [values.yaml](argo-cd/staging/values.yaml) file located inside the [staging](staging/) directory.
 
 For the sake of this example, you can change the application configuration by updating the ArgoCD application details and its parameters. 
 
