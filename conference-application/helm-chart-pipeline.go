@@ -36,25 +36,28 @@ func main() {
 		panic(fmt.Errorf("invalid number of arguments: expected command (build, publish-image, helm-package)"))
 	}
 
+	client := getDaggerClient(ctx)
+	defer client.Close()
+
 	switch os.Args[1] {
 	case "package":
-		_, err := helmPackage(ctx)
+		_, err := helmPackage(ctx, client)
 		if err != nil {
 			fmt.Println("Packaging error: %v ", err)
 		}
 	case "test":
 		err = helmTest(ctx)
 	case "publish":
-		chart, err := helmPackage(ctx)
+		chart, err := helmPackage(ctx, client)
 		if err != nil {
 			fmt.Println("Packaging error: %v ", err)
 		}
-		err = helmPublish(ctx, chart)
+		err = helmPublish(ctx, client, chart)
 		if err != nil {
 			fmt.Println("Publishing error: %v ", err)
 		}
 	case "all":
-		chart, err := helmPackage(ctx)
+		chart, err := helmPackage(ctx, client)
 		if err != nil {
 			panic(err)
 		}
@@ -62,7 +65,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		err = helmPublish(ctx, chart)
+		err = helmPublish(ctx, client, chart)
 		if err != nil {
 			panic(err)
 		}
@@ -85,10 +88,7 @@ func getDaggerClient(ctx context.Context) *dagger.Client {
 	return c
 }
 
-func helmPackage(ctx context.Context) (string, error) {
-	c := getDaggerClient(ctx)
-	defer c.Close()
-
+func helmPackage(ctx context.Context, c *dagger.Client) (string, error) {
 	chartDir := c.Host().Directory("./helm/conference-app")
 
 	helm := c.Container().From("alpine/helm:3.12.1").
@@ -109,9 +109,7 @@ func helmTest(ctx context.Context) error {
 	return nil
 }
 
-func helmPublish(ctx context.Context, chart string) error {
-	c := getDaggerClient(ctx)
-	defer c.Close()
+func helmPublish(ctx context.Context, c *dagger.Client, chart string) error {
 	chartPackagePath := strings.TrimSpace(strings.Split(chart, ":")[1])
 	helm := c.Container().From("alpine/helm:3.12.1").
 		WithExec([]string{"registry", "login", "-u", CONTAINER_REGISTRY_USER, CONTAINER_REGISTRY, "--password-stdin"}, dagger.ContainerWithExecOpts{Stdin: CONTAINER_REGISTRY_PASSWORD}).
