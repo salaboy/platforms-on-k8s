@@ -230,7 +230,7 @@ Save and then Sync the application.
 Because we were using port-forwarding, you might need to run this command again: 
 
 ```
-kubectl port-forward svc/fmtok8s-frontend -n staging 8081:80
+kubectl port-forward svc/frontend -n staging 8081:80
 ```
 
 This is due, the Frontend Service Pod is going to be replaced by the newly configured version, hence the port-forwarding needs to be restarted to target the new pod. 
