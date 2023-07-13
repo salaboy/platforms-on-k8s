@@ -142,4 +142,4 @@ kubectl delete pvc  data-conference-kafka-0 data-conference-postgresql-0 redis-d
 The name of the PVCs will change based on the Helm Release name that you used when installing the chart.
 
 
-
+Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.

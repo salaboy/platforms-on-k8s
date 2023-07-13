@@ -5,3 +5,5 @@ These short tutorials cover both Tekton and Dagger for Service Pipelines. With T
 - [Tekton for Service Pipelines Tutorial](tekton/README.md)
 - [Dagger for Service Pipelines Tutorial](dagger/README.md)
 - [GitHub Actions](github-actions/README.md)
+
+Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.

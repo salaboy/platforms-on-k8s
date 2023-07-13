@@ -10,31 +10,10 @@ We will define the configuration of Staging environment using a Git repository. 
 - Install ArgoCD in your cluster, [follow this instructions](https://argo-cd.readthedocs.io/en/stable/getting_started/) and optionallyu install the argocd CLI 
 - You can fork/copy [this repository](http://github.com/salaboy/platforms-on-k8s/) as if you want to change the configuration for the application you will need to have write access to the repository. We will be using the directory `chapter-4/argo-cd/staging/`
 
-Let's create a new KinD Cluster:
+[Create a KinD Cluster as we did in Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind).
 
-```
-kind create cluster
-```
 
-You should see something like this: 
-```
-> kind create cluster
-Creating cluster "kind" ...
- ✓ Ensuring node image (kindest/node:v1.27.3) 🖼 
- ✓ Preparing nodes 📦  
- ✓ Writing configuration 📜 
- ✓ Starting control-plane 🕹️ 
- ✓ Installing CNI 🔌 
- ✓ Installing StorageClass 💾 
-Set kubectl context to "kind-kind"
-You can now use your cluster with:
-
-kubectl cluster-info --context kind-kind
-
-Thanks for using kind! 😊
-```
-
-Let's install ArgoCD in the cluster: 
+Once you have the cluster up and running with the nginx-ingress controller, let's install Argo CD in the cluster: 
 
 ```
 kubectl create namespace argocd
@@ -115,9 +94,11 @@ kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 You can access the user interface by pointing your browser to [http://localhost:8080](http://localhost:8080)
 
-**Note**: by default the installation works using HTTP and not HTTPS, hence you need to accept the warning (hit the "Advanced Button" on Chrome) and proceed (Process to localhost unsafe). 
-
 <img src="imgs/argocd-warning.png" width="600">
+
+**Note**: by default the installation works using HTTP and not HTTPS, hence you need to accept the warning (hit the "Advanced Button" on Chrome) and proceed (**Process to localhost unsafe**). 
+
+<img src="imgs/argocd-proceed.png" width="600">
 
 That should take you to the Login Page:
 
@@ -161,6 +142,8 @@ Once you have ArgoCD installed you can access to the user interface to set up th
 
 Hit the **"+ New App"** button and use the following details to configure your project: 
 
+<img src="imgs/argocd-app-creation.png" width="600">
+
 Here are the Create Application inputs that I've used: 
 - Application Name: "staging-environment"
 - Project: "default"
@@ -171,12 +154,17 @@ Here are the Create Application inputs that I've used:
 - Cluster: "https://kubernetes.default.svc" 
 - Namespace: "staging"
 
-<img src="imgs/argocd-app-creation.png" width="600">
+<img src="imgs/argocd-app-creation2.png" width="600">
 
 And left the other values to their default ones, hit **Create** on the top 
 
 Once the App is created, it will automatically syncronize the changes, as we selected the **Automatic** mode.
 
+<img src="imgs/argocd-syncing.png" width="600">
+
+You can expand the app by clicking on it to see the full view of all the resources that are being created: 
+
+<img src="imgs/app-detail.png" width="600">
 
 If you are running in a local environment, you can always access the application using `port-forward`, in a **new terminal** run:
 
@@ -219,13 +207,11 @@ For the sake of this example, you can change the application configuration by up
 
 While you will not do this for your applications, here we are simulating a change in the GitHub repository where the staging environment is defined. 
 
-Go ahead and edit the Application Details / Parameters and select `values-debug-enabled.yaml` for the values file that we want to use for this application. This file sets the debug flag into the frontend service and it simulates us changing the original `values.yaml` file that was used for the first installation.
-
 <img src="imgs/argocd-change-parameters.png" width="600">
 
-Save and then Sync the application. 
+Go ahead and edit the Application Details / Parameters and select `values-debug-enabled.yaml` for the values file that we want to use for this application. This file sets the debug flag into the frontend service and it simulates us changing the original `values.yaml` file that was used for the first installation.
 
-<img src="imgs/argocd-syncronize.png" width="600">
+<img src="imgs/argocd-new-values.png" width="600">
 
 Because we were using port-forwarding, you might need to run this command again: 
 
