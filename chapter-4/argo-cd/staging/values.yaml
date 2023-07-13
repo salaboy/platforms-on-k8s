@@ -1,2 +1,2 @@
 install:
-  ingress: false
+  ingress: "false"

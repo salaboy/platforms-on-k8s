@@ -2,4 +2,4 @@ services:
   frontend:
     debug: "true"
 install:
-  ingress: false    
+  ingress: "false"
