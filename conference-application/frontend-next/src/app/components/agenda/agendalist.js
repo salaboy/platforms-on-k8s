@@ -12,15 +12,15 @@ function AgendaList(props) {
     const [isLoading, setLoading] = useState(false)
     
     const mockAgendaItems = [{
-        "Id": "ABC-123",
-        "Title": "Cached Entry",
-        "Author": "Cached Author",
-        "Description": "Cached Content"
+        "id": "ABC-123",
+        "title": "Cached Entry",
+        "author": "Cached Author",
+        "description": "Cached Content"
     }]
     
     const fetchData = () => {
-        console.log("Querying /agenda/")
-        fetch('/api/agenda/')
+        console.log("Querying /agenda/agenda-items/")
+        fetch('/api/agenda/agenda-items/')
         .then((res) => res.json())
         .then((data) => {
             setAgendaItems(data)
@@ -35,7 +35,7 @@ function AgendaList(props) {
         setLoading(true);
         setIsError(false);
         console.log("Archiving Agenda Item ..." + id)
-        fetch('/api/agenda/' + id , {
+        fetch('/api/agenda/agenda-items/' + id , {
           method: "DELETE",
           headers: {
             'accept': 'application/json',
@@ -65,11 +65,11 @@ function AgendaList(props) {
                 {agendaItems && agendaItems.length > 0 && agendaItems.map((item, index) => (
 
                     <AgendaItem
-                        name={item.Title}
+                        name={item.title}
                         key={index}
-                        id={item.Id}
-                        description={item.Description}
-                        author={item.Author}
+                        id={item.id}
+                        description={item.description}
+                        author={item.author}
                         admin={admin}
                         handleArchive={handleArchive}
                     />

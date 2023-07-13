@@ -15,6 +15,7 @@ spec:
       containers:
       - name: frontend
         image: "{{ .Values.services.registry }}/{{ .Values.services.frontend.image }}:{{ .Values.services.tag }}"
+        imagePullPolicy: Always
         env: 
 {{- if eq .Values.services.frontend.debug true }}
         - name: FEATURE_DEBUG_ENABLED

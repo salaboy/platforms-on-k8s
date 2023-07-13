@@ -76,6 +76,7 @@ type ServiceInfo struct {
 func main() {
 	chiServer := NewChiServer()
 	err := http.ListenAndServe(":"+APP_PORT, chiServer)
+	log.Printf("Starting Agenda Service in Port: %s", APP_PORT)
 	if err != http.ErrServerClosed {
 		log.Panic(err)
 	}

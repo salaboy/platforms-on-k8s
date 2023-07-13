@@ -188,7 +188,7 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 			if err != nil {
 				log.Printf("There was an error marshalling the Agenda Item to JSON: %v", err)
 			}
-			r, err := http.NewRequest("POST", AGENDA_SERVICE_URL, bytes.NewBuffer(agendaItemJson))
+			r, err := http.NewRequest("POST", fmt.Sprintf("%s/%s/", AGENDA_SERVICE_URL, "agenda-items"), bytes.NewBuffer(agendaItemJson))
 			if err != nil {
 				log.Printf("There was an error creating the request to the Agenda Item Service: %v", err)
 			}
@@ -247,7 +247,7 @@ func decideProposaldHandler(kafkaWriter *kafka.Writer) func(w http.ResponseWrite
 			return
 		}
 
-		r, err = http.NewRequest("POST", NOTIFICATIONS_SERVICE_URL, bytes.NewBuffer(notificationJson))
+		r, err = http.NewRequest("POST", fmt.Sprintf("%s/%s/", NOTIFICATIONS_SERVICE_URL, "notifications"), bytes.NewBuffer(notificationJson))
 		if err != nil {
 			log.Printf("There was an error creating the request to the Notifications Service: %v", err)
 		}

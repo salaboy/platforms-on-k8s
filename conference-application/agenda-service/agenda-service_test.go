@@ -63,14 +63,14 @@ func Test_API(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 201 when the POST request to '/agenda-items' is executed successfully", func(t *testing.T) {
+	t.Run("It should return 201 when the POST request to '/agenda-items/' is executed successfully", func(t *testing.T) {
 		// arrange
 		agendaItem := agendaItemFake()
 
 		data, _ := json.Marshal(agendaItem)
 
 		// act
-		resp, _ := http.Post(fmt.Sprintf("%s/agenda-items", ts.URL), ApplicationJson, bytes.NewBuffer(data))
+		resp, _ := http.Post(fmt.Sprintf("%s/agenda-items/", ts.URL), ApplicationJson, bytes.NewBuffer(data))
 
 		// assert
 		assert.Equal(t, http.StatusCreated, resp.StatusCode)
@@ -78,15 +78,15 @@ func Test_API(t *testing.T) {
 
 	t.Run("It should return 400 when the request body is invalid", func(t *testing.T) {
 		// arrange, act
-		resp, _ := http.Post(fmt.Sprintf("%s/agenda-items", ts.URL), ApplicationJson, bytes.NewBuffer([]byte(`"{ invalid http request body`)))
+		resp, _ := http.Post(fmt.Sprintf("%s/agenda-items/", ts.URL), ApplicationJson, bytes.NewBuffer([]byte(`"{ invalid http request body`)))
 
 		// assert
 		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a GET request to '/agenda-items' is executed successfully", func(t *testing.T) {
+	t.Run("It should return 200 when a GET request to '/agenda-items/' is executed successfully", func(t *testing.T) {
 		// arrange, act
-		resp, err := http.Get(fmt.Sprintf("%s/agenda-items", ts.URL))
+		resp, err := http.Get(fmt.Sprintf("%s/agenda-items/", ts.URL))
 
 		// assert
 		assert.NoError(t, err)
@@ -99,7 +99,7 @@ func Test_API(t *testing.T) {
 
 		agendaItemAsBytes, _ := agendaItem.MarshalBinary()
 
-		respPost, _ := http.Post(fmt.Sprintf("%s/agenda-items", ts.URL), ApplicationJson, bytes.NewBuffer(agendaItemAsBytes))
+		respPost, _ := http.Post(fmt.Sprintf("%s/agenda-items/", ts.URL), ApplicationJson, bytes.NewBuffer(agendaItemAsBytes))
 		defer respPost.Body.Close()
 
 		var newAgendaItem AgendaItem
@@ -132,7 +132,7 @@ func Test_API(t *testing.T) {
 
 		agendaItemAsBytes, _ := agendaItem.MarshalBinary()
 
-		respPost, _ := http.Post(fmt.Sprintf("%s/agenda-items", ts.URL), ApplicationJson, bytes.NewBuffer(agendaItemAsBytes))
+		respPost, _ := http.Post(fmt.Sprintf("%s/agenda-items/", ts.URL), ApplicationJson, bytes.NewBuffer(agendaItemAsBytes))
 		defer respPost.Body.Close()
 
 		var newAgendaItem AgendaItem
@@ -162,7 +162,7 @@ func agendaItemFake() AgendaItem {
 		},
 		Title:       "Platform Engineering on K8S",
 		Author:      "Mauricio Salatino",
-		Description: "Creating a platform on top of Kubernetes to run our services",
+		Description: "A brief introduction to platform engineering on top of Kubernetes",
 		Archived:    false,
 	}
 }

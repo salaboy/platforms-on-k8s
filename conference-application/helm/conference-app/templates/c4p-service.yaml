@@ -15,9 +15,12 @@ spec:
       containers:
       - name: c4p-service
         image: "{{ .Values.services.registry }}/{{ .Values.services.c4p.image }}:{{ .Values.services.tag }}"
+        imagePullPolicy: Always
         env:
         - name: AGENDA_SERVICE_URL
           value: http://agenda-service.{{ .Release.Namespace }}.svc.cluster.local
+        - name: NOTIFICATIONS_SERVICE_URL
+          value: http://notifications-service.{{ .Release.Namespace }}.svc.cluster.local  
         - name: KAFKA_URL
           value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local
         - name: POSTGRES_HOST

@@ -89,6 +89,7 @@ func main() {
 
 	// Start the server; this is a blocking call
 	err := http.ListenAndServe(":"+APP_PORT, chiServer)
+	log.Printf("Starting Notifications Service in Port: %s", APP_PORT)
 	if err != http.ErrServerClosed {
 		log.Panic(err)
 	}

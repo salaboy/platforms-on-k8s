@@ -12,7 +12,7 @@ function NotificationList() {
     const [check, setCheck] = useState(0)
 
     const fetchData = () => {
-        fetch('/api/notifications/')
+        fetch('/api/notifications/notifications/')
                    .then((res) => res.json())
                    .then((data) => {
                    console.log("Fetching Notifications ...")
@@ -53,13 +53,13 @@ function NotificationList() {
         {
         notifications && notifications.map((item,index)=>(
               <NotificationItem
-                key={item.Id}
-                id={item.Id}
-                title={item.Title}
-                emailTo={item.EmailTo}
-                emailBody={item.EmailBody}
-                emailSubject={item.EmailSubject}
-                approved={item.Accepted}
+                key={item.id}
+                id={item.id}
+                title={item.title}
+                emailTo={item.emailTo}
+                emailBody={item.emailBody}
+                emailSubject={item.emailSubject}
+                approved={item.accepted}
               />
 
           ))

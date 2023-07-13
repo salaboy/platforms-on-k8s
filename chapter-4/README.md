@@ -235,7 +235,7 @@ kubectl port-forward svc/fmtok8s-frontend -n staging 8081:80
 
 This is due, the Frontend Service Pod is going to be replaced by the newly configured version, hence the port-forwarding needs to be restarted to target the new pod. 
 
-Once the application is up and running you should see the new version of the up showing the Debug Banner on top: 
+Once the frontend is up and running you should see the Debug tab in the Back Office section:
 
 ![](imgs/app-debug.png)
 

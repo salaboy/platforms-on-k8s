@@ -250,10 +250,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/agenda-items", wrapper.GetAgendaItems)
+		r.Get(options.BaseURL+"/agenda-items/", wrapper.GetAgendaItems)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/agenda-items", wrapper.CreateAgendaItem)
+		r.Post(options.BaseURL+"/agenda-items/", wrapper.CreateAgendaItem)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/agenda-items/{id}", wrapper.ArchiveAgendaItemById)

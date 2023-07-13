@@ -26,7 +26,7 @@ var POD_IP = getEnv("POD_IP", "N/A")
 var POD_SERVICE_ACCOUNT = getEnv("POD_SERVICE_ACCOUNT", "N/A")
 var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
 var C4P_SERVICE_URL = getEnv("C4P_SERVICE_URL", "http://c4p-service.default.svc.cluster.local")
-var NOTIFICATION_SERVICE_URL = getEnv("NOTIFICATION_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
+var NOTIFICATIONS_SERVICE_URL = getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
 
 var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
 var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
@@ -87,7 +87,7 @@ func c4PServiceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func notificationServiceHandler(w http.ResponseWriter, r *http.Request) {
-	proxyRequest("api/notifications", NOTIFICATION_SERVICE_URL, w, r)
+	proxyRequest("api/notifications", NOTIFICATIONS_SERVICE_URL, w, r)
 }
 
 func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {

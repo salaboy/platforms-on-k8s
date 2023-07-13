@@ -72,7 +72,7 @@ func Test_API(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a POST request is made to '/notifications' (accepted)", func(t *testing.T) {
+	t.Run("It should return 200 when a POST request is made to '/notifications/' (accepted)", func(t *testing.T) {
 		// arrange
 		var accepted bool = true
 		notification := notificationFake(accepted)
@@ -80,13 +80,13 @@ func Test_API(t *testing.T) {
 		notificationAsBytes, _ := notification.MarshalBinary()
 
 		// act
-		resp, _ := http.Post(fmt.Sprintf("%s/notifications", ts.URL), "application/json", bytes.NewBuffer(notificationAsBytes))
+		resp, _ := http.Post(fmt.Sprintf("%s/notifications/", ts.URL), "application/json", bytes.NewBuffer(notificationAsBytes))
 
 		// assert
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a POST request is made to '/notifications' (not accepted)", func(t *testing.T) {
+	t.Run("It should return 200 when a POST request is made to '/notifications/' (not accepted)", func(t *testing.T) {
 		// arrange
 		var accepted bool = false
 		notification := notificationFake(accepted)
@@ -94,7 +94,7 @@ func Test_API(t *testing.T) {
 		notificationAsBytes, _ := notification.MarshalBinary()
 
 		// act
-		resp, _ := http.Post(fmt.Sprintf("%s/notifications", ts.URL), "application/json", bytes.NewBuffer(notificationAsBytes))
+		resp, _ := http.Post(fmt.Sprintf("%s/notifications/", ts.URL), "application/json", bytes.NewBuffer(notificationAsBytes))
 
 		// assert
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -102,7 +102,7 @@ func Test_API(t *testing.T) {
 
 	t.Run("It should return 200 when a GET request is made to '/notifications'", func(t *testing.T) {
 		// arrange, act
-		resp, err := http.Get(fmt.Sprintf("%s/notifications", ts.URL))
+		resp, err := http.Get(fmt.Sprintf("%s/notifications/", ts.URL))
 
 		defer resp.Body.Close()
 
@@ -119,8 +119,8 @@ func Test_API(t *testing.T) {
 func notificationFake(accepted bool) Notification {
 	return Notification{
 		ProposalId: uuid.New().String(),
-		Title:      "Dapr + Crossplane",
+		Title:      "101: Platform Engineeron on Kubernetes",
 		Accepted:   accepted,
-		EmailTo:    "salaboy@salaboy.com",
+		EmailTo:    "salaboy@mail.com",
 	}
 }
