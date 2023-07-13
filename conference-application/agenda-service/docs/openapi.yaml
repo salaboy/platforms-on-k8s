@@ -10,7 +10,7 @@ info:
 servers:
   - url: "http://localhost:8080"
 paths:
-  /agenda-items:
+  /agenda-items/:
     post:
       summary: Create an Agenda Item
       operationId: createAgendaItem

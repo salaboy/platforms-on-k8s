@@ -10,7 +10,7 @@ info:
 servers:
   - url: http://localhost:8080
 paths:
-  /notifications:
+  /notifications/:
     post:
       summary: Create a Notification
       operationId: createNotification
