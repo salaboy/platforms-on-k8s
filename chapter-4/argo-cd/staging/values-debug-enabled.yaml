@@ -1,3 +1,4 @@
-services:
-  frontend:
-    debug: true
+conference-app:
+  services:
+    frontend:
+      debug: true
