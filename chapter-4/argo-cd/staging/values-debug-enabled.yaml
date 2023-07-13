@@ -1,5 +1,3 @@
 services:
   frontend:
     debug: true
-install:
-  ingress: false
