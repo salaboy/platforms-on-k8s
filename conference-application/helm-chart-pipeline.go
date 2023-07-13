@@ -8,13 +8,7 @@ import (
 	"strings"
 
 	"dagger.io/dagger"
-	platformFormat "github.com/containerd/containerd/platforms"
 )
-
-var platforms = []dagger.Platform{
-	"linux/amd64", // a.k.a. x86_64
-	"linux/arm64", // a.k.a. aarch64
-}
 
 var (
 	// the container registry for the multi-platform image
@@ -23,17 +17,12 @@ var (
 	CONTAINER_REGISTRY_PASSWORD = getEnv("CONTAINER_REGISTRY_PASSWORD", "")
 )
 
-// util that returns the architecture of the provided platform
-func architectureOf(platform dagger.Platform) string {
-	return platformFormat.MustParse(string(platform)).Architecture
-}
-
 func main() {
 	var err error
 	ctx := context.Background()
 
 	if len(os.Args) < 2 {
-		panic(fmt.Errorf("invalid number of arguments: expected command (build, publish-image, helm-package)"))
+		panic(fmt.Errorf("invalid number of arguments: expected command (package, test, publish, all)"))
 	}
 
 	client := getDaggerClient(ctx)
@@ -41,23 +30,23 @@ func main() {
 
 	switch os.Args[1] {
 	case "package":
-		_, err := helmPackage(ctx, client)
+		_, _, err := helmPackage(ctx, client)
 		if err != nil {
 			fmt.Println("Packaging error: %v ", err)
 		}
 	case "test":
 		err = helmTest(ctx)
 	case "publish":
-		chart, err := helmPackage(ctx, client)
+		hc, chart, err := helmPackage(ctx, client)
 		if err != nil {
 			fmt.Println("Packaging error: %v ", err)
 		}
-		err = helmPublish(ctx, client, chart)
+		err = helmPublish(ctx, hc, chart)
 		if err != nil {
 			fmt.Println("Publishing error: %v ", err)
 		}
 	case "all":
-		chart, err := helmPackage(ctx, client)
+		hc, chart, err := helmPackage(ctx, client)
 		if err != nil {
 			panic(err)
 		}
@@ -65,7 +54,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		err = helmPublish(ctx, client, chart)
+		err = helmPublish(ctx, hc, chart)
 		if err != nil {
 			panic(err)
 		}
@@ -88,7 +77,7 @@ func getDaggerClient(ctx context.Context) *dagger.Client {
 	return c
 }
 
-func helmPackage(ctx context.Context, c *dagger.Client) (string, error) {
+func helmPackage(ctx context.Context, c *dagger.Client) (*dagger.Container, string, error) {
 	chartDir := c.Host().Directory("./helm/conference-app")
 
 	helm := c.Container().From("alpine/helm:3.12.1").
@@ -99,9 +88,9 @@ func helmPackage(ctx context.Context, c *dagger.Client) (string, error) {
 
 	chartOut, err := helm.Stdout(ctx)
 	if err != nil {
-		return "", err
+		return nil, "", err
 	}
-	return chartOut, nil
+	return helm, chartOut, nil
 }
 
 func helmTest(ctx context.Context) error {
@@ -109,10 +98,9 @@ func helmTest(ctx context.Context) error {
 	return nil
 }
 
-func helmPublish(ctx context.Context, c *dagger.Client, chart string) error {
+func helmPublish(ctx context.Context, c *dagger.Container, chart string) error {
 	chartPackagePath := strings.TrimSpace(strings.Split(chart, ":")[1])
-	helm := c.Container().From("alpine/helm:3.12.1").
-		WithExec([]string{"registry", "login", "-u", CONTAINER_REGISTRY_USER, CONTAINER_REGISTRY, "--password-stdin"}, dagger.ContainerWithExecOpts{Stdin: CONTAINER_REGISTRY_PASSWORD}).
+	helm := c.WithExec([]string{"registry", "login", "-u", CONTAINER_REGISTRY_USER, CONTAINER_REGISTRY, "--password-stdin"}, dagger.ContainerWithExecOpts{Stdin: CONTAINER_REGISTRY_PASSWORD}).
 		WithExec([]string{"push", chartPackagePath, fmt.Sprintf("%s%s/%s", "oci://", CONTAINER_REGISTRY, CONTAINER_REGISTRY_USER)})
 	out, err := helm.Stdout(ctx)
 	fmt.Sprintln("Publish out: %s ", out)
