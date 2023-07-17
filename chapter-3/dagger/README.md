@@ -45,6 +45,8 @@ The next section shows a simple setup of running Dagger pipelines remotely insid
 
 The Dagger Pipeline Engine can be run anywhere where you can run containers, that means that it can runs in Kubernetes without the need of complicated setups. 
 
+For this tutorial you need to have a Kubernetes Cluster, you can create one using [KinD as we did for Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind).
+
 In this short tutorial we will run the pipelines that we were running locally with our local container runtime, now remotely against a Dagger Pipeline Engine that runs inside a Kuberneets Pod. This is an experimental feature, and not a recommended way to run Dagger, but it help us to prove the point. 
 
 Let's run the Dagger Pipeline Engine inside Kubernetes by creating a Pod with Dagger: 

@@ -9,8 +9,7 @@ After running our first Tekton Pipeline this tutorial also includes a links to m
 
 ## Installing Tekton
 
-Follow the next steps in order to install and setup Tekton in your Kubernetes Cluster.
-You can follow this steps in your local KinD cluster. 
+Follow the next steps in order to install and setup Tekton in your Kubernetes Cluster. If you don't have a Kubernetes Cluster you can create one with [KinD, as we did for Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind) 
 
 1. **Install Tekton Pipelines**
 

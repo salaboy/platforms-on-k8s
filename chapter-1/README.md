@@ -1,4 +1,4 @@
-# Chapter 1 - (The rise of) Platforms on Top of Kubernetes
+# Chapter 1 :: (The rise of) Platforms on Top of Kubernetes
 
 ## Conference Application Scenario
 
@@ -12,5 +12,7 @@
 
 
 
+## Sum up and Contribute
 
 Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.
+
