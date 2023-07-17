@@ -27,8 +27,13 @@ spec:
           value: http://c4p-service.{{ .Release.Namespace }}.svc.cluster.local
         - name: NOTIFICATIONS_SERVICE_URL
           value: http://notifications-service.{{ .Release.Namespace }}.svc.cluster.local  
+{{- if .Values.install.infrastructure }}         
         - name: KAFKA_URL
           value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local
+{{- else }}
+        - name: KAFKA_URL
+          value: {{ .Values.frontend.kafka.url}}
+{{- end }}                         
         - name: POD_NODENAME
           valueFrom:
             fieldRef:

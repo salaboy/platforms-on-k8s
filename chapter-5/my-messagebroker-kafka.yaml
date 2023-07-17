@@ -1,0 +1,13 @@
+apiVersion: salaboy.com/v1alpha1
+kind: MessageBroker
+metadata:
+  name: my-mb-kafka
+spec:
+  compositionSelector:
+    matchLabels:
+      provider: local
+      type: dev
+      kind: kafka
+  parameters: 
+    size: small
+     

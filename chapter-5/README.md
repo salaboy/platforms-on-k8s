@@ -41,7 +41,7 @@ kubectl create clusterrolebinding provider-helm-admin-binding --clusterrole clus
 ```
 
 ```
-kubectl apply -f config/helm-provider-config.yaml
+kubectl apply -f crossplane/helm-provider-config.yaml
 ```
 
 
@@ -68,9 +68,17 @@ kubectl apply -f resources/app-database-resource.yaml
 
 The Crossplane Composition resource (`app-database-redis.yaml`) defines which cloud resources need to be created and how they need to be configured together. The Crossplane Composite Resource Definition (XRD) (`app-database-resource.yaml`) defines a simplified interface that enables application development teams to quickly request new databases by creating resources of this type.
 
-## Let's provision a new Database
+We can do the same for Message Brokers: 
 
-We can provision a new Database for our team to use by executing the following command: 
+```
+kubectl apply -f resources/app-messagebroker-kafka.yaml
+kubectl apply -f resources/app-messagebroker-resource.yaml
+```
+
+
+## Let's provision Application Infrastructure
+
+We can provision a new Databases for our team to use by executing the following command: 
 
 ```
 kubectl apply -f my-db-keyvalue.yaml
@@ -141,6 +149,23 @@ sh.helm.release.v1.my-db-keyavalue.v1   helm.sh/release.v1   1      2m32s
 sh.helm.release.v1.my-db-sql.v1         helm.sh/release.v1   1      36s
 ```
 
+We can do the same to provision a new instance of our Kafka Message Broker: 
+
+```
+kubectl apply -f my-messagebroker-kafka.yaml
+```
+
+And then list with: 
+
+```
+kubectl get mbs
+NAME          SIZE    KIND    SYNCED   READY   COMPOSITION                  AGE
+my-mb-kafka   small   kafka   True     True    kafka.mb.local.salaboy.com   2m51s
+```
+
+Kafka doesn't require any secret to be created when using its default configuration. 
+
+
 ## Let's deploy our Conference Application
 
 Ok, now that we have our two databases running, we need to make sure that our application services connect to these instances. The first thing that we need to do is to disable the Agenda and Call For Proposal Services helm dependencies so that when the charts get installed don't install new databases. 
@@ -148,9 +173,7 @@ Ok, now that we have our two databases running, we need to make sure that our ap
 For that, we will use the `app-values.yaml` file containing the configurations for the services to connect to our newly created databases:
 
 ```
-helm repo add fmtok8s https://salaboy.github.io/helm/
-helm repo update
-helm install conference fmtok8s/fmtok8s-conference-chart -f app-values.yaml
+helm install conference oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0 -f app-values.yaml
 ```
 
 The `app-values.yaml` content looks like this: 

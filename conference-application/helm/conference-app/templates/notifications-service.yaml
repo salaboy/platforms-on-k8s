@@ -17,8 +17,13 @@ spec:
         image: "{{ .Values.services.registry }}/{{ .Values.services.notifications.image }}:{{ .Values.services.tag }}"
         imagePullPolicy: Always
         env:
+{{- if .Values.install.infrastructure }}        
         - name: KAFKA_URL
           value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local
+{{- else }}
+        - name: KAFKA_URL
+          value: {{ .Values.frontend.kafka.url}}
+{{- end }}              
         - name: POD_NODENAME
           valueFrom:
             fieldRef:

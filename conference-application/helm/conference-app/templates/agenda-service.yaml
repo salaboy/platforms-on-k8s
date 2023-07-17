@@ -17,6 +17,7 @@ spec:
         image: "{{ .Values.services.registry }}/{{ .Values.services.agenda.image }}:{{ .Values.services.tag  }}"
         imagePullPolicy: Always
         env:
+ {{- if .Values.install.infrastructure }}       
         - name: KAFKA_URL
           value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local
         - name: REDIS_HOST
@@ -26,6 +27,17 @@ spec:
             secretKeyRef:
               name: {{ .Release.Name }}-redis
               key: redis-password
+{{- else }}
+        - name: KAFKA_URL
+          value: {{ .Values.agenda.kafka.url}}
+        - name: REDIS_HOST
+          value: {{ .Values.agenda.redis.host}}
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.agenda.redis.secretName}}
+              key: redis-password
+{{- end }}              
         - name: POD_NODENAME
           valueFrom:
             fieldRef:

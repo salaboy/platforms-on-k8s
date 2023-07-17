@@ -20,7 +20,8 @@ spec:
         - name: AGENDA_SERVICE_URL
           value: http://agenda-service.{{ .Release.Namespace }}.svc.cluster.local
         - name: NOTIFICATIONS_SERVICE_URL
-          value: http://notifications-service.{{ .Release.Namespace }}.svc.cluster.local  
+          value: http://notifications-service.{{ .Release.Namespace }}.svc.cluster.local
+{{- if .Values.install.infrastructure }} 
         - name: KAFKA_URL
           value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local
         - name: POSTGRES_HOST
@@ -30,6 +31,17 @@ spec:
             secretKeyRef:
               name: {{ .Release.Name }}-postgresql
               key: postgres-password 
+{{- else }}
+        - name: KAFKA_URL
+          value: {{ .Values.c4p.kafka.url}}
+        - name: REDIS_HOST
+          value: {{ .Values.c4p.postgresql.host}}
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.c4p.postgresql.secretName}}
+              key: postgres-password 
+{{- end }}                
         - name: POD_NODENAME
           valueFrom:
             fieldRef:

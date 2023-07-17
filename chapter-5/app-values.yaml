@@ -1,0 +1,20 @@
+frontend:
+  kafka:
+    url:
+agenda:
+  kafka:
+    url:
+  redis: 
+    host:
+    secretName:
+c4p: 
+  kafka:
+    url:
+  postgresql:
+    host:
+    secretName:  
+
+notifications: 
+  kafka:
+    url:
+
