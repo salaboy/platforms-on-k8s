@@ -1,0 +1,46 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: kafka.mb.local.salaboy.com
+  labels:
+    type: dev
+    provider: local
+    kind: kafka
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: salaboy.com/v1alpha1
+    kind: MessageBroker
+  resources:
+    - name: kafka-helm-release
+      base:
+        apiVersion: helm.crossplane.io/v1beta1
+        kind: Release
+        metadata:
+          annotations:
+            crossplane.io/external-name: # patched
+        spec:
+          rollbackLimit: 3
+          forProvider:
+            namespace: default
+            chart:
+              name: kafka
+              repository: https://charts.bitnami.com/bitnami
+              version: "22.1.5"
+          providerConfigRef:
+            name: default
+      patches:
+        - fromFieldPath: metadata.name
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
+          policy:
+            fromFieldPath: Required
+        - fromFieldPath: metadata.name
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-kafka"         
+      readinessChecks:
+      - type: MatchString
+        fieldPath: status.atProvider.state
+        matchString: deployed
