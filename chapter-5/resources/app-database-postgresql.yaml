@@ -11,7 +11,7 @@ spec:
   compositeTypeRef:
     apiVersion: salaboy.com/v1alpha1
     kind: Database
-  resources:
+  resources:  
     - name: postgresql-helm-release
       base:
         apiVersion: helm.crossplane.io/v1beta1
@@ -27,6 +27,12 @@ spec:
               name: postgresql
               repository: https://charts.bitnami.com/bitnami
               version: "12.5.7"
+            values: 
+              primary: 
+                initdb:
+                  user: postgres
+                  password: postgres
+                  scriptsConfigMap: c4p-init-sql
           providerConfigRef:
             name: default
       patches:
@@ -39,7 +45,7 @@ spec:
           transforms:
             - type: string
               string:
-                fmt: "%s-postgres"         
+                fmt: "%s-postgres"
       readinessChecks:
       - type: MatchString
         fieldPath: status.atProvider.state

@@ -141,6 +141,15 @@ kubectl delete pvc  data-conference-kafka-0 data-conference-postgresql-0 redis-d
 
 The name of the PVCs will change based on the Helm Release name that you used when installing the chart.
 
+## Next Steps
+
+I strongly recommend you to get your hands dirty with a real Kubernetes Cluster hosted in a Cloud Provider. You can try Civo Cloud, as they offer a free trial where you can create Kubernetes Clusters and run all these examples. 
+
+If you can create a Cluster in a Cloud provider and get the application up and running you will gain real life experience on all the topics covered in Chapter 2.
+
 ## Sum up and Contribute
+
+In this short tutorial we have managed to install the Conference Application walking skeleton. We will be using this application as an example through the rest of the chapters. Make sure that this application works for you as it cover the basics of using and interacting with a Kubernetes Cluster. 
+
 
 Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.

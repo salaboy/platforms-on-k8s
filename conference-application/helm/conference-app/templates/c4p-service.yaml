@@ -34,9 +34,9 @@ spec:
 {{- else }}
         - name: KAFKA_URL
           value: {{ .Values.c4p.kafka.url}}
-        - name: REDIS_HOST
-          value: {{ .Values.c4p.postgresql.host}}
         - name: POSTGRES_HOST
+          value: {{ .Values.c4p.postgresql.host}}
+        - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
               name: {{ .Values.c4p.postgresql.secretName}}

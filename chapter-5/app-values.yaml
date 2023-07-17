@@ -1,20 +1,22 @@
+install:
+  infrastructure: false
 frontend:
   kafka:
-    url:
+    url: my-mb-kafka.default.svc.cluster.local
 agenda:
   kafka:
-    url:
+    url: my-mb-kafka.default.svc.cluster.local
   redis: 
-    host:
-    secretName:
+    host: my-db-keyavalue-redis-master.default.svc.cluster.local
+    secretName: my-db-keyavalue-redis
 c4p: 
   kafka:
-    url:
+    url: my-mb-kafka.default.svc.cluster.local
   postgresql:
-    host:
-    secretName:  
+    host: my-db-sql-postgresql.default.svc.cluster.local
+    secretName: my-db-sql-postgresql
 
 notifications: 
   kafka:
-    url:
+    url: my-mb-kafka.default.svc.cluster.local
 

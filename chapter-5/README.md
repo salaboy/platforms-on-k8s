@@ -33,7 +33,7 @@ Then install the Crossplane Helm provider:
 kubectl crossplane install provider crossplane/provider-helm:v0.10.0
 ```
 
-We need the correct ServiceAccount to create a new ClusterRoleBinding so the Helm Provider can install Charts on our behalf. 
+We need the correct `ServiceAccount`` to create a new `ClusterRoleBinding`` so the Helm Provider can install Charts on our behalf. 
 
 ```
 SA=$(kubectl -n crossplane-system get sa -o name | grep provider-helm | sed -e 's|serviceaccount\/|crossplane-system:|g')
@@ -53,32 +53,25 @@ NAME                             INSTALLED   HEALTHY   PACKAGE                  
 crossplane-provider-helm         True        True      crossplane/provider-helm:v0.10.0      49s
 ```
 
-Now we are ready to install our Databases Crossplane composition to provision all the components our application needs to work.
+Now we are ready to install our Databases and Message Brokers Crossplane compositions to provision all the components our application needs to work.
 
 
-## Databases on demand with Crossplane Compositions
+## App Infrastructure on demand using Crossplane Compositions
 
-First, we will install a Crossplane composition that uses the Crossplane Helm Provider to allow teams to request Databases on demand. 
+We need to install our Crossplane Compositions for our Key-Value Database (Redis), our SQL Database (PostgreSQL) and our Message Broker(Kafka). 
 
 ```
-kubectl apply -f resources/app-database-redis.yaml
-kubectl apply -f resources/app-database-postgresql.yaml
-kubectl apply -f resources/app-database-resource.yaml
+kubectl apply -f resources/
 ```
 
 The Crossplane Composition resource (`app-database-redis.yaml`) defines which cloud resources need to be created and how they need to be configured together. The Crossplane Composite Resource Definition (XRD) (`app-database-resource.yaml`) defines a simplified interface that enables application development teams to quickly request new databases by creating resources of this type.
 
-We can do the same for Message Brokers: 
-
-```
-kubectl apply -f resources/app-messagebroker-kafka.yaml
-kubectl apply -f resources/app-messagebroker-resource.yaml
-```
+Check the [resources/](resources/) directory for the Compositions and the Composite Resource Definitions (XRDs). 
 
 
-## Let's provision Application Infrastructure
+### Let's provision Application Infrastructure
 
-We can provision a new Databases for our team to use by executing the following command: 
+We can provision a new Key-Value Database for our team to use by executing the following command: 
 
 ```
 kubectl apply -f my-db-keyvalue.yaml
@@ -111,7 +104,7 @@ NAME              SIZE    MOCKDATA   KIND       SYNCED   READY   COMPOSITION    
 my-db-keyavalue   small   false      keyvalue   True     True    keyvalue.db.local.salaboy.com   97s
 ```
 
-You can check that a new Redis instance was created in the `my-db-keyvalue` namespace. 
+You can check that a new Redis instance was created in the `default` namespace. 
 
 You can follow the same steps to provision a PostgreSQL database by running: 
 
@@ -165,10 +158,11 @@ my-mb-kafka   small   kafka   True     True    kafka.mb.local.salaboy.com   2m51
 
 Kafka doesn't require any secret to be created when using its default configuration. 
 
+You can now create as many database or message broker instances as your cluster resources can handle! 
 
 ## Let's deploy our Conference Application
 
-Ok, now that we have our two databases running, we need to make sure that our application services connect to these instances. The first thing that we need to do is to disable the Agenda and Call For Proposal Services helm dependencies so that when the charts get installed don't install new databases. 
+Ok, now that we have our two databases and our message broker running, we need to make sure that our application services connect to these instances. The first thing that we need to do is to disable the Helm dependencies defined in the Conference Application chart, so that when the application gets installed don't install the databases and the message broker. We can do this by setting the `install.infrastructure` flag to `false`.
 
 For that, we will use the `app-values.yaml` file containing the configurations for the services to connect to our newly created databases:
 
@@ -178,36 +172,36 @@ helm install conference oci://registry-1.docker.io/salaboy/conference-app --vers
 
 The `app-values.yaml` content looks like this: 
 ```
-fmtok8s-agenda-service: 
-  redis:
-    enabled: false
-  env: 
-    - name: SPRING_REDIS_HOST
-      value: my-db-keyavalue-redis-master
-    - name: SPRING_REDIS_PORT
-      value: "6379" 
-    - name: SPRING_REDIS_PASSWORD
-      valueFrom:
-        secretKeyRef:
-          name: my-db-keyavalue-redis
-          key: redis-password
-    
-fmtok8s-c4p-service: 
+install:
+  infrastructure: false
+frontend:
+  kafka:
+    url: my-mb-kafka.default.svc.cluster.local
+agenda:
+  kafka:
+    url: my-mb-kafka.default.svc.cluster.local
+  redis: 
+    host: my-db-keyavalue-redis-master.default.svc.cluster.local
+    secretName: my-db-keyavalue-redis
+c4p: 
+  kafka:
+    url: my-mb-kafka.default.svc.cluster.local
   postgresql:
-    enabled: false
-  env: 
-  - name: DB_ENDPOINT
-    value: my-db-sql-postgresql
-  - name: DB_PORT
-    value: "5432"
-  - name: SPRING_R2DBC_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: my-db-sql-postgresql
-        key: postgres-password
+    host: my-db-sql-postgresql.default.svc.cluster.local
+    secretName: my-db-sql-postgresql
+notifications: 
+  kafka:
+    url: my-mb-kafka.default.svc.cluster.local
 ```
 
-As you can see, we are just setting Environment Variables and referencing the secrets for the database passwords. 
+Notice that the `app-values.yaml` file relies on the names that we specified for our databases (`my-db-keyavalue` and `my-db-sql`) and our message brokers (`my-mb-kafka`) in the example files. If you request other databases and message brokers with other names you will need to adapt this file with the new names.
+
+## Next Steps
+
+If you have access to a Cloud Provider such as Google Cloud Platform, Microsoft Azure or Amazon AWS, I strongly recommend you checking the Crossplane Providers for these platforms. Installing these providers and provisioning Cloud Resources, instead of using the Crossplane Helm Provider will give you real life experience on how these tools work. 
+
+As mentioned in Chapter 5, how would you deal with services that need infrastrucutre components that are not offered as managed services? In the case of Google Cloud Platform, they don't offer a Managed Kafka Service that you can provision. Would you install Kafka using Helm Charts or VMs or would you switch Kafka for a managed service such as Google PubSub? Would you maintain two versions of the same service? 
+
 
 ## Sum up and Contribute
 

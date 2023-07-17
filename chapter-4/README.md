@@ -225,6 +225,12 @@ Once the frontend is up and running you should see the Debug tab in the Back Off
 
 ![](imgs/app-debug.png)
 
+## Next Steps
+
+Argo CD is just one project to implement GitOps, can you replicate this tutorial with Flux CD? Which one you prefer? Is your organization already using a GitOps tool? What would it take to deploy the Conference Application walking skeleton to a Kubernetes Cluster using that tool? 
+
+Can you create another environment, let's say a `production-environment` and describe the flow that will need to follow a new release of the `notifications-service` from the staging environment to the production environment? Where would you store the production environment configuration? 
+
 ## Sum up and Contribute
 
 In this tutorial we created our **Staging Environment** using an Argo CD application. This allowed us to sync the configuration located inside a GitHub repository to our running Kubernetes Cluster in KinD. If you make changes to the content of the GitHub repository and refresh the ArgoCD application, ArgoCD will notice that our Environment is out of sync. If we use an automated sync strategy, ArgoCD will run the sync step automatically for us everytime it notices that there has been changes in the configuration. For more information check the [project website](https://argo-cd.readthedocs.io/en/stable/) or [my blog](https://www.salaboy.com). 
