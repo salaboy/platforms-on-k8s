@@ -27,12 +27,18 @@ spec:
               name: postgresql
               repository: https://charts.bitnami.com/bitnami
               version: "12.5.7"
-            values: 
+            values:
+              image:
+                debug: true
               primary: 
                 initdb:
                   user: postgres
                   password: postgres
                   scriptsConfigMap: c4p-init-sql
+              global:
+                postgresql:
+                  auth: 
+                    postgresPassword: postgres
           providerConfigRef:
             name: default
       patches:
