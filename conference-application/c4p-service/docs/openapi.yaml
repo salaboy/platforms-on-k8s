@@ -1,0 +1,11 @@
+openapi: 3.0.3
+info:
+  title: Agenda Service
+  description: Agenda Service
+  version: 1.0.0
+  contact:
+    email: salaboy@salaboy.com
+    name: Mauricio Salatino
+    url: https://salaboy.com
+servers:
+  - url: "http://localhost:8080"
