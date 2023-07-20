@@ -1,15 +1,21 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: CompositeResourceDefinition
 metadata:
-  name: environments.salaboy.com
+  name: xenvironments.salaboy.com
 spec:
   group: salaboy.com
   names:
+    kind: XEnvironment
+    plural: xenvironments
+    shortNames:
+      - "xenv"
+      - "xenvs"
+  claimNames:
     kind: Environment
-    plural: environments
+    plural: environments 
     shortNames:
       - "env"
-      - "envs"
+      - "envs"   
   versions:
   - additionalPrinterColumns:
     - jsonPath: .spec.parameters.database

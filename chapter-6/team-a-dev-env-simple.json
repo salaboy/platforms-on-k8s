@@ -1,0 +1,7 @@
+{
+    "name": "team-y-dev-env",
+    "parameters":{
+        "type": "development",
+        "infraInstall": true
+    }
+}

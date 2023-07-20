@@ -8,7 +8,7 @@ spec:
   writeConnectionSecretsToNamespace: crossplane-system
   compositeTypeRef:
     apiVersion: salaboy.com/v1alpha1
-    kind: Environment
+    kind: XEnvironment
   resources:
     - name: vcluster-helm-release
       base:
@@ -156,7 +156,7 @@ spec:
           forProvider:
             chart:
               name: conference-app
-              repository: https://salaboy.github.io/helm/
+              repository: oci://docker.io/salaboy
               version: "v1.0.0"
             values:
               install:
@@ -167,7 +167,7 @@ spec:
       patches:
         - fromFieldPath: metadata.name
           toFieldPath: spec.providerConfigRef.name
-        - fromFieldPath: spec.infraInstall
+        - fromFieldPath: spec.parameters.infraInstall
           toFieldPath: spec.forProvider.values.install.infrastructure  
       readinessChecks:
       - type: MatchString

@@ -151,12 +151,24 @@ kubectl apply -f my-messagebroker-kafka.yaml
 And then list with: 
 
 ```
-kubectl get mbs
+> kubectl get mbs
 NAME          SIZE    KIND    SYNCED   READY   COMPOSITION                  AGE
 my-mb-kafka   small   kafka   True     True    kafka.mb.local.salaboy.com   2m51s
 ```
 
 Kafka doesn't require any secret to be created when using its default configuration. 
+
+You should see three running pods (one for Kafka, one for Redis and one for PostgreSQL).
+
+```
+> kubectl get pods
+NAME                             READY   STATUS    RESTARTS   AGE
+my-db-keyavalue-redis-master-0   1/1     Running   0          113s
+my-db-sql-postgresql-0           1/1     Running   0          108s
+my-mb-kafka-0                    1/1     Running   0          100s
+```
+
+**Note**: if you are deleting and recreating databases or message brokers using the same resource name, remember to delete the PersistentVolumeClaims, as these resources don't get removed when you delete the Database or MessageBroker resources. 
 
 You can now create as many database or message broker instances as your cluster resources can handle! 
 
