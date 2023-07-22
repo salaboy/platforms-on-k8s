@@ -1,0 +1,60 @@
+.grid {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
+    gap: var(--grid-gap);
+    max-width: 100%;
+    margin: 0 var(--grid-margin);
+}
+
+.grid.content {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns), 1fr);
+    gap: calc(var(--grid-gap)*2);
+    max-width: 100%;
+    margin: calc(var(--grid-margin)*4);
+}
+.grid.noMargin {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
+.grid.align-bottom {
+    align-items: end;
+}
+
+.grid .col.single {
+    grid-column-end: span 1;
+}
+
+.grid .col.quarter {
+    grid-column-end: span 3;
+}
+
+.grid .col.third {
+    grid-column-end: span 4;
+}
+
+.grid .col.half {
+    grid-column-end: span 6;
+}
+
+.grid .col.twoThirds {
+    grid-column-end: span 8;
+}
+.grid .col.full {
+    grid-column-end: span 12;
+}
+
+.grid .col.positionSingle {
+    grid-column-start: 2;
+}
+.grid .col.positionHalf {
+    grid-column-start: 7;
+}
+.grid .col.positionThird {
+    grid-column-start: 4;
+}
+.grid .col.positionTwoThirds {
+    grid-column-start: 10;
+}
+

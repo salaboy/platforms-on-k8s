@@ -1,0 +1,20 @@
+apiVersion: v2
+description: A Helm chart for the Conference Admin app
+name: conference-admin
+version: v1.0.0
+type: application
+icon: https://www.salaboy.com/content/images/2023/06/avatar-new.png
+appVersion: v1.0.0
+maintainers: 
+  - name: salaboy
+    email: salaboy@gmail.com
+    url: http://salaboy.com
+home: http://github.com/salaboy/platforms-on-k8s
+keywords:
+  - cloudnative
+  - platform-engineering
+  - platforms
+  - book
+  - kubernetes
+  - tutorial
+  - example

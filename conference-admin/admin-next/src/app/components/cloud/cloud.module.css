@@ -1,0 +1,31 @@
+.cloud {
+    height: 1em;
+    width: 0.5em;
+    display: inline-block;
+    z-index: 0;
+    margin-left: .5em;
+}
+.cloud svg {
+    height: 100%;
+    position: relative;
+    top: .1em;
+    transform: translateX(-50%);
+}
+.cloud svg path{
+    fill: var(--color-primary);
+}
+
+.cloud.orange svg path{
+    fill: var(--color-orange-400);
+}
+.cloud.green svg path{
+    fill: var(--color-green-500);
+}
+.cloud.brown svg path{
+    fill: var(--color-orange-900);
+}
+
+.cloud.brand {
+    width: 1em;
+}
+

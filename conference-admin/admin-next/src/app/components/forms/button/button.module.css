@@ -1,0 +1,14 @@
+
+.button a{
+    border: 2px solid var(--button-color-border);
+    padding: var(--button-padding);
+    font-size: var(--text-small-font-size);
+    text-transform: uppercase;
+    border-radius: var(--button-border-radius);
+    background-color: var(--button-color-background);
+    letter-spacing: var(--button-text-letter-spacing);
+}
+
+.button a:hover{
+    background-color: var(--button-color-background-hover);
+}

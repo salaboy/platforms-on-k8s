@@ -1,0 +1,27 @@
+{
+  "name": "admin-next",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "export": "next build && next export && next-image-export-optimizer"
+  },
+  "dependencies": {
+    "eslint": "8.42.0",
+    "eslint-config-next": "13.4.5",
+    "lorem-ipsum": "^2.0.8",
+    "next": "^13.4.10",
+    "next-image-export-optimizer": "^1.8.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
+    "react-tabs": "^6.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "20.3.1",
+    "@types/react": "18.2.13"
+  }
+}

@@ -11,7 +11,10 @@
             }
         },
         "parameters": {
-            "infraInstall": true
+            "infraInstall": true,
+            "frontend":{
+                "debug": true
+            }
         }
     }
 }

@@ -1,0 +1,86 @@
+.nav {
+   background-color: var(--nav-color-background); 
+   font-size: var(--nav-text-font-size);
+   line-height: var(--nav-text-line-height);
+   text-transform: uppercase;
+   letter-spacing: var(--nav-text-letter-spacing);
+   padding: var(--nav-padding);
+
+}
+
+
+
+
+.logos {
+    list-style-type: none;
+    display: flex;
+    color: var(--nav-color-text);
+}
+
+.logosItem {
+    padding: 10px;
+    position: relative;
+}
+
+.logosItem .logosArrow {
+    height: var(--sizing-x5);
+    display: inline-block;
+    overflow: visible; 
+    position: relative;
+    top: 0;
+    margin-right: var(--sizing-x2);
+}
+
+.logosItem:first-child {
+    padding-left: 0px;
+}
+
+.menu {
+    list-style-type: none;
+    display: flex;
+    justify-content: end;
+}
+.menu  a, .logos a{
+    color: var(--nav-color-text);
+}
+.menu  a:hover, .logos a:hover{
+    color: var(--nav-color-text-hover);
+}
+
+.menu  a:hover svg path, .logos a:hover  svg path{
+    fill: var(--nav-color-text-hover);
+}
+
+.menuItem {
+    padding: 10px;
+}
+
+.menuItem.icon {
+    height: var(--sizing-x5);
+    overflow: visible; 
+    position: relative;
+    top: calc(0px - var(--sizing-x));
+}
+
+.menuItem.icon svg path {
+    fill: var(--nav-color-text);
+}
+
+.menuItem:last-child {
+    padding-right: 0px;
+}
+
+.active {
+    color: var(--nav-color-text-active) !important;
+    
+}
+
+/* Tablet and Smaller Desktop */
+@media (min-width: 701px) and (max-width: 1120px) {
+  
+}
+
+@media (prefers-color-scheme: dark) {
+  
+}
+

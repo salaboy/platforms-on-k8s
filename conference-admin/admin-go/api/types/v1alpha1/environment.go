@@ -4,17 +4,27 @@ package v1alpha1
 
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+type Frontend struct {
+	Debug bool `json:"debug"`
+}
+
 type Parameters struct {
-	InstallInfra bool `json:"installInfra"`
+	InstallInfra bool     `json:"installInfra"`
+	Frontend     Frontend `json:"frontend"`
 }
 
 type CompositionSelector struct {
 	MatchLabels map[string]string `json:"matchLabels"`
 }
 
+type WriteConnectionSecretToRef struct {
+	Name string `json:"name"`
+}
+
 type EnvironmentSpec struct {
-	Parameters          Parameters          `json:"parameters"`
-	CompositionSelector CompositionSelector `json:"compositionSelector,omitempty"`
+	WriteConnectionSecretToRef WriteConnectionSecretToRef `json:"writeConnectionSecretToRef"`
+	Parameters                 Parameters                 `json:"parameters"`
+	CompositionSelector        CompositionSelector        `json:"compositionSelector,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

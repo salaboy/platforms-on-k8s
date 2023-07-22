@@ -1,0 +1,36 @@
+.main {
+ 
+}
+.section {
+    padding-top: 10vh;
+    padding-bottom: 10vh;
+    
+}
+
+.section.hero {
+    background-color: var(--color-background-light);
+}
+
+.section.venue {
+    background-color: var(--color-background-primary);
+    color: var(--color-text-primary);
+    overflow: hidden;
+}
+.proposalsCloud {
+    margin: -10vh 0 ;
+    max-height: 75vh;
+}
+.venueCloud {
+margin-top: -10vh;
+    margin-bottom: -12vh;
+}
+
+/* Tablet and Smaller Desktop */
+@media (min-width: 701px) and (max-width: 1120px) {
+  
+}
+
+@media (prefers-color-scheme: dark) {
+  
+}
+

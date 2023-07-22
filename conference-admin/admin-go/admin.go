@@ -34,10 +34,19 @@ const (
 	ContentType     = "Content-Type"
 )
 
+type Frontend struct {
+	Debug bool `json:"debug"`
+}
+
+type Parameters struct {
+	Type         string   `json:"type"`
+	InstallInfra bool     `json:"installInfra"`
+	Frontend     Frontend `json:"frontend"`
+}
+
 type EnvironmentSimple struct {
-	Name         string `json:"name"`
-	Type         string `json:"type"`
-	InstallInfra bool   `json:"installInfra"`
+	Name       string     `json:"name"`
+	Parameters Parameters `json:"parameters"`
 }
 
 type ServiceInfo struct {
@@ -86,8 +95,8 @@ func main() {
 
 	r := mux.NewRouter()
 
-	r.HandleFunc("/api/", getAllEnvironmentsHandler(clientSet)).Methods("GET")
-	r.HandleFunc("/api/", createEnvironmentHandler(clientSet)).Methods("POST")
+	r.HandleFunc("/api/environments/", getAllEnvironmentsHandler(clientSet)).Methods("GET")
+	r.HandleFunc("/api/environments/", createEnvironmentHandler(clientSet)).Methods("POST")
 
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
@@ -148,13 +157,19 @@ func createEnvironmentHandler(clientSet *clientV1alpha1.ConferenceAdminV1Alpha1C
 				Name: env.Name,
 			},
 			Spec: v1alpha1.EnvironmentSpec{
+				WriteConnectionSecretToRef: v1alpha1.WriteConnectionSecretToRef{
+					Name: env.Name,
+				},
 				CompositionSelector: v1alpha1.CompositionSelector{
 					MatchLabels: map[string]string{
-						"type": env.Type,
+						"type": env.Parameters.Type,
 					},
 				},
 				Parameters: v1alpha1.Parameters{
-					InstallInfra: env.InstallInfra,
+					InstallInfra: env.Parameters.InstallInfra,
+					Frontend: v1alpha1.Frontend{
+						Debug: env.Parameters.Frontend.Debug,
+					},
 				},
 			},
 		}

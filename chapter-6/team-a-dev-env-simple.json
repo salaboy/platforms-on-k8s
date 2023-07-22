@@ -1,7 +1,10 @@
 {
-    "name": "team-y-dev-env",
+    "name": "team-p-dev-env",
     "parameters":{
         "type": "development",
-        "infraInstall": true
+        "infraInstall": true,
+        "frontend":{
+            "debug": true
+        }
     }
 }

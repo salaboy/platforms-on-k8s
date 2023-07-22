@@ -1,0 +1,223 @@
+:root {
+  /* Raw Values */
+  /* SIZING */
+  --sizing-block: 4px;
+  --sizing-x: var(--sizing-block);
+  --sizing-x2: calc(var(--sizing-block)*2);
+  --sizing-x3: calc(var(--sizing-block)*3);
+  --sizing-x4: calc(var(--sizing-block)*4);
+  --sizing-x5: calc(var(--sizing-block)*5);
+  --sizing-x6: calc(var(--sizing-block)*6);
+  --sizing-x7: calc(var(--sizing-block)*7);
+  --sizing-x8: calc(var(--sizing-block)*8);
+  --sizing-x9: calc(var(--sizing-block)*9);
+  --sizing-x10: calc(var(--sizing-block)*10);
+  --sizing-x11: calc(var(--sizing-block)*11);
+  --sizing-x12: calc(var(--sizing-block)*12);
+  --sizing-x14: calc(var(--sizing-block)*14);
+  --sizing-x16: calc(var(--sizing-block)*16);
+  --sizing-x18: calc(var(--sizing-block)*18);
+  --sizing-x20: calc(var(--sizing-block)*20);
+  --sizing-x25: calc(var(--sizing-block)*25);
+  --sizing-x30: calc(var(--sizing-block)*30);
+  /* COLORS */
+  --color-white: #FFFFFF;
+    
+  --color-blue-100: #F0F3FC;
+  --color-blue-300: #CBD8FB;
+  --color-blue-500: #0040E5;
+
+  --color-red-500: #E96868;
+
+  --color-orange-100: #FCF8F2;
+  --color-orange-400: #FEC586;
+  --color-orange-900: #331B00;
+
+  --color-green-100: #EFFCF8;
+  --color-green-300: #C9FCED;
+  --color-green-500: #5BE3BB;
+  /* TYPE */
+  --text-font-size: 20px;
+  --text-line-height:  var(--sizing-x10);
+
+  --text-small-font-size: 15px;
+  --text-small-line-height: var(--sizing-x8);
+
+  --text-big-font-size: 45px;
+  --text-big-line-height: var(--sizing-x16);
+
+  --headings-h1-font-size: 120px;
+  --headings-h1-line-height: var(--sizing-x25);
+  --headings-h1-letter-spacing: -0.01em;
+  --headings-h2-font-size: 85px;
+  --headings-h2-line-height: var(--sizing-x18);
+  --headings-h2-letter-spacing: 0.03em;
+  --headings-h3-font-size: 52px;
+  --headings-h3-line-height: var(--sizing-x11);
+  --headings-h3-letter-spacing: 0.04em;
+  --headings-h4-font-size: 32px;
+  --headings-h4-line-height: var(--sizing-x8);
+  --headings-h4-letter-spacing: 0.05em;
+  --headings-h5-font-size: var(--text-font-size);
+  --headings-h5-line-height: var(--text-line-height);
+  --headings-h5-letter-spacing: 0.04em;
+
+  /* Tokens */
+  /* SIZING */
+  --sizing-xxs: var(--sizing-x);
+  --sizing-xs: var(--sizing-x2); 
+  --sizing-s: var(--sizing-x5);
+  --sizing-m: var(--sizing-x6);
+  --sizing-b: var(--sizing-x10);
+  --sizing-xb: var(--sizing-x14);
+  --sizing-xxb: var(--sizing-x20); 
+  /* GRID */
+  --grid-gap: var(--sizing-m);
+  --grid-margin: var(--sizing-s);
+  --grid-columns: 12;
+  /* COLORS */
+  --color-primary: var(--color-blue-500);
+  --color-secondary: var(--color-green-500);
+  --color-text: var(--color-orange-900);
+  --color-text-primary: var(--color-white);
+  --color-text-highlight: var(--color-text);
+  --color-text-dark: var(--color-orange-100);
+  --color-link-dark: var(--color-orange-400);
+  --color-background: var(--color-blue-100);
+  --color-background-light: var(--color-white);
+  --color-background-primary: var(--color-blue-500);
+  --color-background-highlight: var(--color-green-500);
+  --color-background-secondary: var(--color-orange-400);
+  --color-background-dark: var(--color-text);
+
+
+  /*COMPONENTS TOKENS */
+  /*Nav*/
+  --nav-color-background: var(--color-white);
+  --nav-text-font-size: var(--text-small-font-size);
+  --nav-text-line-height: var(--text-small-line-height);
+  --nav-text-letter-spacing: 0.02em;
+  --nav-color-text: var(--color-text);
+  --nav-color-text-hover: var(--color-primary);
+  --nav-color-text-active: var(--color-primary);
+  --nav-padding: var(--sizing-x3) 0;
+  /*Buttons*/
+  --button-color-border: var(--color-primary);
+  --button-color-background: var(--color-blue-100);
+  --button-color-background-hover: var(--color-white);
+  --button-border-radius: var(--sizing-x);
+  --button-text-font-size: var(--text-small-font-size);
+  --button-text-line-height: var(--text-small-line-height);
+  --button-text-letter-spacing: 0.04em;
+  --button-padding: var(--sizing-x3) var(--sizing-s);
+  /*Forms*/
+  --form-label-font-size: var(--text-small-font-size);
+  --form-label-line-height: var(--text-small-line-height);
+  --form-input-font-size: var(--text-font-size);
+  --form-input-line-height: var(--text-line-height);
+  --form-input-border: 2px solid var(--color-orange-900);
+  --form-input-border-focus: 2px solid var(--color-primary);
+  --form-input-background: var(--color-background-light);
+  --form-input-background-focus: var(--color-background-light);
+  --form-input-border-radius: var(--sizing-x);
+  --form-input-padding: 0 var(--sizing-x2);
+}
+
+@media (prefers-color-scheme: dark) {
+ 
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+ font-family: var(--font-body);
+ background-color: var(--color-background);
+ font-size: var(--text-font-size);
+ line-height: var(--text-line-height);
+ color: var(--color-text);
+}
+
+h1, h2, h3, h4, .h1, .h2, .h3, .h4 {
+  font-family: var(--font-headings);
+  text-transform: uppercase;
+}
+
+h1, .h1 {
+  font-size: var(--headings-h1-font-size);
+  line-height: var(--headings-h1-line-height);
+  margin-bottom: var(--sizing-m);
+  letter-spacing: var(--headings-h1-letter-spacing);
+}
+h2, .h2 {
+  font-size: var(--headings-h2-font-size);
+  line-height: var(--headings-h2-line-height);
+  margin-bottom: var(--sizing-s);
+  letter-spacing: var(--headings-h2-letter-spacing);
+}
+h3, .h3 {
+  font-size: var(--headings-h3-font-size);
+  line-height: var(--headings-h3-line-height);
+  margin-bottom: var(--sizing-s);
+  letter-spacing: var(--headings-h3-letter-spacing);
+}
+h4, .h4 {
+  font-size: var(--headings-h4-font-size);
+  line-height: var(--headings-h4-line-height);
+  margin-bottom: var(--sizing-xs);
+  letter-spacing: var(--headings-h4-letter-spacing);
+}
+
+h5, .h5 {
+  font-size: var(--headings-h5-font-size);
+  line-height: var(--headings-h5-line-height);
+  margin-bottom: var(--sizing-xs);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: var(--headings-h5-letter-spacing);
+}
+
+p {
+  font-size: var(--text-font-size);
+  line-height: var(--text-line-height);
+  padding: 0;
+  margin-bottom: var(--sizing-s);
+}
+
+p.--s {
+  font-size: var(--text-small-font-size);
+  line-height: var(--text-small-line-height);
+}
+
+p.--b {
+  font-size: var(--text-big-font-size);
+  line-height: var(--text-big-line-height);
+}
+
+
+body {
+ 
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  color: var(--color-primary);
+}
+
+@import url("./grid.css");
+@import url("./tabs.css");
+
+@media (prefers-color-scheme: dark) {
+  html {
+    /* color-scheme: dark; */
+  }
+}
+
+
+
+

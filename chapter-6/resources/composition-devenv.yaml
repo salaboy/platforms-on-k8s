@@ -161,14 +161,19 @@ spec:
             values:
               install:
                 infrastructure: #patched
+              services:
+                frontend: 
+                  debug: #patched  
             namespace: default
           providerConfigRef: 
             name: #patched
       patches:
         - fromFieldPath: metadata.name
           toFieldPath: spec.providerConfigRef.name
-        - fromFieldPath: spec.parameters.infraInstall
+        - fromFieldPath: spec.parameters.installInfra
           toFieldPath: spec.forProvider.values.install.infrastructure  
+        - fromFieldPath: spec.parameters.frontend.debug
+          toFieldPath: spec.forProvider.values.services.frontend.debug
       readinessChecks:
       - type: MatchString
         fieldPath: status.atProvider.state

@@ -1,0 +1,32 @@
+.textfield {
+    margin-bottom: var(--sizing-m);
+}
+
+.textfield label{
+    display: block;
+    margin-bottom:0;
+    font-size: var(--form-label-font-size);
+    line-height: var(--form-label-line-height);
+    
+}
+
+.textfield input{
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    font-size: var(--form-input-font-size);
+    line-height: var(--form-input-line-height);
+    border: var(--form-input-border);
+    border-radius: var(--form-input-border-radius);
+    background-color: var(--form-input-background);
+    padding: var(--form-input-padding);
+}
+
+.textfield input:focus{
+   
+    border: var(--form-input-border-focus);
+    
+    background-color: var(--form-input-background-focus);
+}
+
+

@@ -1,0 +1,25 @@
+.main {
+ 
+}
+.hero {
+    background-color: var(--color-background-dark);
+    color: var(--color-text-dark);
+    padding: var(--sizing-xb) 0 var(--sizing-b);
+}
+.BackofficeContent {
+    background-color: var(--color-background-dark);
+    min-height: 90vh;
+}
+.tabs {
+  
+}
+
+/* Tablet and Smaller Desktop */
+@media (min-width: 701px) and (max-width: 1120px) {
+  
+}
+
+@media (prefers-color-scheme: dark) {
+  
+}
+

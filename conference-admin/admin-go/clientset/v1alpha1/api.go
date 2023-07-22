@@ -10,7 +10,7 @@ import (
 )
 
 type ConferenceAdminV1Alpha1Interface interface {
-	Environment(namespace string) EnvironmentInterface
+	Environments(namespace string) EnvironmentInterface
 }
 
 type ConferenceAdminV1Alpha1Client struct {

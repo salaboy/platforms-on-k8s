@@ -3,9 +3,13 @@ kind: Environment
 metadata:
   name: team-a-dev-env
 spec:
+  writeConnectionSecretToRef:
+    name: team-a-dev-env
   compositionSelector:
     matchLabels:
       type: development
   parameters: 
     infraInstall: true
+    frontend:
+      debug: true
     

@@ -18,9 +18,15 @@ spec:
       - "envs"   
   versions:
   - additionalPrinterColumns:
-    - jsonPath: .spec.parameters.database
-      name: DB
+    - jsonPath: .spec.compositionSelector.matchLabels.type
+      name: TYPE
+      type: string  
+    - jsonPath: .spec.parameters.installInfra
+      name: INFRA
       type: boolean
+    - jsonPath: .spec.parameters.frontend.debug
+      name: DEBUG
+      type: boolean  
     name: v1alpha1
     served: true
     referenceable: true
@@ -34,8 +40,13 @@ spec:
               parameters: 
                 type: object
                 properties:
-                  infraInstall:
-                    type: boolean   
+                  installInfra:
+                    type: boolean 
+                  frontend:
+                    type: object
+                    properties: 
+                      debug: 
+                        type: boolean            
                 required:   
             required: 
             - parameters          
