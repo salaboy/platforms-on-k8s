@@ -30,47 +30,7 @@ spec:
               multiNamespaceMode:
                 enabled: false
               sync:
-                # generic:
-                #   role:
-                #     extraRules:
-                #       - apiGroups: ["serving.knative.dev"]
-                #         resources: ["services", "configurations", "revisions", "routes"]
-                #         verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]
-                #       - apiGroups: ["dapr.io"]
-                #         resources: ["components", "subscriptions", "configurations"]
-                #         verbs: ["create", "delete", "patch", "update", "get", "list", "watch"]  
-                #   clusterRole:
-                #     extraRules:
-                #       - apiGroups: [ "apiextensions.k8s.io" ]
-                #         resources: [ "customresourcedefinitions" ]
-                #         verbs: [ "get", "list", "watch" ]
-                #   config: |-
-                #     version: v1beta1 
-                #     export:
-                #     - kind: Component
-                #       apiVersion: dapr.io/v1alpha1
-                #     - kind: Subscription
-                #       apiVersion: dapr.io/v1alpha1  
-                #     - apiVersion: serving.knative.dev/v1
-                #       kind: Service
-                #     - apiVersion: serving.knative.dev/v1
-                #       kind: Configuration
-                #     - apiVersion: serving.knative.dev/v1
-                #       kind: Revision
-                #     - apiVersion: serving.knative.dev/v1
-                #       kind: Route  
-                #     import:
-                #     - kind: Pod
-                #       apiVersion: v1
-                #       replaceOnConflict: true
-                #     - apiVersion: serving.knative.dev/v1
-                #       kind: Service
-                #     - apiVersion: serving.knative.dev/v1
-                #       kind: Configuration
-                #     - apiVersion: serving.knative.dev/v1
-                #       kind: Revision
-                #     - apiVersion: serving.knative.dev/v1
-                #       kind: Route
+                #used for plugins
               syncer:
                 extraArgs: [] # patched
               #     - --out-kube-config-server=https://cluster-1.cluster-1.svc
