@@ -7,5 +7,5 @@ spec:
     matchLabels:
       type: development
   parameters: 
-    infraInstall: false
+    installInfra: false
     

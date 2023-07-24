@@ -14,6 +14,7 @@ type EnvironmentInterface interface {
 	List(opts metav1.ListOptions) (*v1alpha1.EnvironmentList, error)
 	Get(name string, options metav1.GetOptions) (*v1alpha1.Environment, error)
 	Create(*v1alpha1.Environment) (*v1alpha1.Environment, error)
+	Delete(name string, opts metav1.DeleteOptions) error
 	Watch(opts metav1.ListOptions) (watch.Interface, error)
 	// ...
 }
@@ -62,6 +63,17 @@ func (c *envClient) Create(environment *v1alpha1.Environment) (*v1alpha1.Environ
 		Into(&result)
 
 	return &result, err
+}
+
+func (c *envClient) Delete(name string, opts metav1.DeleteOptions) error {
+	return c.restClient.
+		Delete().
+		Namespace(c.ns).
+		Resource("environments").
+		Name(name).
+		Body(&opts).
+		Do(c.ctx).
+		Error()
 }
 
 func (c *envClient) Watch(opts metav1.ListOptions) (watch.Interface, error) {

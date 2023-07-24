@@ -20,12 +20,16 @@ module.exports = {
       // `placeholder="empty"` to all <ExportedImage> components.
       nextImageExportOptimizer_generateAndUseBlurImages: true,
     },
-    // output: 'standalone', -> this is to get a server for nodejs
+    //output: 'standalone', -> this is to get a server for nodejs
     async rewrites() {
       return [
         {
           source: '/api/environments/',
           destination: 'http://localhost:8080/api/environments/',
+        },
+        {
+          source: '/api/environments/:path*/',
+          destination: 'http://localhost:8080/api/environments/:path*/',
         },
         
       ]

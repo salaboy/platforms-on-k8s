@@ -97,7 +97,7 @@ func main() {
 
 	r.HandleFunc("/api/environments/", getAllEnvironmentsHandler(clientSet)).Methods("GET")
 	r.HandleFunc("/api/environments/", createEnvironmentHandler(clientSet)).Methods("POST")
-
+	r.HandleFunc("/api/environments/{id}/", deleteEnvironmentsHandler(clientSet)).Methods("DELETE")
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
@@ -125,6 +125,17 @@ func main() {
 	if err != http.ErrServerClosed {
 		log.Panic(err)
 	}
+}
+
+func deleteEnvironmentsHandler(clientSet *clientV1alpha1.ConferenceAdminV1Alpha1Client) func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+		err := clientSet.Environments("default").Delete(vars["id"], metav1.DeleteOptions{})
+		if err != nil {
+			panic(err)
+		}
+	})
+
 }
 
 func getAllEnvironmentsHandler(clientSet *clientV1alpha1.ConferenceAdminV1Alpha1Client) func(w http.ResponseWriter, r *http.Request) {

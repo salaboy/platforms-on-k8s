@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react'
 import styles from '@/app/styles/events.module.css'
 import Textfield from '../forms/textfield/textfield';
-import Textarea from '../forms/textarea/textarea';
 import Button from '../forms/button/button';
 
 

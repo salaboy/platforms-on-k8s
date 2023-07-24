@@ -18,6 +18,9 @@ spec:
       - "envs"   
   versions:
   - additionalPrinterColumns:
+    - jsonPath: .spec.resourceRef.name
+      name: CONNECT-TO
+      type: string
     - jsonPath: .spec.compositionSelector.matchLabels.type
       name: TYPE
       type: string  
@@ -26,7 +29,8 @@ spec:
       type: boolean
     - jsonPath: .spec.parameters.frontend.debug
       name: DEBUG
-      type: boolean  
+      type: boolean
+        
     name: v1alpha1
     served: true
     referenceable: true

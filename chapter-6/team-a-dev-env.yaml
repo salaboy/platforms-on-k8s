@@ -9,7 +9,7 @@ spec:
     matchLabels:
       type: development
   parameters: 
-    infraInstall: true
+    installInfra: true
     frontend:
       debug: true
     

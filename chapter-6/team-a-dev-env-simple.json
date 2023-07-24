@@ -1,8 +1,8 @@
 {
-    "name": "team-p-dev-env",
+    "name": "team-curl-dev-env",
     "parameters":{
         "type": "development",
-        "infraInstall": true,
+        "installInfra": true,
         "frontend":{
             "debug": true
         }

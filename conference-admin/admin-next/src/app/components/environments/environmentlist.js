@@ -11,6 +11,26 @@ function EnvironmentList() {
     const [environments, setEnvironments] = useState([]) // state hook
     const [check, setCheck] = useState(0)
 
+    const handleDelete = (name) => {
+      setLoading(true);
+      setIsError(false);
+      console.log("Deleting Environment ..." + name)
+      fetch('/api/environments/' + name , {
+        method: "DELETE",
+        headers: {
+          'accept': 'application/json',
+        },
+      }).then((response) => response.json()).then(() => {
+        fetchData(filter)
+        setLoading(false);
+      }).catch(err => {
+        console.log(err);
+        setLoading(false);
+        setIsError(true);
+      });
+  
+    }
+
     const fetchData = () => {
         fetch('/api/environments/')
           .then((res) => res.json())
@@ -53,12 +73,17 @@ function EnvironmentList() {
         {
         environments && environments.map((item,index)=>(
               <EnvironmentItem
-                key={item.id}
-                id={item.id}
+                key={item.metadata.uid}
+                id={item.metadata.uid}
                 name={item.metadata.name}
                 type={item.spec.compositionSelector.matchLabels.type}
                 installInfra={item.spec.parameters.installInfra}
                 debug={item.spec.parameters.frontend.debug}
+                status={item.status.conditions[1].status}
+                synced={item.status.conditions[0].status}
+                vclusterRef={item.spec.resourceRef.name}
+                secretRef={item.spec.writeConnectionSecretToRef.name}
+                handleDelete={handleDelete}
               />
 
           ))
