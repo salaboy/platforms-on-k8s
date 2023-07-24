@@ -146,14 +146,65 @@ You can install this Admin User Interface using Helm:
 helm install admin oci://docker.io/salaboy/conference-admin --version v1.0.0
 ```
 
+Once installed you can port-forward to the Admin UI by running: 
 
+```
+kubectl port-forward svc/admin 8081:80
+```
+
+Now you can create and check your environments using a simple interface. If you wait for the environment to be ready you will get the `vcluster` command to use to connect to the environment.
+
+[imgs/admin-ui.png]
+
+By using this simple interface, development teams will not need to access the Kubernetes APIs from the cluster which has all the platform tools (Crossplane and Argo CD for example) directly.
+
+Besides the User interface, the Platform Admin application offers you a simplified set of REST endpoints where you have full flexibility to define how the resources looks like instead of following the Kubernetes Resource Model. For example, instead of having a Kubernetes Resource with all the metadata needed by the Kubernetes API, we can use the following JSON payload to create a new Environment: 
+
+```
+{
+    "name": "team-curl-dev-env",
+    "parameters":{
+        "type": "development",
+        "installInfra": true,
+        "frontend":{
+            "debug": true
+        }
+    }
+}
+```
+
+You can create this environment by running:
+
+```
+curl -X POST -H "Content-Type: application/json" -d @team-a-dev-env-simple.json http://localhost:8081/api/environments/
+```
+
+Then list all the environments with: 
+```
+curl localhost:8081/api/environments/
+```
+
+Or delete one environment running: 
+
+```
+curl -X DELETE http://localhost:8081/api/environments/team-curl-dev-env/
+```
+
+This application serves as a facade between Kubernetes and the outside world. Depending on your organization needs, you might want to have this abstractions (APIs) early on, so the platform team can pivot on their tooling and workflow decisions under the covers.
 
 ## Next Steps
 
-Can you extend the Admin User Interface to create Databases and Message Brokers like we did in Chapter 5? 
+Can you extend the Admin User Interface to create Databases and Message Brokers like we did in Chapter 5? What would it take? Understanding where the changes needs to be made will give you hands-on experience on developing components that interact with the Kubernetes APIs and provide simplified interfaces for consumers.
+
+Can you create your own compositions to use Real Clusters instead of `vcluster`? For which kind of scenario would you use a real Cluster and when a `vcluster`?
+
+What extra steps would you need to do to run this in a real Kubernetes Cluster instead of running this on Kubernetes KinD? 
+
 
 
 
 ## Sum up and Contribute
+
+On this 
 
 Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.
