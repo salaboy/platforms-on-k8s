@@ -25,11 +25,11 @@ module.exports = {
       return [
         {
           source: '/api/environments/',
-          destination: 'http://localhost:8080/api/environments/',
+          destination: 'http://982cc774-a5ca-4663-9a94-a1e243cb4bf6.k8s.civo.com/api/environments/',
         },
         {
           source: '/api/environments/:path*/',
-          destination: 'http://localhost:8080/api/environments/:path*/',
+          destination: 'http://982cc774-a5ca-4663-9a94-a1e243cb4bf6.k8s.civo.com/api/environments/:path*/',
         },
         
       ]
