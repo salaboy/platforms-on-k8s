@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"database/sql"
 	"encoding/json"
@@ -15,9 +14,8 @@ import (
 	"github.com/google/uuid"
 	_ "github.com/lib/pq"
 
+	dapr "github.com/dapr/go-sdk/client"
 	"github.com/salaboy/platforms-on-k8s/conference-application/c4p-service/api"
-
-	kafka "github.com/segmentio/kafka-go"
 )
 
 const (
@@ -81,6 +79,18 @@ type Notification struct {
 	Accepted     bool   `json:"accepted"`
 }
 
+type Event struct {
+	Id      string `json:"id"`
+	Payload string `json:"payload"`
+	Type    string `json:"type"`
+}
+
+type Event struct {
+	Id      string `json:"id"`
+	Payload string `json:"payload"`
+	Type    string `json:"type"`
+}
+
 type ServiceInfo struct {
 	Name              string `json:"name"`
 	Version           string `json:"version"`
@@ -93,8 +103,8 @@ type ServiceInfo struct {
 }
 
 var (
-	Version            = getEnv("VERSION", "1.0.0")
-	Source             = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/c4p-service")
+	Version            = getEnv("VERSION", "2.0.0")
+	Source             = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/v2.0.0/conference-application/c4p-service")
 	PodName            = getEnv("POD_NAME", "N/A")
 	PodNamespace       = getEnv("POD_NAMESPACE", "N/A")
 	PodNodeName        = getEnv("POD_NODENAME", "N/A")
@@ -104,10 +114,10 @@ var (
 	PostgresqlPort     = getEnv("POSTGRES_PORT", "5432")
 	PostgresqlUsername = getEnv("POSTGRES_USERNAME", "postgres")
 	PostgresqlPassword = getEnv("POSTGRES_PASSWORD", "postgres")
-
-	KafkaUrl   = getEnv("KAFKA_URL", "localhost:9094")
-	KafkaTopic = getEnv("KAFKA_TOPIC", "events-topic")
-	AppPort    = getEnv("APP_PORT", "8080")
+	PubSubName         = getEnv("PUBSUB_NAME", "conference-pubsub")
+	PubSubTopic        = getEnv("PUBSUB_TOPIC", "events-topic")
+	TenantId           = getEnv("TENANT_ID", "tenant-a")
+	AppPort            = getEnv("APP_PORT", "8080")
 )
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -126,33 +136,9 @@ func getEnv(key, fallback string) string {
 	return value
 }
 
-func isKafkaAlive(kafkaURL string, topic string) bool {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
-	if err != nil {
-		panic(any(err.Error()))
-	}
-	defer conn.Close()
-
-	brokers, err := conn.Brokers()
-
-	if err != nil {
-		panic(any(err.Error()))
-	}
-
-	for _, b := range brokers {
-		log.Printf("Available Broker: %v", b)
-	}
-	if len(brokers) > 0 {
-		return true
-	} else {
-		return false
-	}
-
-}
-
 // server
 type server struct {
-	KafkaWriter             *kafka.Writer
+	APIClient               *dapr.Client
 	DB                      *sql.DB
 	AgendaServiceURL        string
 	NotificationsServiceURL string
@@ -197,6 +183,8 @@ func (s server) GetProposals(w http.ResponseWriter, r *http.Request) {
 
 // CreateProposal creates a new proposal.
 func (s server) CreateProposal(w http.ResponseWriter, r *http.Request) {
+
+	ctx := context.Background()
 	var proposal Proposal
 	err := json.NewDecoder(r.Body).Decode(&proposal)
 	if err != nil {
@@ -205,12 +193,12 @@ func (s server) CreateProposal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	proposal.Status = ProposalStatus{Status: "PENDING"}
 	proposal.Id = uuid.New().String()
+	proposal.Status = ProposalStatus{Status: "PENDING"}
 
 	insertStmt := `insert into Proposals("id", "title", "description", "email", "author", "approved", "status") values($1, $2, $3, $4, $5, $6, $7)`
 
-	_, err = s.DB.Exec(insertStmt, proposal.Id, proposal.Title, proposal.Description, proposal.Email, proposal.Author, false, "PENDING")
+	_, err = s.DB.Exec(insertStmt, proposal.Id, proposal.Title, proposal.Description, proposal.Email, proposal.Author, false, proposal.Status)
 
 	if err != nil {
 		log.Printf("An error occured while executing query: %v", err)
@@ -218,7 +206,7 @@ func (s server) CreateProposal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("Proposal Stored in Database: %v", proposal)
+	log.Printf("Proposal Stored in Database: %s", proposal)
 
 	proposalJson, err := json.Marshal(proposal)
 	if err != nil {
@@ -226,38 +214,33 @@ func (s server) CreateProposal(w http.ResponseWriter, r *http.Request) {
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return
 	}
-
 	event := Event{
 		Id:      uuid.New().String(),
 		Type:    "new-proposal",
 		Payload: string(proposalJson),
 	}
-
 	eventJson, err := json.Marshal(event)
 	if err != nil {
-		log.Printf("An error occured while marshalling the event for the proposal to json: %v", err)
+		log.Printf("An error occured while marshalling the event to json: %v", err)
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	msg := kafka.Message{
-		Key:   []byte(fmt.Sprintf("new-proposal-%s", proposal.Id)),
-		Value: eventJson,
-	}
-	err = s.KafkaWriter.WriteMessages(r.Context(), msg)
-
-	if err != nil {
-		log.Printf("An error occured while writing the message to Kafka: %v", err)
+	//@TODO: add tenant to PUBSUB_TOPIC
+	if err := s.APIClient.PublishEvent(ctx, PubSubName, PubSubTopic, eventJson); err != nil {
+		log.Printf("An error occured while publishing the event: %v", err)
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return
 	}
-	log.Printf("New Proposal Event emitted to Kafka: %v", proposal)
+
+	log.Printf("New Proposal Event published: %s", proposal)
 	respondWithJSON(w, http.StatusOK, proposal)
+
 }
 
 // DeleteProposal deletes a proposal.
 func (s server) DeleteProposal(w http.ResponseWriter, r *http.Request, proposalId string) {
-
+	ctx := context.Background()
 	var decision ProposalDecision
 	err := json.NewDecoder(r.Body).Decode(&decision)
 	if err != nil {
@@ -303,29 +286,25 @@ func (s server) DeleteProposal(w http.ResponseWriter, r *http.Request, proposalI
 
 	eventJson, err := json.Marshal(event)
 	if err != nil {
-		log.Printf("An error occured while marshalling the event for the proposal to json: %v", err)
+		log.Printf("An error occured while marshalling the event to json: %v", err)
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return
 	}
 
-	msg := kafka.Message{
-		Key:   []byte(fmt.Sprintf("proposal-archived-%s", proposal.Id)),
-		Value: eventJson,
-	}
-	err = s.KafkaWriter.WriteMessages(r.Context(), msg)
-
-	if err != nil {
-		log.Printf("An error occured while writing the message to Kafka: %v", err)
+	if err := s.APIClient.PublishEvent(ctx, PubSubName, PubSubTopic, eventJson); err != nil {
+		log.Printf("An error occured while publishing the event: %v", err)
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return
 	}
-	log.Printf("Proposal Archived Event emitted to Kafka: %v", proposal)
+
+	log.Printf("Proposal Archived Event published: %s", proposal)
 
 	respondWithJSON(w, http.StatusOK, proposal)
 }
 
 // DecideProposal updates the status of a proposal.oa
 func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalId string) {
+	ctx := context.Background()
 	var decision ProposalDecision
 	err := json.NewDecoder(r.Body).Decode(&decision)
 	if err != nil {
@@ -375,19 +354,22 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 		if err != nil {
 			log.Printf("There was an error marshalling the Agenda Item to JSON: %v", err)
 		}
-		r, err := http.NewRequest("POST", fmt.Sprintf("%s/%s/", s.AgendaServiceURL, "agenda-items"), bytes.NewBuffer(agendaItemJson))
+
+		content := &dapr.DataContent{
+			ContentType: "application/json",
+			Data:        agendaItemJson,
+		}
+
+		res, err := s.APIClient.InvokeMethodWithContent(ctx, "agenda-service", "agenda-items/", "POST", content)
 		if err != nil {
 			log.Printf("There was an error creating the request to the Agenda Item Service: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
 		}
-		r.Header.Add("Content-Type", "application/json")
-		client := &http.Client{}
-		res, err := client.Do(r)
-		if err != nil {
-			log.Printf("There was an error submitting the request to the Agenda Item Service: %v", err)
-		}
-		defer res.Body.Close()
+
+		log.Printf("Response from calling agenda-service %s: ", res)
+
 		var agendaItemResponse AgendaItem
-		err = json.NewDecoder(res.Body).Decode(&agendaItemResponse)
+		err = json.Unmarshal(res, &agendaItemResponse)
 		if err != nil {
 			log.Printf("There was an error decoding the request body into the struct: %v", err)
 		}
@@ -400,31 +382,26 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 			return
 		}
 
+		//@TODO: add tenant to PUBSUB_TOPIC
 		event := Event{
 			Id:      uuid.New().String(),
 			Type:    "proposal-approved",
 			Payload: string(proposalJson),
 		}
-
 		eventJson, err := json.Marshal(event)
 		if err != nil {
-			log.Printf("An error occured while marshalling the event for the proposal to json: %v", err)
+			log.Printf("An error occured while marshalling the event to json: %v", err)
 			respondWithJSON(w, http.StatusInternalServerError, err)
 			return
 		}
 
-		msg := kafka.Message{
-			Key:   []byte(fmt.Sprintf("proposal-approved-%s", proposal.Id)),
-			Value: eventJson,
-		}
-		err = s.KafkaWriter.WriteMessages(r.Context(), msg)
-
-		if err != nil {
-			log.Printf("An error occured while writing the message to Kafka: %v", err)
+		if err := s.APIClient.PublishEvent(ctx, PubSubName, PubSubTopic, eventJson); err != nil {
+			log.Printf("An error occured while publishing the event: %v", err)
 			respondWithJSON(w, http.StatusInternalServerError, err)
 			return
 		}
-		log.Printf("Proposal Approved Event emitted to Kafka: %v", proposal)
+
+		log.Printf("Proposal Approved Event published: %s", proposal)
 
 	} else {
 
@@ -447,20 +424,17 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return
 	}
+	content := &dapr.DataContent{
+		ContentType: "application/json",
+		Data:        notificationJson,
+	}
 
-	r, err = http.NewRequest("POST", fmt.Sprintf("%s/%s/", s.NotificationsServiceURL, "notifications"), bytes.NewBuffer(notificationJson))
+	resp, err := s.APIClient.InvokeMethodWithContent(ctx, "notifications-service", "notifications/", "POST", content)
 	if err != nil {
 		log.Printf("There was an error creating the request to the Notifications Service: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
 	}
-	r.Header.Add("Content-Type", "application/json")
-	client := &http.Client{}
-	res, err := client.Do(r)
-
-	if err != nil {
-		log.Printf("There was an error submitting the request to the Notifications Service: %v", err)
-	} else {
-		defer res.Body.Close()
-	}
+	log.Printf("Response from calling notification service %s", resp)
 
 	respondWithJSON(w, http.StatusOK, proposal)
 }
@@ -495,17 +469,10 @@ func NewChiServer() *chi.Mux {
 	// create new chi router
 	r := chi.NewRouter()
 
-	AgendaServiceUrl := getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
-	NotificationsServiceUrl := getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
-
 	// add logger middleware
 	r.Use(middleware.Logger)
 
 	log.Printf("Starting C4P Service in Port: %s", AppPort)
-
-	fmt.Println("Environment Variables:")
-	fmt.Println("Agenda Service URL: ", AgendaServiceUrl)
-	fmt.Println("Notifications Service URL: ", NotificationsServiceUrl)
 
 	// connect to database
 	db := NewDB()
@@ -517,11 +484,13 @@ func NewChiServer() *chi.Mux {
 	}
 	log.Printf("Connected to PostgreSQL.")
 
-	// create a new *kafka.Writer using the given broker addresses and configuration
-	kafkaWriter := NewKafkaWriter(KafkaUrl, KafkaTopic)
+	APIClient, err := dapr.NewClient()
+	if err != nil {
+		panic(err)
+	}
 
 	// Create a new server
-	server := NewServer(kafkaWriter, db, AgendaServiceUrl, NotificationsServiceUrl)
+	server := NewServer(APIClient, db)
 	OpenAPI(r)
 
 	// mount the API on the server
@@ -543,34 +512,6 @@ func OpenAPI(r *chi.Mux) {
 	r.Handle("/openapi/*", http.StripPrefix("/openapi/", fs))
 }
 
-// NewServer creates a new api.ServerInterface.
-func NewServer(kafkaWriter *kafka.Writer, db *sql.DB, agendaServiceURL string, notificationsServiceURL string) api.ServerInterface {
-	return &server{
-		KafkaWriter:             kafkaWriter,
-		DB:                      db,
-		AgendaServiceURL:        agendaServiceURL,
-		NotificationsServiceURL: notificationsServiceURL,
-	}
-}
-
-// NewKafkaWriter creates a new *kafka.Write.
-func NewKafkaWriter(kafkaURL, topic string) *kafka.Writer {
-	log.Printf("Connecting to Kafka Instance: %s, topic: %s.", KafkaUrl, KafkaTopic)
-	kafkaAlive := isKafkaAlive(KafkaUrl, KafkaTopic)
-	if !kafkaAlive {
-		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
-		panic(any("Cannot connect to Kafka"))
-	}
-
-	log.Printf("Connected to Kafka.")
-
-	return &kafka.Writer{
-		Addr:     kafka.TCP(kafkaURL),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
-	}
-}
-
 func NewDB() *sql.DB {
 	connStr := "postgresql://" + PostgresqlUsername + ":" + PostgresqlPassword + "@" + PostgresqlHost + ":" + PostgresqlPort + "/postgres?sslmode=disable"
 	log.Printf("Connecting to Database: %s.", connStr)
@@ -581,4 +522,11 @@ func NewDB() *sql.DB {
 		log.Fatal(err)
 	}
 	return db
+}
+
+func NewServer(daprClient *dapr.Client, db *sql.DB) api.ServerInterface {
+	return &server{
+		APIClient: daprClient,
+		DB:        db,
+	}
 }

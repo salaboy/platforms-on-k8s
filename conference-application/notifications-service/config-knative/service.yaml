@@ -7,14 +7,16 @@ spec:
     metadata:
       annotations:  
         autoscaling.knative.dev/min-scale: "1"
+        dapr.io/app-id: notifications-service
+        dapr.io/app-port: "8080"
+        dapr.io/metrics-port: "9092"
+        dapr.io/enabled: "true"
     spec:
       containerConcurrency: 0
       containers:
         - image: ko://github.com/salaboy/platforms-on-k8s/conference-application/notifications-service
           name: user-container
           env:
-          - name: KAFKA_URL
-            value: kafka.default.svc.cluster.local:9092
           - name: POD_NODENAME
             valueFrom:
               fieldRef:

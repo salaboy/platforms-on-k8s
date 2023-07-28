@@ -9,6 +9,10 @@ spec:
       app: agenda-service
   template:
     metadata:
+      annotations:  
+        dapr.io/app-id: agenda-service
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true"
       labels:
         app: agenda-service
         app.kubernetes.io/name: agenda-service
@@ -21,27 +25,10 @@ spec:
         image: "{{ .Values.services.registry }}/{{ .Values.services.agenda.image }}:{{ .Values.services.tag  }}"
         imagePullPolicy: Always
         env:
- {{- if .Values.install.infrastructure }}       
-        - name: KAFKA_URL
-          value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local
-        - name: REDIS_HOST
-          value: {{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.cluster.local
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Release.Name }}-redis
-              key: redis-password
-{{- else }}
-        - name: KAFKA_URL
-          value: {{ .Values.agenda.kafka.url}}
-        - name: REDIS_HOST
-          value: {{ .Values.agenda.redis.host}}
-        - name: REDIS_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: {{ .Values.agenda.redis.secretName}}
-              key: redis-password
-{{- end }}              
+        - name: STATESTORE_NAME
+          value: {{ .Release.Name }}-agenda-service-statestore
+        - name: PUBSUB_NAME
+          value: {{ .Release.Name }}-conference-pubsub         
         - name: POD_NODENAME
           valueFrom:
             fieldRef:

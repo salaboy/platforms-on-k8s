@@ -3,17 +3,16 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	dapr "github.com/dapr/go-sdk/client"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 	api "github.com/salaboy/platforms-on-k8s/conference-application/notifications-service/api"
-	kafka "github.com/segmentio/kafka-go"
 )
 
 const (
@@ -50,23 +49,29 @@ type Notification struct {
 	EmailBody    string `json:"emailBody"`
 }
 
+type Event struct {
+	Id      string `json:"id"`
+	Payload string `json:"payload"`
+	Type    string `json:"type"`
+}
+
 func (s Notification) MarshalBinary() ([]byte, error) {
 	return json.Marshal(s)
 }
 
 var (
-	VERSION             = getEnv("VERSION", "1.0.0")
-	SOURCE              = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service")
+	VERSION             = getEnv("VERSION", "2.0.0")
+	SOURCE              = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/v2.0.0/conference-application/notifications-service")
 	POD_NAME            = getEnv("POD_NAME", "N/A")
 	POD_NAMESPACE       = getEnv("POD_NAMESPACE", "N/A")
 	POD_NODENAME        = getEnv("POD_NODENAME", "N/A")
 	POD_IP              = getEnv("POD_IP", "N/A")
 	POD_SERVICE_ACCOUNT = getEnv("POD_SERVICE_ACCOUNT", "N/A")
-	KAFKA_URL           = getEnv("KAFKA_URL", "localhost:9094")
-	KAFKA_TOPIC         = getEnv("KAFKA_TOPIC", "events-topic")
 	APP_PORT            = getEnv("APP_PORT", "8080")
-
-	notifications = []Notification{}
+	PUBSUB_NAME         = getEnv("PUBSUB_NAME", "conference-pubsub")
+	PUBSUB_TOPIC        = getEnv("PUBSUB_TOPIC", "events-topic")
+	TENANT_ID           = getEnv("TENANT_ID", "tenant-a")
+	notifications       = []Notification{}
 )
 
 // respondWithJSON is a helper function to write a JSON response.
@@ -78,25 +83,11 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
-// getKafkaWriter returns a new kafka writer.
-func getKafkaWriter(kafkaURL, topic string) *kafka.Writer {
-	kafkaAlive := isKafkaAlive(KAFKA_URL, KAFKA_TOPIC)
-	if !kafkaAlive {
-		panic(errors.New("cannot connect to Kafka, restarting until it is healthy"))
-	}
-	return &kafka.Writer{
-		Addr:     kafka.TCP(kafkaURL),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
-	}
-}
-
 func main() {
 	chiServer := NewChiServer()
 
 	// Start the server; this is a blocking call
 	err := http.ListenAndServe(":"+APP_PORT, chiServer)
-	log.Printf("Starting Notifications Service in Port: %s", APP_PORT)
 	if err != http.ErrServerClosed {
 		log.Panic(err)
 	}
@@ -111,41 +102,9 @@ func getEnv(key, fallback string) string {
 	return value
 }
 
-// isKafkaAlive returns true if the kafka instance is alive.
-func isKafkaAlive(kafkaURL string, topic string) bool {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
-	if err != nil {
-		panic(err.Error())
-	}
-	defer conn.Close()
-
-	brokers, err := conn.Brokers()
-
-	if err != nil {
-		panic(err.Error())
-	}
-
-	for _, b := range brokers {
-		log.Printf("Available Broker: %v", b)
-	}
-	if len(brokers) > 0 {
-		return true
-	} else {
-		return false
-	}
-
-}
-
 // NewChiServer creates a new Chi server.
 func NewChiServer() *chi.Mux {
 	log.Printf("Starting Notifications Service in Port: %s", APP_PORT)
-
-	log.Printf("Connecting to Kafka Instance: %s, topic: %s.", KAFKA_URL, KAFKA_TOPIC)
-
-	//https://github.com/segmentio/kafka-go/blob/main/examples/producer-api/main.go
-	kafkaWriter := getKafkaWriter(KAFKA_URL, KAFKA_TOPIC)
-
-	log.Printf("Connected to Kafka Instance: %s, topic: %s.", KAFKA_URL, KAFKA_TOPIC)
 
 	// create new router
 	r := chi.NewRouter()
@@ -154,7 +113,7 @@ func NewChiServer() *chi.Mux {
 	r.Use(middleware.Logger)
 
 	// create new server
-	server := NewServer(kafkaWriter)
+	server := NewServer()
 
 	// add openapi spec
 	OpenAPI(r)
@@ -178,13 +137,17 @@ func OpenAPI(r *chi.Mux) {
 
 // server implements the api.ServerInterface
 type server struct {
-	KafkaWriter *kafka.Writer
+	APIClient dapr.Client
 }
 
 // NewServer creates a new api.ServerInterface instance.
-func NewServer(kafkaWriter *kafka.Writer) api.ServerInterface {
+func NewServer() api.ServerInterface {
+	client, err := dapr.NewClient()
+	if err != nil {
+		panic(err)
+	}
 	return &server{
-		KafkaWriter: kafkaWriter,
+		APIClient: client,
 	}
 }
 
@@ -195,7 +158,7 @@ func (s *server) GetAllNotifications(w http.ResponseWriter, r *http.Request) {
 
 // CreateNotification creates a new notification.
 func (s *server) CreateNotification(w http.ResponseWriter, r *http.Request) {
-
+	ctx := context.Background()
 	var notification Notification
 	err := json.NewDecoder(r.Body).Decode(&notification)
 	if err != nil {
@@ -256,18 +219,14 @@ func (s *server) CreateNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msg := kafka.Message{
-		Key:   []byte(fmt.Sprintf("notification-sent-%s", notification.Id)),
-		Value: eventJson,
-	}
-	err = s.KafkaWriter.WriteMessages(r.Context(), msg)
-
-	if err != nil {
-		log.Printf("An error occured while writing the message to Kafka: %v", err)
+	//@TODO: add tenant to PUBSUB_TOPIC
+	if err := s.APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); err != nil {
+		log.Printf("An error occured while publishing the event: %v", err)
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return
 	}
-	log.Printf("Notification Sent - Event emitted to Kafka: %v", notification)
+
+	log.Printf("Notification Sent - Event published: %v", notification)
 
 	// @TODO avoid doing two marshals to json
 	respondWithJSON(w, http.StatusOK, notification)

@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      annotations:  
+        dapr.io/app-id: frontend
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true"
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: ko://github.com/salaboy/platforms-on-k8s/conference-application/frontend-go
+        imagePullPolicy: Always
+        env:   
+        - name: AGENDA_SERVICE_URL
+          value: http://agenda-service.default.svc.cluster.local
+        - name: C4P_SERVICE_URL
+          value: http://c4p-service.default.svc.cluster.local
+        - name: NOTIFICATIONS_SERVICE_URL
+          value: http://notifications-service.default.svc.cluster.local         
+        - name: POD_NODENAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: POD_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName      
+        livenessProbe:
+          httpGet:
+            path: /health/readiness
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /health/liveness
+            port: 8080
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+  - port: 80
+    targetPort: 8080

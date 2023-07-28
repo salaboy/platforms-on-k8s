@@ -1,0 +1,13 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: {{ .Release.Name }}-conference-pubsub
+  namespace: {{ .Release.Namespace }}
+spec:
+  type: pubsub.kafka
+  version: v1
+  metadata:
+  - name: brokers # Required. Kafka broker connection setting
+    value:  {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local:9092
+  - name: authType
+    value: "none"  

@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: c4p-service-deployment
+spec:
+  selector:
+    matchLabels:
+      app: c4p-service
+  template:
+    metadata:
+      annotations:  
+        dapr.io/app-id: c4p-service
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true"
+      labels:
+        app: c4p-service
+    spec:
+      containers:
+      - name: c4p-service
+        image: ko://github.com/salaboy/platforms-on-k8s/conference-application/c4p-service
+        imagePullPolicy: Always
+        env:     
+        - name: AGENDA_SERVICE_URL
+          value: http://agenda-service.default.svc.cluster.local
+        - name: NOTIFICATIONS_SERVICE_URL
+          value: http://notifications-service.default.svc.cluster.local
+        - name: POSTGRES_HOST
+          value: postgresql.default.svc.cluster.local
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql
+              key: postgres-password        
+        - name: POD_NODENAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: POD_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName      
+        livenessProbe:
+          httpGet:
+            path: /health/readiness
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /health/liveness
+            port: 8080
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: c4p-service
+spec:
+  selector:
+    app: c4p-service
+  ports:
+  - port: 80
+    targetPort: 8080

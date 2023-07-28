@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,19 +10,18 @@ import (
 	"net/http/httputil"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/salaboy/platforms-on-k8s/conference-application/frontend-go/api"
 
-	kafka "github.com/segmentio/kafka-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
 var (
-	Version = getEnv("VERSION", "1.0.0")
+	Version = getEnv("VERSION", "2.0.0")
 
-	Source                  = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/frontend-go")
+	Source                  = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/v2.0.0/conference-application/frontend-go")
 	PodName                 = getEnv("POD_NAME", "N/A")
 	PodNamespace            = getEnv("POD_NAMESPACE", "N/A")
 	PodNodeName             = getEnv("POD_NODENAME", "N/A")
@@ -32,10 +30,8 @@ var (
 	AgendaServiceUrl        = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
 	C4pServiceUrl           = getEnv("C4P_SERVICE_URL", "http://c4p-service.default.svc.cluster.local")
 	NotificationsServiceUrl = getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
-	KafkaUrl                = getEnv("KAFKA_URL", "localhost:9094")
-	KafkaTopic              = getEnv("KAFKA_TOPIC", "events-topic")
-	KafkaGroupId            = getEnv("KAFKA_GROUP_ID", "app")
-	AppPort                 = getEnv("APP_PORT", "8080")
+
+	AppPort = getEnv("APP_PORT", "8080")
 
 	// FeatureGenerateProposal values:
 	// - PUBLIC (no filters)
@@ -78,18 +74,6 @@ type Features struct {
 func main() {
 
 	r := NewChiServer()
-	log.Printf("Connecting to Kafka Instance: %s, topic: %s., group: %s", KafkaUrl, KafkaTopic, KafkaGroupId)
-	reader := getKafkaReader(KafkaUrl, KafkaTopic, KafkaGroupId)
-
-	kafkaAlive := isKafkaAlive(KafkaUrl, KafkaTopic)
-	if !kafkaAlive {
-		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
-		return
-	}
-
-	go consumeFromKafka(reader)
-
-	defer reader.Close()
 
 	log.Printf("Starting Frontend Go in Port: %s", AppPort)
 
@@ -108,6 +92,10 @@ func featureHandler(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, features)
 }
 
+func eventsHandler(w http.ResponseWriter, r *http.Request) {
+	respondWithJSON(w, http.StatusOK, events)
+}
+
 func agendaServiceHandler(w http.ResponseWriter, r *http.Request) {
 	proxyRequest("api/agenda", AgendaServiceUrl, w, r)
 }
@@ -120,43 +108,6 @@ func notificationServiceHandler(w http.ResponseWriter, r *http.Request) {
 	proxyRequest("api/notifications", NotificationsServiceUrl, w, r)
 }
 
-func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
-	brokers := strings.Split(kafkaURL, ",")
-
-	return kafka.NewReader(kafka.ReaderConfig{
-		Brokers:     brokers,
-		GroupID:     groupID,
-		Topic:       topic,
-		MinBytes:    5,    // 5B
-		MaxBytes:    10e6, // 10MB
-		StartOffset: kafka.FirstOffset,
-		MaxWait:     3 * time.Second,
-	})
-}
-
-func isKafkaAlive(kafkaURL string, topic string) bool {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
-	if err != nil {
-		panic(any(err.Error()))
-	}
-	defer conn.Close()
-
-	brokers, err := conn.Brokers()
-
-	if err != nil {
-		panic(any(err.Error()))
-	}
-
-	for _, b := range brokers {
-		log.Printf("Available Broker: %s", b)
-	}
-	if len(brokers) > 0 {
-		return true
-	} else {
-		return false
-	}
-
-}
 func proxyRequest(serviceName string, serviceUrl string, w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -222,7 +173,6 @@ func proxyRequest(serviceName string, serviceUrl string, w http.ResponseWriter, 
 	}
 }
 
-// respondWithJSON is a helper function to write json response format.
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 
@@ -238,27 +188,6 @@ func getEnv(key, fallback string) string {
 		value = fallback
 	}
 	return value
-}
-
-// consumeFromKafka consumes events from Kafka.
-func consumeFromKafka(reader *kafka.Reader) {
-	fmt.Println("Consuming Events ...")
-
-	for {
-		m, err := reader.ReadMessage(context.Background())
-		if err != nil {
-			log.Fatalln(err)
-		}
-		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-
-		var event Event
-		err = json.Unmarshal(m.Value, &event)
-		if err != nil {
-			log.Printf("failed to parse Event Data from Kafka Message: %v", err)
-
-		}
-		events = append(events, event)
-	}
 }
 
 // OpenAPI OpenAPIHandler returns a handler that serves the OpenAPI documentation.
@@ -328,4 +257,22 @@ func NewChiServer() *chi.Mux {
 	})
 
 	return r
+}
+
+func (s *server) NewEvents(w http.ResponseWriter, r *http.Request) {
+	cloudEvent, err := cloudevents.NewEventFromHTTPRequest(r)
+	if err != nil {
+		log.Printf("failed to parse CloudEvent from request: %v", err)
+
+	}
+	log.Println(cloudEvent.String())
+	var event Event
+	err = json.Unmarshal(cloudEvent.DataEncoded, &event)
+	if err != nil {
+		log.Printf("failed to parse Event Data from CloudEvent: %v", err)
+
+	}
+	fmt.Printf("Event received (type: %s): %s, Payload: %s \n", event.Type, event.Id, event.Payload)
+	events = append(events, event)
+	respondWithJSON(w, http.StatusOK, event)
 }

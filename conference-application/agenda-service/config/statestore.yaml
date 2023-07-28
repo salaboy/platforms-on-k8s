@@ -1,0 +1,18 @@
+apiVersion: dapr.io/v1alpha1
+kind: Component
+metadata:
+  name: agenda-service-statestore
+spec:
+  type: state.redis
+  version: v1
+  metadata:
+  - name: keyPrefix
+    value: name
+  - name: redisHost
+    value: redis-master:6379
+  - name: redisPassword
+    secretKeyRef:
+      name: redis
+      key: redis-password
+auth:
+  secretStore: kubernetes

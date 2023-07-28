@@ -55,7 +55,6 @@ function EventsList() {
                             id={item.id}
                             type={item.type}
                             payload={item.payload}
-
                         />
 
                     ))

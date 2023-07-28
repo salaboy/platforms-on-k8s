@@ -9,6 +9,10 @@ spec:
       app: c4p-service
   template:
     metadata:
+      annotations:  
+        dapr.io/app-id: c4p-service
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true"
       labels:
         app: c4p-service
         app.kubernetes.io/name: c4p-service
@@ -25,9 +29,9 @@ spec:
           value: http://agenda-service.{{ .Release.Namespace }}.svc.cluster.local
         - name: NOTIFICATIONS_SERVICE_URL
           value: http://notifications-service.{{ .Release.Namespace }}.svc.cluster.local
+        - name: PUBSUB_NAME
+          value: {{ .Release.Name }}-conference-pubsub  
 {{- if .Values.install.infrastructure }} 
-        - name: KAFKA_URL
-          value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local
         - name: POSTGRES_HOST
           value: {{ .Release.Name }}-postgresql.{{ .Release.Namespace }}.svc.cluster.local
         - name: POSTGRES_PASSWORD
@@ -36,8 +40,6 @@ spec:
               name: {{ .Release.Name }}-postgresql
               key: postgres-password 
 {{- else }}
-        - name: KAFKA_URL
-          value: {{ .Values.c4p.kafka.url}}
         - name: POSTGRES_HOST
           value: {{ .Values.c4p.postgresql.host}}
         - name: POSTGRES_PASSWORD

@@ -7,6 +7,9 @@ spec:
     metadata:
       annotations:  
         autoscaling.knative.dev/min-scale: "1"
+        dapr.io/app-id: agenda-service
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true"
     spec:
       containerConcurrency: 0
       containers:

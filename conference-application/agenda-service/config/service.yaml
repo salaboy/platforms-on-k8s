@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agenda-service-deployment
+spec:
+  selector:
+    matchLabels:
+      app: agenda-service
+  template:
+    metadata:
+      annotations:  
+        dapr.io/app-id: agenda-service
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true"
+      labels:
+        app: agenda-service
+    spec:
+      containers:
+      - name: agenda-service
+        image: ko://github.com/salaboy/platforms-on-k8s/conference-application/agenda-service
+        imagePullPolicy: Always
+        env:          
+        - name: POD_NODENAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: POD_SERVICE_ACCOUNT
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.serviceAccountName      
+        livenessProbe:
+          httpGet:
+            path: /health/readiness
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /health/liveness
+            port: 8080
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agenda-service
+spec:
+  selector:
+    app: agenda-service
+  ports:
+  - port: 80
+    targetPort: 8080

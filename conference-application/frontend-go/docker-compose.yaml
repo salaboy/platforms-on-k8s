@@ -15,7 +15,7 @@ services:
       test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
       interval: 10s
       timeout: 10s
-      retries: 10   
+      retries: 10    
   init-kafka:
     image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
     depends_on:
@@ -32,6 +32,18 @@ services:
       echo -e 'Successfully created the following topics:'
       kafka-topics.sh --bootstrap-server kafka:9092 --list
       "
+  dapr: 
+    image: daprio/daprd:edge
+    command: ["./daprd",
+     "-app-id", "frontend",
+     "-components-path", "/components"]
+    volumes:
+      - "./components/:/components"
+    ports: 
+    - "50001:50001"
+    depends_on:
+      kafka:
+        condition: service_healthy     
 volumes:
   kafka_data:
     driver: local      

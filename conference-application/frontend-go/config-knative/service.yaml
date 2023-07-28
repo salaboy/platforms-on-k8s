@@ -15,8 +15,6 @@ spec:
           env: 
           - name: FEATURE_DEBUG_ENABLED
             value: "true"
-          - name: KAFKA_URL
-            value: kafka.default.svc.cluster.local:9092
           - name: POD_NODENAME
             valueFrom:
               fieldRef:

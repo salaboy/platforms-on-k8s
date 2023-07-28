@@ -9,6 +9,10 @@ spec:
       app: notifications-service
   template:
     metadata:
+      annotations:  
+        dapr.io/app-id: notifications-service
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true"
       labels:
         app: notifications-service
         app.kubernetes.io/name: notifications-service
@@ -20,14 +24,9 @@ spec:
       - name: notifications-service
         image: "{{ .Values.services.registry }}/{{ .Values.services.notifications.image }}:{{ .Values.services.tag }}"
         imagePullPolicy: Always
-        env:
-{{- if .Values.install.infrastructure }}        
-        - name: KAFKA_URL
-          value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local
-{{- else }}
-        - name: KAFKA_URL
-          value: {{ .Values.notifications.kafka.url}}
-{{- end }}              
+        env: 
+        - name: PUBSUB_NAME
+          value: {{ .Release.Name }}-conference-pubsub
         - name: POD_NODENAME
           valueFrom:
             fieldRef:

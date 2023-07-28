@@ -33,6 +33,18 @@ services:
       echo -e 'Successfully created the following topic: events-topic'
       kafka-topics.sh --bootstrap-server kafka:9092 --list
       "
+  dapr: 
+    image: daprio/daprd:edge
+    command: ["./daprd",
+     "-app-id", "notifications-service",
+     "-components-path", "/components"]
+    volumes:
+      - "./components/:/components"
+    ports: 
+    - "50001:50001"
+    depends_on:
+      kafka:
+        condition: service_healthy        
 volumes:
   kafka_data:
     driver: local            

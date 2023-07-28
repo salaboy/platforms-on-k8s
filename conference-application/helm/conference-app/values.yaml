@@ -1,6 +1,6 @@
 services:
   registry: salaboy
-  tag: v1.0.0
+  tag: v2.0.0
   frontend: 
     image: frontend-go-1739aa83b5e69d4ccb8a5615830ae66c
   agenda: 
@@ -12,7 +12,7 @@ services:
 install:
   infrastructure: true
   ingress: true
-postgresql:
+postgresql: #helm install postgresql bitnami/postgresql --version 12.5.7 --set "image.debug=true" --set "primary.initdb.user=postgres" --set "primary.initdb.password=postgres" --set "primary.initdb.scriptsConfigMap=c4p-init-sql" --set "global.postgresql.auth.postgresPassword=postgres"
   image:
     debug: true
   primary: 
@@ -26,7 +26,7 @@ postgresql:
     postgresql:
       auth: 
         postgresPassword: postgres
-redis: 
+redis: #helm install redis bitnami/redis --version 17.11.3 --set "architecture=standalone"
   architecture: standalone
   master:
     persistence:
@@ -34,6 +34,7 @@ redis:
 kafka: 
   persistence:
     size: "1Gi"
+kafka: # helm install kafka bitnami/kafka --version 22.1.5 --set "provisioning.topics[0].name=events-topic" --set "provisioning.topics[0].partitions=1" 
   provisioning:
     topics:
     - name: events-topic

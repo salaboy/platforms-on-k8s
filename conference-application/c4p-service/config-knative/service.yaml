@@ -6,6 +6,9 @@ spec:
   template:
     metadata:
       annotations:  
+        dapr.io/app-id: c4p-service
+        dapr.io/app-port: "8080"
+        dapr.io/enabled: "true"
         autoscaling.knative.dev/min-scale: "1"
     spec:
       containerConcurrency: 0

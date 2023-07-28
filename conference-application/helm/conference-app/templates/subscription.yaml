@@ -1,0 +1,11 @@
+apiVersion: dapr.io/v1alpha1
+kind: Subscription
+metadata:
+  name: {{ .Release.Name }}-frontend-subscritpion
+  namespace: {{ .Release.Namespace }}
+spec:
+  topic: events-topic
+  route: /api/new-events/
+  pubsubname: {{ .Release.Name }}-conference-pubsub
+scopes: 
+- frontend

@@ -8,6 +8,8 @@ services:
       - 6379:6379
     healthcheck:
       test: ["CMD", "redis-cli","ping"]  
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]  
   kafka:
     image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
     ports:
@@ -24,7 +26,7 @@ services:
       test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
       interval: 10s
       timeout: 10s
-      retries: 10  
+      retries: 10    
   init-kafka:
     image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
     depends_on:
@@ -41,6 +43,20 @@ services:
       echo -e 'Successfully created the following topic: events-topic'
       kafka-topics.sh --bootstrap-server kafka:9092 --list
       "
+  dapr: 
+    image: daprio/daprd:edge
+    command: ["./daprd",
+     "-app-id", "agenda-service",
+     "-components-path", "/components"]
+    volumes:
+      - "./components/:/components"
+    ports: 
+    - "50001:50001"
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy    
 volumes:
   kafka_data:
     driver: local            
