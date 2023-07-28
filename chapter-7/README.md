@@ -116,5 +116,39 @@ Spec:
 Events:     <none>
 ```
 
+The final piece of the puzzle that allows the Frontend service to receive events that are submitted to the PubSub component is the following Dapr Subscription: 
 
+```
+> kubectl get subscription
+NAME                               AGE
+conference-frontend-subscritpion   39m
+```
 
+You can also describe this resource to see its configurations: 
+```
+> kubectl describe subscription conference-frontend-subscritpion
+Name:         conference-frontend-subscritpion
+Namespace:    default
+Labels:       app.kubernetes.io/managed-by=Helm
+Annotations:  meta.helm.sh/release-name: conference
+              meta.helm.sh/release-namespace: default
+API Version:  dapr.io/v2alpha1
+Kind:         Subscription
+Metadata:
+  Creation Timestamp:  2023-07-28T08:26:55Z
+  Generation:          1
+  Resource Version:    4102
+  UID:                 9f748cb0-125a-4848-bd39-f84e37e41282
+Scopes:
+  frontend
+Spec:
+  Bulk Subscribe:
+    Enabled:   false
+  Pubsubname:  conference-conference-pubsub
+  Routes:
+    Default:  /api/new-events/
+  Topic:      events-topic
+Events:       <none>
+```
+
+As you can see, this subscription forwards events to the route `/api/new-events/` for the Dapr applications listed in the `Scopes` section, in this case only the `frontend` application. 
