@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -11,11 +12,11 @@ import (
 	"os"
 	"strings"
 
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	"github.com/open-feature/go-sdk/pkg/openfeature"
 	"github.com/salaboy/platforms-on-k8s/conference-application/frontend-go/api"
-
-	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
 var (
@@ -31,8 +32,9 @@ var (
 	C4pServiceUrl           = getEnv("C4P_SERVICE_URL", "http://c4p-service.default.svc.cluster.local")
 	NotificationsServiceUrl = getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
 
-	AppPort = getEnv("APP_PORT", "8080")
-
+	AppPort   = getEnv("APP_PORT", "8080")
+	FlagdHost = getEnv("FLAGD_HOST", "http://flagd.default.svc.cluster.local")
+	FlagdPort = getEnv("FLAGD_PORT", "8013")
 	// FeatureGenerateProposal values:
 	// - PUBLIC (no filters)
 	// - GENERATE (Read Only Form - Generate Proposal)
@@ -41,8 +43,6 @@ var (
 	FeatureDebugEnabled     = getEnv("FEATURE_DEBUG_ENABLED", "false")
 	KoDataPath              = getEnv("KO_DATA_PATH", "kodata")
 )
-
-var events = []Event{}
 
 const (
 	ApplicationJson = "application/json"
@@ -71,14 +71,27 @@ type Features struct {
 	GenerateProposal string
 }
 
+var events = []Event{}
+
 func main() {
 
 	r := NewChiServer()
 
+	openfeature.SetProvider(flagd.NewProvider(
+		flagd.WithHost(FlagdHost),
+		flagd.WithPort(FlagdPort),
+	))
+
+	client := openfeature.NewClient("frontend")
+
+	value, err := client.BooleanValue(
+		context.Background(), "debug_enabled", false, openfeature.EvaluationContext{},
+	)
+
 	log.Printf("Starting Frontend Go in Port: %s", AppPort)
 
 	// Start the server; this is a blocking call
-	err := http.ListenAndServe(":"+AppPort, r)
+	err = http.ListenAndServe(":"+AppPort, r)
 	if err != http.ErrServerClosed {
 		log.Panic(err)
 	}

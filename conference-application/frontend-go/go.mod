@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/gorilla/mux v1.8.0
+	github.com/open-feature/go-sdk v1.5.1
 )
 
 require (
