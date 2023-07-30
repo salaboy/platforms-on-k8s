@@ -4,10 +4,45 @@ import styles from './nav.module.css'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import Cloud from '../cloud/cloud'
+import { useState, useEffect } from 'react'
 
-
+function renderCallForProposalContent(pathname, features){
+    console.log("Call for proposals enabled? : "+ features.CALL_FOR_PROPOSALS_ENABLED)
+    if(features.CALL_FOR_PROPOSALS_ENABLED){
+        return (
+            <li className={styles.menuItem}><Link href="/proposals/" className={pathname === "/proposals" ? `${styles.active} ` : ' '} scroll={false}>Call for Proposals</Link></li>
+         );
+    }else{
+        return (
+            <></>
+         );
+    }
+    
+}
 
 export default function Nav() {
+
+    const [features, setFeatures] = useState('') // state hook
+
+    const fetchFeatures = () => {
+        console.log("Querying /api/features/")
+        fetch('/api/features/')
+        .then((res) => res.json())
+        .then((data) => {
+            console.log("Features Data: " + data)
+            setFeatures(data)
+        }).catch((error) => {
+            setFeatures({})
+            console.log(error)
+        })
+    };
+
+    useEffect(() => {                           // side effect hook
+        fetchFeatures()
+    
+  }, [])
+
+
     const pathname = usePathname()
     return (
         <nav className={styles.nav}>
@@ -41,20 +76,21 @@ export default function Nav() {
                             </ul>
                         </div>
                         <div className="col half positionHalf">
-                            
-                                <ul className={styles.menu}>
-                                    <li className={styles.menuItem}><Link href="/agenda/" className={pathname === "/agenda" ? `${styles.active} ` : ' '} scroll={false}>Agenda</Link></li>
-                                    <li className={styles.menuItem}><Link href="/proposals/" className={pathname === "/proposals" ? `${styles.active} ` : ' '} scroll={false}>Call for Proposals</Link></li>
-                                    <li className={styles.menuItem}><Link href="/about/" className={pathname === "/about" ? `${styles.active} ` : ' '} scroll={false}>About</Link></li>
-                                    <li className={`${styles.menuItem}   ${styles.icon} `}>
-                                        <Link href="/backoffice/" className={pathname === "/backoffice" ? `${styles.active} ` : ' '} scroll={false}>
-                                            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                            <path d="M10 19C9.44772 19 9 19.4477 9 20C9 20.5523 9.44772 21 10 21V19ZM30.7071 20.7071C31.0976 20.3166 31.0976 19.6834 30.7071 19.2929L24.3431 12.9289C23.9526 12.5384 23.3195 12.5384 22.9289 12.9289C22.5384 13.3195 22.5384 13.9526 22.9289 14.3431L28.5858 20L22.9289 25.6569C22.5384 26.0474 22.5384 26.6805 22.9289 27.0711C23.3195 27.4616 23.9526 27.4616 24.3431 27.0711L30.7071 20.7071ZM10 21H30V19H10V21Z" fill="black"/>
-                                            </svg>
-                                        </Link></li>
-                                </ul>
-                            
-                        </div>
+                        
+                            <ul className={styles.menu}>
+                                <li className={styles.menuItem}><Link href="/agenda/" className={pathname === "/agenda" ? `${styles.active} ` : ' '} scroll={false}>Agenda</Link></li>
+
+                                {renderCallForProposalContent(pathname, features)}
+                                <li className={styles.menuItem}><Link href="/about/" className={pathname === "/about" ? `${styles.active} ` : ' '} scroll={false}>About</Link></li>
+                                <li className={`${styles.menuItem}   ${styles.icon} `}>
+                                    <Link href="/backoffice/" className={pathname === "/backoffice" ? `${styles.active} ` : ' '} scroll={false}>
+                                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10 19C9.44772 19 9 19.4477 9 20C9 20.5523 9.44772 21 10 21V19ZM30.7071 20.7071C31.0976 20.3166 31.0976 19.6834 30.7071 19.2929L24.3431 12.9289C23.9526 12.5384 23.3195 12.5384 22.9289 12.9289C22.5384 13.3195 22.5384 13.9526 22.9289 14.3431L28.5858 20L22.9289 25.6569C22.5384 26.0474 22.5384 26.6805 22.9289 27.0711C23.3195 27.4616 23.9526 27.4616 24.3431 27.0711L30.7071 20.7071ZM10 21H30V19H10V21Z" fill="black"/>
+                                        </svg>
+                                    </Link></li>
+                            </ul>
+    
+                        </div> 
                     </>
                 )}
                 

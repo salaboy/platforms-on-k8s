@@ -16,6 +16,8 @@ import (
 
 	dapr "github.com/dapr/go-sdk/client"
 	"github.com/salaboy/platforms-on-k8s/conference-application/c4p-service/api"
+	flagd "github.com/open-feature/go-sdk-contrib/providers/flagd/pkg"
+	"github.com/open-feature/go-sdk/pkg/openfeature"
 )
 
 const (
@@ -100,6 +102,13 @@ type ServiceInfo struct {
 	PodNodeName       string `json:"podNodeName"`
 	PodIp             string `json:"podIp"`
 	PodServiceAccount string `json:"podServiceAccount"`
+	EventsEnabled     bool   `json:"eventsEnabled"`
+}
+
+type EventsEnabled struct {
+	AgendaService        bool `json:"agenda-service"`
+	NotificationsService bool `json:"notifications-service"`
+	C4PService           bool `json:"c4p-service"`
 }
 
 var (
@@ -118,23 +127,14 @@ var (
 	PubSubTopic        = getEnv("PUBSUB_TOPIC", "events-topic")
 	TenantId           = getEnv("TENANT_ID", "tenant-a")
 	AppPort            = getEnv("APP_PORT", "8080")
+	FlagdHost          = getEnv("FLAGD_HOST", "flagd.default.svc.cluster.local")
 )
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(code)
-	w.Write(response)
-}
 
-func getEnv(key, fallback string) string {
-	value, exists := os.LookupEnv(key)
-	if !exists {
-		value = fallback
-	}
-	return value
-}
+var db *sql.DB
 
 // server
 type server struct {
@@ -142,6 +142,28 @@ type server struct {
 	DB                      *sql.DB
 	AgendaServiceURL        string
 	NotificationsServiceURL string
+}
+
+func areEventsEnabled(featureClient *openfeature.Client) bool {
+	ctx := context.Background()
+	eventsEnabled, err := featureClient.ObjectValue(ctx, "eventsEnabled", EventsEnabled{}, openfeature.EvaluationContext{})
+	if err != nil {
+		log.Println("failed to find Feature Flag `eventsEnabled`.")
+		return false
+	}
+
+	jsonData, err := json.Marshal(eventsEnabled)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var eventsEnabledStruct EventsEnabled
+	err = json.Unmarshal(jsonData, &eventsEnabledStruct)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return eventsEnabledStruct.C4PService
 }
 
 // GetProposals gets all proposals.
@@ -262,6 +284,7 @@ func (s server) DeleteProposal(w http.ResponseWriter, r *http.Request, proposalI
 
 	defer rows.Close()
 
+	
 	//@TODO: validate that only one result comes from the query
 	var proposal Proposal
 	for rows.Next() {
@@ -278,26 +301,30 @@ func (s server) DeleteProposal(w http.ResponseWriter, r *http.Request, proposalI
 		return
 	}
 
-	event := Event{
-		Id:      uuid.New().String(),
-		Type:    "proposal-archived",
-		Payload: string(proposalJson),
-	}
+	eventsEnabled := areEventsEnabled(s.FeatureClient)
+	log.Printf("Events Enabled? %s", eventsEnabled)
+	if eventsEnabled {
+		event := Event{
+			Id:      uuid.New().String(),
+			Type:    "proposal-archived",
+			Payload: string(proposalJson),
+		}
 
-	eventJson, err := json.Marshal(event)
-	if err != nil {
-		log.Printf("An error occured while marshalling the event to json: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
+		eventJson, err := json.Marshal(event)
+		if err != nil {
+			log.Printf("An error occured while marshalling the event to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	if err := s.APIClient.PublishEvent(ctx, PubSubName, PubSubTopic, eventJson); err != nil {
-		log.Printf("An error occured while publishing the event: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
+		if err := s.APIClient.PublishEvent(ctx, PubSubName, PubSubTopic, eventJson); err != nil {
+			log.Printf("An error occured while publishing the event: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	log.Printf("Proposal Archived Event published: %s", proposal)
+		log.Printf("Proposal Archived Event published: %s", proposal)
+	}
 
 	respondWithJSON(w, http.StatusOK, proposal)
 }
@@ -360,13 +387,13 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 			Data:        agendaItemJson,
 		}
 
-		res, err := s.APIClient.InvokeMethodWithContent(ctx, "agenda-service", "agenda-items/", "POST", content)
-		if err != nil {
-			log.Printf("There was an error creating the request to the Agenda Item Service: %v", err)
-			respondWithJSON(w, http.StatusInternalServerError, err)
-		}
-
-		log.Printf("Response from calling agenda-service %s: ", res)
+			res, err := APIClient.InvokeMethodWithContent(ctx, "agenda-service", "agenda-items/", "POST", content)
+			log.Printf("Response from calling agenda-service %s: ", res)
+			if err != nil {
+				log.Printf("There was an error creating the request to the Agenda Item Service: %v", err)
+				respondWithJSON(w, http.StatusInternalServerError, err)
+				return
+			}
 
 		var agendaItemResponse AgendaItem
 		err = json.Unmarshal(res, &agendaItemResponse)
@@ -375,37 +402,71 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 		}
 		decisionResponse.AgendaItem = agendaItemResponse
 
-		proposalJson, err := json.Marshal(proposal)
-		if err != nil {
-			log.Printf("An error occured while marshalling the proposal to json: %v", err)
-			respondWithJSON(w, http.StatusInternalServerError, err)
-			return
-		}
+		eventsEnabled := areEventsEnabled(s.FeatureClient)
+		log.Printf("Events Enabled? %s", eventsEnabled)
+		if eventsEnabled {
+			proposalJson, err := json.Marshal(proposal)
+			if err != nil {
+				log.Printf("An error occured while marshalling the proposal to json: %v", err)
+				respondWithJSON(w, http.StatusInternalServerError, err)
+				return
+			}
 
-		//@TODO: add tenant to PUBSUB_TOPIC
-		event := Event{
-			Id:      uuid.New().String(),
-			Type:    "proposal-approved",
-			Payload: string(proposalJson),
-		}
-		eventJson, err := json.Marshal(event)
-		if err != nil {
-			log.Printf("An error occured while marshalling the event to json: %v", err)
-			respondWithJSON(w, http.StatusInternalServerError, err)
-			return
-		}
+			//@TODO: add tenant to PUBSUB_TOPIC
+			event := Event{
+				Id:      uuid.New().String(),
+				Type:    "proposal-approved",
+				Payload: string(proposalJson),
+			}
+			eventJson, err := json.Marshal(event)
+			if err != nil {
+				log.Printf("An error occured while marshalling the event to json: %v", err)
+				respondWithJSON(w, http.StatusInternalServerError, err)
+				return
+			}
 
-		if err := s.APIClient.PublishEvent(ctx, PubSubName, PubSubTopic, eventJson); err != nil {
-			log.Printf("An error occured while publishing the event: %v", err)
-			respondWithJSON(w, http.StatusInternalServerError, err)
-			return
-		}
+			if err := s.APIClient.PublishEvent(ctx, PubSubName, PubSubTopic, eventJson); err != nil {
+				log.Printf("An error occured while publishing the event: %v", err)
+				respondWithJSON(w, http.StatusInternalServerError, err)
+				return
+			}
 
-		log.Printf("Proposal Approved Event published: %s", proposal)
+			log.Printf("Proposal Approved Event published: %s", proposal)
+		}
 
 	} else {
 
 		log.Printf("Proposal Id: %s was rejected!", proposalId)
+
+		eventsEnabled := areEventsEnabled(s.FeatureClient)
+		log.Printf("Events Enabled? %s", eventsEnabled)
+		if eventsEnabled {
+			proposalJson, err := json.Marshal(proposal)
+			if err != nil {
+				log.Printf("An error occured while marshalling the proposal to json: %v", err)
+				respondWithJSON(w, http.StatusInternalServerError, err)
+				return
+			}
+
+			//@TODO: add tenant to PUBSUB_TOPIC
+			event := Event{
+				Id:      uuid.New().String(),
+				Type:    "proposal-rejected",
+				Payload: string(proposalJson),
+			}
+			eventJson, err := json.Marshal(event)
+			if err != nil {
+				log.Printf("An error occured while marshalling the event to json: %v", err)
+				respondWithJSON(w, http.StatusInternalServerError, err)
+				return
+			}
+
+			if err := APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); err != nil {
+				log.Printf("An error occured while publishing the event: %v", err)
+				respondWithJSON(w, http.StatusInternalServerError, err)
+				return
+			}
+		}
 
 	}
 	log.Printf("Sending Notification to Proposal's author: %s author about decision", proposal.Email)
@@ -489,12 +550,17 @@ func NewChiServer() *chi.Mux {
 		panic(err)
 	}
 
+	openfeature.SetProvider(flagd.NewProvider(
+		flagd.WithHost(FlagdHost),
+		flagd.WithPort(8013),
+	))
+
+	openfeatureClient := openfeature.NewClient("c4p-service")
+
 	// Create a new server
-	server := NewServer(APIClient, db)
+	server := NewServer(APIClient, db, openfeatureClient)
 	OpenAPI(r)
 
-	// mount the API on the server
-	r.Mount("/", api.Handler(server))
 
 	// add health check
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
@@ -524,9 +590,10 @@ func NewDB() *sql.DB {
 	return db
 }
 
-func NewServer(daprClient *dapr.Client, db *sql.DB) api.ServerInterface {
+func NewServer(daprClient *dapr.Client, db *sql.DB, openfeatureClient *openfeature.Client) api.ServerInterface {
 	return &server{
 		APIClient: daprClient,
 		DB:        db,
+		OpenFeatureClient: openfeatureClient
 	}
 }

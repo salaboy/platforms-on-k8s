@@ -24,6 +24,10 @@ type ServerInterface interface {
 	// Get Service Info
 	// (GET /service/info)
 	GetServiceInfo(w http.ResponseWriter, r *http.Request)
+	// Get event
+	// (POST /features)
+	GetFeatures(w http.ResponseWriter, r *http.Request)
+
 }
 
 // ServerInterfaceWrapper converts contexts to parameters.
@@ -216,6 +220,9 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	})
 	r.Group(func(r chi.Router) {
 		r.Post(options.BaseURL+"/new-events/", wrapper.NewEvents)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/features/", wrapper.GetFeatures)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/service/info", wrapper.GetServiceInfo)

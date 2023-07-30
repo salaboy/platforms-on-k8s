@@ -12,6 +12,8 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	flagd "github.com/open-feature/go-sdk-contrib/providers/flagd/pkg"
+	"github.com/open-feature/go-sdk/pkg/openfeature"
 	api "github.com/salaboy/platforms-on-k8s/conference-application/notifications-service/api"
 )
 
@@ -36,6 +38,7 @@ type ServiceInfo struct {
 	PodNodeName       string `json:"podNodeName"`
 	PodIp             string `json:"podIp"`
 	PodServiceAccount string `json:"podServiceAccount"`
+	EventsEnabled     bool   `json:"eventsEnabled"`
 }
 
 type Notification struct {
@@ -55,6 +58,12 @@ type Event struct {
 	Type    string `json:"type"`
 }
 
+type EventsEnabled struct {
+	AgendaService        bool `json:"agenda-service"`
+	NotificationsService bool `json:"notifications-service"`
+	C4PService           bool `json:"c4p-service"`
+}
+
 func (s Notification) MarshalBinary() ([]byte, error) {
 	return json.Marshal(s)
 }
@@ -72,6 +81,7 @@ var (
 	PUBSUB_TOPIC        = getEnv("PUBSUB_TOPIC", "events-topic")
 	TENANT_ID           = getEnv("TENANT_ID", "tenant-a")
 	notifications       = []Notification{}
+	FLAGD_HOST          = getEnv("FLAGD_HOST", "flagd.default.svc.cluster.local")
 )
 
 // respondWithJSON is a helper function to write a JSON response.
@@ -137,23 +147,54 @@ func OpenAPI(r *chi.Mux) {
 
 // server implements the api.ServerInterface
 type server struct {
-	APIClient dapr.Client
+	APIClient     dapr.Client
+	FeatureClient *openfeature.Client
 }
 
 // NewServer creates a new api.ServerInterface instance.
 func NewServer() api.ServerInterface {
+	openfeature.SetProvider(flagd.NewProvider(
+		flagd.WithHost(FLAGD_HOST),
+		flagd.WithPort(8013),
+	))
+
+	openfeatureClient := openfeature.NewClient("notifications-service")
+
 	client, err := dapr.NewClient()
 	if err != nil {
 		panic(err)
 	}
 	return &server{
-		APIClient: client,
+		APIClient:     client,
+		FeatureClient: openfeatureClient,
 	}
 }
 
 // GetAllNotifications returns all notifications.
 func (s *server) GetAllNotifications(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, notifications)
+}
+
+func (s server) areEventsEnabled() bool {
+	ctx := context.Background()
+	eventsEnabled, err := s.FeatureClient.ObjectValue(ctx, "eventsEnabled", EventsEnabled{}, openfeature.EvaluationContext{})
+	if err != nil {
+		log.Println("failed to find Feature Flag `eventsEnabled`.")
+		return false
+	}
+
+	jsonData, err := json.Marshal(eventsEnabled)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var eventsEnabledStruct EventsEnabled
+	err = json.Unmarshal(jsonData, &eventsEnabledStruct)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return eventsEnabledStruct.NotificationsService
 }
 
 // CreateNotification creates a new notification.
@@ -199,34 +240,39 @@ func (s *server) CreateNotification(w http.ResponseWriter, r *http.Request) {
 
 	notifications = append(notifications, notification)
 
-	notificationJson, err := json.Marshal(notification)
-	if err != nil {
-		log.Printf("An error occured while marshalling the notification to json: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
+	log.Printf("Notification Sent: %v", notification)
 
-	event := Event{
-		Id:      uuid.New().String(),
-		Type:    "notification-sent",
-		Payload: string(notificationJson),
-	}
+	eventsEnabled := s.areEventsEnabled()
+	log.Printf("Events Enabled? %s", eventsEnabled)
+	if eventsEnabled {
+		notificationJson, err := json.Marshal(notification)
+		if err != nil {
+			log.Printf("An error occured while marshalling the notification to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	eventJson, err := json.Marshal(event)
-	if err != nil {
-		log.Printf("An error occured while marshalling the event for the notification to json: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
+		event := Event{
+			Id:      uuid.New().String(),
+			Type:    "notification-sent",
+			Payload: string(notificationJson),
+		}
+		eventJson, err := json.Marshal(event)
+		if err != nil {
+			log.Printf("An error occured while marshalling the event to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	//@TODO: add tenant to PUBSUB_TOPIC
-	if err := s.APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); err != nil {
-		log.Printf("An error occured while publishing the event: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
+		//@TODO: add tenant to PUBSUB_TOPIC
+		if err := s.APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); err != nil {
+			log.Printf("An error occured while publishing the event: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	log.Printf("Notification Sent - Event published: %v", notification)
+		log.Printf("Notification Sent - Event published: %v", notification)
+	}
 
 	// @TODO avoid doing two marshals to json
 	respondWithJSON(w, http.StatusOK, notification)
@@ -243,6 +289,7 @@ func (s *server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 		PodNamespace:      POD_NAMESPACE,
 		PodIp:             POD_IP,
 		PodServiceAccount: POD_SERVICE_ACCOUNT,
+		EventsEnabled:     s.areEventsEnabled(),
 	}
 	w.Header().Set(ContentType, ApplicationJson)
 	json.NewEncoder(w).Encode(info)

@@ -28,7 +28,6 @@ function EventItem({id, type, payload}) {
         <div className={styles.header}>
           <h5><span>#{id}</span>  {type}</h5>
         </div>
-          {/* Maybe render using: https://www.npmjs.com/package/react-json-pretty */}
           <div className={styles.description}>
             <div className={styles.codeContainer}>
               <JSONPretty id="json-pretty" data={payload}></JSONPretty>

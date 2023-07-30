@@ -3,9 +3,9 @@ import ServiceInfo from './serviceinfo'
 import styles from '@/app/styles/debug.module.css'
 
 import { useState, useEffect } from 'react'
+import JSONPretty from 'react-json-pretty';
 
-
-function Debug() {
+function Debug(features) {
     const [isLoading, setLoading] = useState(false)
     const [frontendServiceInfo, setFrontendServiceInfo] = useState('') // state hook
     const [c4pServiceInfo, setC4pServiceInfo] = useState('') // state hook
@@ -23,7 +23,8 @@ function Debug() {
         "podServiceAccount": "N/A",
         "source": "N/A",
         "version": "N/A",
-        "healthy": false
+        "healthy": false,
+        "eventsEnabled": false
     }
 
     const mockAgendaServiceInfo = {
@@ -35,7 +36,9 @@ function Debug() {
         "podServiceAccount": "N/A",
         "source": "N/A",
         "version": "N/A",
-        "healthy": false
+        "healthy": false,
+        "eventsEnabled": false
+
     }
 
     const mockC4PServiceInfo = {
@@ -47,7 +50,8 @@ function Debug() {
         "podServiceAccount": "N/A",
         "source": "N/A",
         "version": "N/A",
-        "healthy": false
+        "healthy": false,
+        "eventsEnabled": false
     }
 
     const mockNotificationsServiceInfo = {
@@ -59,7 +63,8 @@ function Debug() {
         "serviceAccount": "N/A",
         "source": "N/A",
         "version": "N/A",
-        "healthy": false
+        "healthy": false,
+        "eventsEnabled": false
     }
 
     useEffect(() => {
@@ -143,56 +148,71 @@ function Debug() {
     }, [])
 
     return (
-        <div className={styles.DebugList}>
-            <ServiceInfo
-                name={frontendServiceInfo.name}
-                version={frontendServiceInfo.version}
-                key="frontend"
-                source={frontendServiceInfo.source}
-                podIp={frontendServiceInfo.podIp}
-                podName={frontendServiceInfo.podName}
-                nodeName={frontendServiceInfo.podNodeName}
-                namespace={frontendServiceInfo.podNamespace}
-                serviceAccount={frontendServiceInfo.podServiceAccount}
-                healthy={frontendServiceInfo.healthy}
-            />
+        <div>
+            <div>
+                <h3>Feature Flags</h3>
+                <JSONPretty id="json-pretty" data={JSON.stringify(features)}></JSONPretty>
+            </div>
+            <div>
+            <h3>Services</h3>
+            
+                <div className={styles.DebugList}>
+                    
+                    <ServiceInfo
+                        name={frontendServiceInfo.name}
+                        version={frontendServiceInfo.version}
+                        key="frontend"
+                        source={frontendServiceInfo.source}
+                        podIp={frontendServiceInfo.podIp}
+                        podName={frontendServiceInfo.podName}
+                        nodeName={frontendServiceInfo.podNodeName}
+                        namespace={frontendServiceInfo.podNamespace}
+                        serviceAccount={frontendServiceInfo.podServiceAccount}
+                        healthy={frontendServiceInfo.healthy}
+                        eventsEnabled={frontendServiceInfo.eventsEnabled}
+                    />
 
-            <ServiceInfo
-                name={c4pServiceInfo.name}
-                version={c4pServiceInfo.version}
-                key="c4p"
-                source={c4pServiceInfo.source}
-                podName={c4pServiceInfo.podName}
-                podIp={c4pServiceInfo.podIp}
-                nodeName={c4pServiceInfo.podNodeName}
-                namespace={c4pServiceInfo.podNamespace}
-                serviceAccount={c4pServiceInfo.podServiceAccount}
-                healthy={c4pServiceInfo.healthy}
-            />
-            <ServiceInfo
-                name={agendaServiceInfo.name}
-                version={agendaServiceInfo.version}
-                key="agenda"
-                source={agendaServiceInfo.source}
-                podIp={agendaServiceInfo.podIp}
-                podName={agendaServiceInfo.podName}
-                nodeName={agendaServiceInfo.podNodeName}
-                namespace={agendaServiceInfo.podNamespace}
-                serviceAccount={agendaServiceInfo.podServiceAccount}
-                healthy={agendaServiceInfo.healthy}
-            />
-            <ServiceInfo
-                name={notificationsServiceInfo.name}
-                version={notificationsServiceInfo.version}
-                key="notifications"
-                source={notificationsServiceInfo.source}
-                podIp={notificationsServiceInfo.podIp}
-                podName={notificationsServiceInfo.podName}
-                nodeName={notificationsServiceInfo.podNodeName}
-                namespace={notificationsServiceInfo.podNamespace}
-                serviceAccount={notificationsServiceInfo.podServiceAccount}
-                healthy={notificationsServiceInfo.healthy}
-            />
+                    <ServiceInfo
+                        name={c4pServiceInfo.name}
+                        version={c4pServiceInfo.version}
+                        key="c4p"
+                        source={c4pServiceInfo.source}
+                        podName={c4pServiceInfo.podName}
+                        podIp={c4pServiceInfo.podIp}
+                        nodeName={c4pServiceInfo.podNodeName}
+                        namespace={c4pServiceInfo.podNamespace}
+                        serviceAccount={c4pServiceInfo.podServiceAccount}
+                        healthy={c4pServiceInfo.healthy}
+                        eventsEnabled={c4pServiceInfo.eventsEnabled}
+                    />
+                    <ServiceInfo
+                        name={agendaServiceInfo.name}
+                        version={agendaServiceInfo.version}
+                        key="agenda"
+                        source={agendaServiceInfo.source}
+                        podIp={agendaServiceInfo.podIp}
+                        podName={agendaServiceInfo.podName}
+                        nodeName={agendaServiceInfo.podNodeName}
+                        namespace={agendaServiceInfo.podNamespace}
+                        serviceAccount={agendaServiceInfo.podServiceAccount}
+                        healthy={agendaServiceInfo.healthy}
+                        eventsEnabled={agendaServiceInfo.eventsEnabled}
+                    />
+                    <ServiceInfo
+                        name={notificationsServiceInfo.name}
+                        version={notificationsServiceInfo.version}
+                        key="notifications"
+                        source={notificationsServiceInfo.source}
+                        podIp={notificationsServiceInfo.podIp}
+                        podName={notificationsServiceInfo.podName}
+                        nodeName={notificationsServiceInfo.podNodeName}
+                        namespace={notificationsServiceInfo.podNamespace}
+                        serviceAccount={notificationsServiceInfo.podServiceAccount}
+                        healthy={notificationsServiceInfo.healthy}
+                        eventsEnabled={notificationsServiceInfo.eventsEnabled}
+                    />
+                </div>
+            </div>
         </div>
     );
 

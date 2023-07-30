@@ -5,4 +5,6 @@ Release Name: {{ .Release.Name }}
 
 For more information visit: https://github.com/salaboy/platforms-on-k8s
 
+
 Access the Conference Application Frontend by running `kubectl port-forward svc/frontend -n {{ .Release.Namespace }} 8080:80`
+

@@ -14,6 +14,9 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+
+	flagd "github.com/open-feature/go-sdk-contrib/providers/flagd/pkg"
+	"github.com/open-feature/go-sdk/pkg/openfeature"
 )
 
 var (
@@ -31,6 +34,8 @@ var (
 	PUBSUB_NAME     = getEnv("PUBSUB_NAME", "conference-pubsub")
 	PUBSUB_TOPIC    = getEnv("PUBSUB_TOPIC", "events-topic")
 	TENANT_ID       = getEnv("TENANT_ID", "tenant-a")
+
+	FLAGD_HOST = getEnv("FLAGD_HOST", "flagd.default.svc.cluster.local")
 )
 
 const (
@@ -66,6 +71,12 @@ type AgendaItem struct {
 	Archived    bool     `json:"archived"`
 }
 
+type EventsEnabled struct {
+	AgendaService        bool `json:"agenda-service"`
+	NotificationsService bool `json:"notifications-service"`
+	C4PService           bool `json:"c4p-service"`
+}
+
 // MarshalBinary is a custom marshaler for AgendaItem.
 func (s AgendaItem) MarshalBinary() ([]byte, error) {
 	return json.Marshal(s)
@@ -81,6 +92,7 @@ type ServiceInfo struct {
 	PodNodeName       string `json:"podNodeName"`
 	PodIp             string `json:"podIp"`
 	PodServiceAccount string `json:"podServiceAccount"`
+	EventsEnabled     bool   `json:"eventsEnabled"`
 }
 
 // main is the entrypoint of the application.
@@ -120,7 +132,8 @@ func errorHandler(w http.ResponseWriter, statusCode int, message string) {
 
 // server is the API server struct that implements api.ServerInterface.
 type server struct {
-	APIClient dapr.Client
+	APIClient     dapr.Client
+	FeatureClient *openfeature.Client
 }
 
 // GetAgendaItems is a handler to get all Agenda Items.
@@ -193,47 +206,37 @@ func (s server) CreateAgendaItem(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Agenda Item Stored in Database: %v", agendaItem)
+	eventsEnabled := s.areEventsEnabled()
+	log.Printf("Events Enabled? %s", eventsEnabled)
+	if eventsEnabled {
+		agendaItemJson, err := json.Marshal(agendaItem)
+		if err != nil {
+			log.Printf("An error occured while marshalling the agenda item to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	agendaItemJson, err := json.Marshal(agendaItem)
-	if err != nil {
-		log.Printf("An error occured while marshalling the agenda item to json: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
+		event := Event{
+			Id:      uuid.New().String(),
+			Type:    "new-agenda-item",
+			Payload: string(agendaItemJson),
+		}
+		eventJson, err := json.Marshal(event)
+		if err != nil {
+			log.Printf("An error occured while marshalling the event to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	event := Event{
-		Id:      uuid.New().String(),
-		Type:    "new-agenda-item",
-		Payload: string(agendaItemJson),
-	}
+		//@TODO: add tenant to PUBSUB_TOPIC
+		if err := s.APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); err != nil {
+			log.Printf("An error occured while publishing the event: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	eventJson, err := json.Marshal(event)
-	if err != nil {
-		log.Printf("An error occured while marshalling the event for the agenda item to json: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
+		log.Printf("New Agenda Item Event emitted: %v", agendaItem)
 	}
-
-	event := Event{
-		Id:      uuid.New().String(),
-		Type:    "new-agenda-item",
-		Payload: string(agendaItemJson),
-	}
-	eventJson, err := json.Marshal(event)
-	if err != nil {
-		log.Printf("An error occured while marshalling the event to json: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	//@TODO: add tenant to PUBSUB_TOPIC
-	if err := s.APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); err != nil {
-		log.Printf("An error occured while publishing the event: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	log.Printf("New Agenda Item Event emitted: %v", agendaItem)
 
 	respondWithJSON(w, http.StatusCreated, agendaItem)
 }
@@ -285,6 +288,7 @@ func (s server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 		PodNamespace:      POD_NAMESPACE,
 		PodIp:             POD_IP,
 		PodServiceAccount: POD_SERVICE_ACCOUNT,
+		EventsEnabled:     s.areEventsEnabled(),
 	}
 	w.Header().Set(ContentType, ApplicationJson)
 	json.NewEncoder(w).Encode(info)
@@ -331,47 +335,79 @@ func (s server) ArchiveAgendaItemById(w http.ResponseWriter, r *http.Request, id
 	}
 
 	log.Printf("Agenda Item Archived in Database: %v", archivedAgendaItem)
+	eventsEnabled := s.areEventsEnabled()
+	log.Printf("Events Enabled? %s", eventsEnabled)
+	if eventsEnabled {
+		agendaItemJson, err := json.Marshal(archivedAgendaItem)
+		if err != nil {
+			log.Printf("An error occured while marshalling the agenda item to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	agendaItemJson, err := json.Marshal(archivedAgendaItem)
-	if err != nil {
-		log.Printf("An error occured while marshalling the agenda item to json: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
+		event := Event{
+			Id:      uuid.New().String(),
+			Type:    "agenda-item-archived",
+			Payload: string(agendaItemJson),
+		}
+		eventJson, err := json.Marshal(event)
+		if err != nil {
+			log.Printf("An error occured while marshalling the event to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		//@TODO: add tenant to PUBSUB_TOPIC
+		if err := s.APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); err != nil {
+			log.Printf("An error occured while publishing the event: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		log.Printf("Agenda Item Archived Event published: %v", archivedAgendaItem)
 	}
-
-	event := Event{
-		Id:      uuid.New().String(),
-		Type:    "agenda-item-archived",
-		Payload: string(agendaItemJson),
-	}
-
-	eventJson, err := json.Marshal(event)
-	if err != nil {
-		log.Printf("An error occured while marshalling the event for the agenda item to json: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	//@TODO: add tenant to PUBSUB_TOPIC
-	if err := s.APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); err != nil {
-		log.Printf("An error occured while publishing the event: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
-
-	log.Printf("Agenda Item Archived Event published: %v", archivedAgendaItem)
 
 	respondWithJSON(w, http.StatusNoContent, archivedAgendaItem)
 }
 
+func (s server) areEventsEnabled() bool {
+	ctx := context.Background()
+	eventsEnabled, err := s.FeatureClient.ObjectValue(ctx, "eventsEnabled", EventsEnabled{}, openfeature.EvaluationContext{})
+	if err != nil {
+		log.Println("failed to find Feature Flag `eventsEnabled`.")
+		return false
+	}
+
+	jsonData, err := json.Marshal(eventsEnabled)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var eventsEnabledStruct EventsEnabled
+	err = json.Unmarshal(jsonData, &eventsEnabledStruct)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return eventsEnabledStruct.AgendaService
+}
+
 // NewServer creates a new api.ServerInterface.
 func NewServer() api.ServerInterface {
+	openfeature.SetProvider(flagd.NewProvider(
+		flagd.WithHost(FLAGD_HOST),
+		flagd.WithPort(8013),
+	))
+
+	openfeatureClient := openfeature.NewClient("agenda-service")
+
 	client, err := dapr.NewClient()
 	if err != nil {
 		panic(err)
 	}
 	return &server{
-		APIClient: client,
+		APIClient:     client,
+		FeatureClient: openfeatureClient,
 	}
 }
 

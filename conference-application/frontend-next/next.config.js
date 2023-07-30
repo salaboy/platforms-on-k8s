@@ -20,48 +20,60 @@ module.exports = {
       // `placeholder="empty"` to all <ExportedImage> components.
       nextImageExportOptimizer_generateAndUseBlurImages: true,
     },
-    // output: 'standalone', -> this is to get a server for nodejs
+    // output: 'standalone', -> this is to get a server for nodejs 
     // async rewrites() {
     //   return [
     //     {
     //       source: '/api/agenda',
-    //       destination: 'http://frontend.default.74.220.17.154.sslip.io/api/agenda/',
+    //       destination: 'http://localhost/api/agenda/',
     //     },
     //     {
     //         source: '/api/agenda/:path*',
-    //         destination: 'http://frontend.default.74.220.17.154.sslip.io/api/agenda/:path*',
+    //         destination: 'http://localhost/api/agenda/:path*',
+    //     },
+    //     {
+    //       source: '/api/agenda/agenda-items/',
+    //       destination: 'http://localhost/api/agenda/agenda-items/',
+    //     },
+    //     {
+    //       source: '/api/agenda/agenda-items/:path*',
+    //       destination: 'http://localhost/api/agenda/agenda-items/:path*',
     //     },
     //     {
     //         source: '/api/c4p',
-    //         destination: 'http://frontend.default.74.220.17.154.sslip.io/api/c4p/',
+    //         destination: 'http://localhost/api/c4p/',
     //     },
     //     {
     //         source: '/api/c4p/:path*',
-    //         destination: 'http://frontend.default.74.220.17.154.sslip.io/api/c4p/:path*',
+    //         destination: 'http://localhost/api/c4p/:path*',
     //     },
     //     {
     //       source: '/api/events',
-    //       destination: 'http://frontend.default.74.220.17.154.sslip.io/api/events/',
+    //       destination: 'http://localhost/api/events/',
     //     },
     //     {
     //       source: '/api/events/:path*',
-    //       destination: 'http://frontend.default.74.220.17.154.sslip.io/api/events/:path*',
+    //       destination: 'http://localhost/api/events/:path*',
     //     },
     //     {
     //       source: '/api/notifications',
-    //       destination: 'http://frontend.default.74.220.17.154.sslip.io/api/notifications/',
+    //       destination: 'http://localhost/api/notifications/',
+    //     },
+    //     {
+    //       source: '/api/notifications/notifications',
+    //       destination: 'http://localhost/api/notifications/notifications/',
     //     },
     //     {
     //       source: '/api/notifications/:path*',
-    //       destination: 'http://frontend.default.74.220.17.154.sslip.io/api/notifications/:path*',
+    //       destination: 'http://localhost/api/notifications/:path*',
     //     },
     //     {
     //       source: '/service/info',
-    //       destination: 'http://frontend.default.74.220.17.154.sslip.io/service/info',
+    //       destination: 'http://localhost/service/info',
     //     },
     //     {
     //       source: '/api/features',
-    //       destination: 'http://frontend.default.74.220.17.154.sslip.io/api/features/',
+    //       destination: 'http://localhost/api/features/',
     //     },
     //   ]
     // },

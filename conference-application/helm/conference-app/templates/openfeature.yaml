@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flagd
+  labels:
+    app: flagd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flagd
+  template:
+    metadata:
+      labels:
+        app: flagd
+    spec:
+      containers:
+      - name: flagd
+        image: ghcr.io/open-feature/flagd:v0.5.3
+        args: ["start", "-f", "file:etc/config/flag-config.json"]
+        ports:
+        - containerPort: 8013
+        volumeMounts:
+        - name: flag-config-volume
+          mountPath: /etc/config
+      volumes:
+      - name: flag-config-volume
+        configMap:
+          name: flag-configuration
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flagd
+spec:
+  selector:
+    app: flagd
+  ports:
+  - protocol: TCP
+    port: 8013
+    targetPort: 8013
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flag-configuration
+  namespace: default
+data:
+  flag-config.json: |
+    {
+      "flags": {
+        "debugEnabled": {
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "off"
+        },
+        "callForProposalsEnabled": {
+          "state": "ENABLED",
+          "variants": {
+            "on": true,
+            "off": false
+          },
+          "defaultVariant": "on"  
+        },
+        "eventsEnabled": {
+          "state": "ENABLED",
+          "variants": {
+            "all": {
+              "agenda-service": true,
+              "notifications-service": true,
+              "c4p-service": true
+            },
+            "decisions-only": {
+              "agenda-service": false,
+              "notifications-service": false,
+              "c4p-service": true
+            },
+            "none": {
+              "agenda-service": false,
+              "notifications-service": false,
+              "c4p-service": false
+            }
+          },
+          "defaultVariant": "all"
+        }
+      }
+    }

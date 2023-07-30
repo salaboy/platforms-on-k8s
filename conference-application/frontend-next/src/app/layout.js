@@ -1,3 +1,5 @@
+
+
 import './styles/globals.css'
 import localFont from 'next/font/local'
 import Nav from './components/nav/nav'
@@ -41,6 +43,7 @@ export const metadata = {
 }
 
 export default function RootLayout({ children }) {
+  
   return (
     <html lang="en">
       <body className={`${excon.variable} ${generalsans.variable}  `}>

@@ -15,6 +15,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
+	flagd "github.com/open-feature/go-sdk-contrib/providers/flagd/pkg"
 	"github.com/open-feature/go-sdk/pkg/openfeature"
 	"github.com/salaboy/platforms-on-k8s/conference-application/frontend-go/api"
 )
@@ -66,43 +67,60 @@ type Event struct {
 	Type    string `json:"type"`
 }
 
+type EventsEnabled struct {
+	AgendaService        bool `json:"agenda-service"`
+	NotificationsService bool `json:"notifications-service"`
+	C4PService           bool `json:"c4p-service"`
+}
+
 type Features struct {
-	DebugEnabled     string
-	GenerateProposal string
+	DebugEnabled            bool
+	CallForProposalsEnabled bool
+	EventsEnabled           EventsEnabled
 }
 
 var events = []Event{}
 
-func main() {
+func (s *server) GetFeatures(w http.ResponseWriter, r *http.Request) {
 
-	r := NewChiServer()
-
-	openfeature.SetProvider(flagd.NewProvider(
-		flagd.WithHost(FlagdHost),
-		flagd.WithPort(FlagdPort),
-	))
-
-	client := openfeature.NewClient("frontend")
-
-	value, err := client.BooleanValue(
-		context.Background(), "debug_enabled", false, openfeature.EvaluationContext{},
-	)
-
-	log.Printf("Starting Frontend Go in Port: %s", AppPort)
-
-	// Start the server; this is a blocking call
-	err = http.ListenAndServe(":"+AppPort, r)
-	if err != http.ErrServerClosed {
-		log.Panic(err)
+	ctx := context.Background()
+	debugEnabled, err := s.FeatureClient.BooleanValue(ctx, "debugEnabled", false, openfeature.EvaluationContext{})
+	if err != nil {
+		log.Println("failed to find Feature Flag `debugEnabled`.")
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
 	}
-}
+	callForProposalsEnabled, err := s.FeatureClient.BooleanValue(ctx, "callForProposalsEnabled", true, openfeature.EvaluationContext{})
+	if err != nil {
+		log.Println("failed to find Feature Flag `callForProposalsEnabled`.")
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
 
-func featureHandler(w http.ResponseWriter, r *http.Request) {
+	eventsEnabled, err := s.FeatureClient.ObjectValue(ctx, "eventsEnabled", EventsEnabled{}, openfeature.EvaluationContext{})
+	if err != nil {
+		log.Println("failed to find Feature Flag `eventsEnabled`.")
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	jsonData, err := json.Marshal(eventsEnabled)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var eventsEnabledStruct EventsEnabled
+	err = json.Unmarshal(jsonData, &eventsEnabledStruct)
+	if err != nil {
+		log.Fatal(err)
+	}
 	var features = Features{
-		DebugEnabled:     FeatureDebugEnabled,
-		GenerateProposal: FeatureGenerateProposal,
+		DebugEnabled:            debugEnabled,
+		CallForProposalsEnabled: callForProposalsEnabled,
+		EventsEnabled:           eventsEnabledStruct,
 	}
 	respondWithJSON(w, http.StatusOK, features)
+
 }
 
 func eventsHandler(w http.ResponseWriter, r *http.Request) {
@@ -210,7 +228,9 @@ func OpenAPI(r *chi.Mux) {
 }
 
 // server implements api.ServerInterface interface.
-type server struct{}
+type server struct {
+	FeatureClient *openfeature.Client
+}
 
 // GetEventsWithPost gets all events from the in-memory store.
 func (s *server) GetEventsWithPost(w http.ResponseWriter, r *http.Request) {
@@ -240,7 +260,15 @@ func (s *server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 
 // NewServer creates a new api.ServerInterface server.
 func NewServer() api.ServerInterface {
-	return &server{}
+	openfeature.SetProvider(flagd.NewProvider(
+		flagd.WithHost(FlagdHost),
+		flagd.WithPort(8013),
+	))
+
+	openfeatureClient := openfeature.NewClient("notifications-service")
+	return &server{
+		FeatureClient: openfeatureClient,
+	}
 }
 
 // NewChiServer creates a new chi.Mux server.
@@ -259,7 +287,6 @@ func NewChiServer() *chi.Mux {
 	r.HandleFunc("/api/agenda/*", agendaServiceHandler)
 	r.HandleFunc("/api/c4p/*", c4PServiceHandler)
 	r.HandleFunc("/api/notifications/*", notificationServiceHandler)
-	r.HandleFunc("/api/features/*", featureHandler)
 
 	r.Mount("/api/", api.Handler(server))
 	r.Handle("/*", http.StripPrefix("/", fs))

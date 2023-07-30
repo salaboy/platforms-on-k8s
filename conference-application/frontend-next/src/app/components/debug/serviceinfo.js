@@ -1,7 +1,7 @@
 'use client'
 import styles from '@/app/styles/debug.module.css'
 
-function ServiceInfo({ key, name, version, source, podName, nodeName, namespace, podIp, serviceAccount, healthy }) {
+function ServiceInfo({ key, name, version, source, podName, nodeName, namespace, podIp, serviceAccount, healthy, eventsEnabled }) {
 
 
 
@@ -55,6 +55,13 @@ function ServiceInfo({ key, name, version, source, podName, nodeName, namespace,
             Pod Service Account: 
             </span>
             {serviceAccount}
+          </div>
+
+          <div className={styles.descriptionItem}>
+            <span>
+            Events Enabled: 
+            </span>
+            {eventsEnabled}
           </div>
 
         </div>
