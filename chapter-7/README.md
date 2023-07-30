@@ -1,9 +1,15 @@
 # Chapter 7 :: Shared Applications Concerns
 
+On this step-by-step tutorials we will look into how to use [Dapr](https://dapr.io) to provide Application-level APIs to solve common challenges that most Distributed Applications will phase. 
+
+Then we will look at [OpenFeature](https://openfeature.dev) a project that aims to standardize Feature Flags, so developement teams can keep releasing new features and stakeholders can decide when to enable/disable these features for their customers. 
+
+Because both projects are focused on providing developers new APIs and tools to use inside their service's code, we will deploy a new version of the application (`v2.0.0`). You can find all the changes required for this new version in the `v2.0.0` of this repository. [You can also compare the differences between the branches here](https://github.com/salaboy/platforms-on-k8s/compare/v2.0.0).
+
 
 # Installation
 
-You need a Kubernetes Cluster to install [Dapr](https://dapr.io) and `flagd` an [Open Feature](https://openfeature.dev/) Provider. You can create one using Kubernetes KinD as we did in [Chapter 2](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind)
+You need a Kubernetes Cluster to install [Dapr](https://dapr.io) and `flagd` an [OpenFeature](https://openfeature.dev/) Provider. You can create one using Kubernetes KinD as we did in [Chapter 2](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind)
 
 Then you can install Dapr into the cluster by running: 
 ```
