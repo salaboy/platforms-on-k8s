@@ -1,0 +1,41 @@
+{
+  "flags": {
+    "debugEnabled": {
+      "state": "ENABLED",
+      "variants": {
+        "on": true,
+        "off": false
+      },
+      "defaultVariant": "on"
+    },
+    "callForProposalsEnabled": {
+      "state": "ENABLED",
+      "variants": {
+        "on": true,
+        "off": false
+      },
+      "defaultVariant": "on"  
+    },
+    "eventsEnabled": {
+      "state": "ENABLED",
+      "variants": {
+        "all": {
+          "agenda-service": true,
+          "notifications-service": true,
+          "c4p-service": true
+        },
+        "decisions-only": {
+          "agenda-service": false,
+          "notifications-service": false,
+          "c4p-service": true
+        },
+        "none": {
+          "agenda-service": false,
+          "notifications-service": false,
+          "c4p-service": false
+        }
+      },
+      "defaultVariant": "none"
+    }
+  }
+}

@@ -202,9 +202,10 @@ What extra steps would you need to do to run this in a real Kubernetes Cluster i
 
 
 
-
 ## Sum up and Contribute
 
-On this 
+On this tutorial we have built a new Platform API reusing the Kubernetes Resource model to provision on demand development environments. On top of that with the Platform Admin application we have created a simplified layer to expose the same capabilities without pushing teams to learn about how Kubernetes work or the underlaying details, projects and technologies that we have used to build our Platform. 
+
+By relying on contracts (for this example the Environment resource definition), the platform team have the flexibility to change the mechanisms used to provision environments depending on their requirements and available tools. 
 
 Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.
