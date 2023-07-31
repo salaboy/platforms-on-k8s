@@ -324,5 +324,11 @@ To be able to run these pipelines you will need the following credentials to be 
 **Note**: These pipelines are just examples to illustrate the work required to configure Tekton to build containers and charts.
 
 
+## Clean up
 
+If you want to get rid of the KinD Cluster created for these tutorials, you can run:
+
+```
+kind delete clusters dev
+```
 

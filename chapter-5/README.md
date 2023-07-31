@@ -208,6 +208,16 @@ notifications:
 
 Notice that the `app-values.yaml` file relies on the names that we specified for our databases (`my-db-keyavalue` and `my-db-sql`) and our message brokers (`my-mb-kafka`) in the example files. If you request other databases and message brokers with other names you will need to adapt this file with the new names.
 
+
+## Clean up
+
+If you want to get rid of the KinD Cluster created for this tutorial, you can run:
+
+```
+kind delete clusters dev
+```
+
+
 ## Next Steps
 
 If you have access to a Cloud Provider such as Google Cloud Platform, Microsoft Azure or Amazon AWS, I strongly recommend you checking the Crossplane Providers for these platforms. Installing these providers and provisioning Cloud Resources, instead of using the Crossplane Helm Provider will give you real life experience on how these tools work. 

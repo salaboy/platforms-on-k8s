@@ -332,6 +332,14 @@ While we are still using a `ConfigMap` to store the feature flags configurations
 
 In this example, we haven't used more advanved features to evaluate feature flags like [context-based evaluations](https://openfeature.dev/docs/reference/concepts/evaluation-context#providing-evaluation-context), that can use for example the geo-location of the user to provide different values for the same feature flag, or [targetting keys](https://openfeature.dev/docs/reference/concepts/evaluation-context#targeting-key). It is up to the reader to go deeper into OpenFeature capabilities as well as which other [Open Feature flag providers](https://openfeature.dev/docs/reference/concepts/provider) are available.  
 
+## Clean up
+
+If you want to get rid of the KinD Cluster created for this tutorial, you can run:
+
+```
+kind delete clusters dev
+```
+
 
 ## Next Steps
 

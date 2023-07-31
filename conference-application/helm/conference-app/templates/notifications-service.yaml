@@ -22,7 +22,7 @@ spec:
           value: {{ .Release.Name }}-kafka.{{ .Release.Namespace }}.svc.cluster.local
 {{- else }}
         - name: KAFKA_URL
-          value: {{ .Values.frontend.kafka.url}}
+          value: {{ .Values.notifications.kafka.url}}
 {{- end }}              
         - name: POD_NODENAME
           valueFrom:

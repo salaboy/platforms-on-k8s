@@ -192,6 +192,16 @@ curl -X DELETE http://localhost:8081/api/environments/team-curl-dev-env/
 
 This application serves as a facade between Kubernetes and the outside world. Depending on your organization needs, you might want to have this abstractions (APIs) early on, so the platform team can pivot on their tooling and workflow decisions under the covers.
 
+
+## Clean up
+
+If you want to get rid of the KinD Cluster created for these tutorials, you can run:
+
+```
+kind delete clusters dev
+```
+
+
 ## Next Steps
 
 Can you extend the Admin User Interface to create Databases and Message Brokers like we did in Chapter 5? What would it take? Understanding where the changes needs to be made will give you hands-on experience on developing components that interact with the Kubernetes APIs and provide simplified interfaces for consumers.

@@ -225,6 +225,14 @@ Once the frontend is up and running you should see the Debug tab in the Back Off
 
 ![](imgs/app-debug.png)
 
+## Clean up
+
+If you want to get rid of the KinD Cluster created for this tutorial, you can run:
+
+```
+kind delete clusters dev
+```
+
 ## Next Steps
 
 Argo CD is just one project to implement GitOps, can you replicate this tutorial with Flux CD? Which one you prefer? Is your organization already using a GitOps tool? What would it take to deploy the Conference Application walking skeleton to a Kubernetes Cluster using that tool? 

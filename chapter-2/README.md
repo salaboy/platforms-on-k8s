@@ -115,7 +115,7 @@ Now you can point your browser to [http://localhost](http://localhost) to see th
 
 
 
-## Important !!! READ!!
+## Clean up - Important !!! READ!!
 
 Because the Conference Application is installing PostgreSQL, Redis and Kafka, if you want to remove and install the application again you need to make sure to delete the associated PersistenceVolumeClaims (PVCs). These PVCs are the volumes uses to store the data from the databases and Kafka, failing to delete these PVCs in between installations will cause the services to use old credentials to connect to the new provisioned databases. 
 
@@ -140,6 +140,14 @@ kubectl delete pvc  data-conference-kafka-0 data-conference-postgresql-0 redis-d
 ```
 
 The name of the PVCs will change based on the Helm Release name that you used when installing the chart.
+
+Finally, if you want to get rid of the KinD Cluster entirely, you can run:
+
+```
+kind delete clusters dev
+```
+
+
 
 ## Next Steps
 

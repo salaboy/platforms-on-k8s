@@ -7,6 +7,14 @@ These short tutorials cover both Tekton and Dagger for Service Pipelines. With T
 - [GitHub Actions](github-actions/README.md)
 
 
+## Clean up
+
+If you want to get rid of the KinD Cluster created for these tutorials, you can run:
+
+```
+kind delete clusters dev
+```
+
 ## Next Steps
 
 I strongly recommend following the tutorials listed for Tekton and Dagger in your local environments. If you have a development background you can extend the Dagger pipelines with your custom steps. 
