@@ -1,7 +1,7 @@
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
-  name: notifications-service 
+  name: frontend
 spec:
   template:
     metadata:
@@ -9,10 +9,16 @@ spec:
         autoscaling.knative.dev/min-scale: "1"
     spec:
       containers:
-        - image: salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525:v1.0.0
+        - image: salaboy/frontend-go-1739aa83b5e69d4ccb8a5615830ae66c:v1.0.0
           env:
           - name: KAFKA_URL
             value: kafka.default.svc.cluster.local
+          - name: AGENDA_SERVICE_URL
+            value: http://agenda-service.default.svc.cluster.local
+          - name: C4P_SERVICE_URL
+            value: http://c4p-service.default.svc.cluster.local
+          - name: NOTIFICATIONS_SERVICE_URL
+            value: http://notifications-service.default.svc.cluster.local    
           - name: POD_NODENAME
             valueFrom:
               fieldRef:

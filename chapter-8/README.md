@@ -13,13 +13,11 @@ apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
 - role: control-plane
   extraPortMappings:
-  - containerPort: 31080 # expose port 31380 of the node to port 8080 on the host, later to be use by kourier or contour ingress
+  - containerPort: 31080 # expose port 31380 of the node to port 80 on the host, later to be use by kourier or contour ingress
     listenAddress: 127.0.0.1
-    hostPort: 8080
+    hostPort: 80
 EOF
 ```
-
-Notice that we are using the 8080 port so you need to make sure that this port is available on your local setup. 
 
 When using Knative Serving there is no need to install an Ingress Controller, as Knative Serving requires a more advanced networking stack to enable features such as traffic routing and splitting. 
 
@@ -89,7 +87,7 @@ spec:
   ports:
     - name: http2
       nodePort: 31080
-      port: 8080
+      port: 80
       targetPort: 8080
 EOF
 ```
@@ -118,7 +116,7 @@ Knative Services also expose a simplified configuration that resembles Container
 Because the Notifications Service uses Kafka for emitting events, we need to install Kafka using Helm:
 
 ```
-helm install kafka bitnami/kafka --version 22.1.5 --set "provisioning.topics[0].name=events-topic" --set "provisioning.topics[0].partitions=1" 
+helm install kafka oci://registry-1.docker.io/bitnamicharts/kafka --version 22.1.5 --set "provisioning.topics[0].name=events-topic" --set "provisioning.topics[0].partitions=1" 
 ```
 
 Check that Kafka is running before proceeding, as it usually takes a bit of time to fetch the Kafka Container image and start it. 
@@ -158,16 +156,25 @@ notifications-service   http://notifications-service.default.127.0.0.1.sslip.io 
 
 ```
 
-You can now curl the `service/info` URL of the service to make sure that it is working. Notice the extra `:8080` on the service URL:
+You can now curl the `service/info` URL of the service to make sure that it is working:
 
 ```
-curl http://notifications-service.default.127.0.0.1.sslip.io:8080/service/info
+curl http://notifications-service.default.127.0.0.1.sslip.io/service/info
 ```
 
 You should see the following output: 
 
 ```
-{"name":"NOTIFICATIONS","version":"1.0.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service","podName":"notifications-service-00002-deployment-76ffd7fbcc-ljkdt","podNamespace":"default","podNodeName":"dev-control-plane","podIp":"10.244.0.22","podServiceAccount":"default"}
+{
+    "name": "NOTIFICATIONS",
+    "podIp": "10.244.0.16",
+    "podName": "notifications-service-00001-deployment-7ff76b4c77-qkk69",
+    "podNamespace": "default",
+    "podNodeName": "dev-control-plane",
+    "podServiceAccount": "default",
+    "source": "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service",
+    "version": "1.0.0"
+}
 
 ```
 
@@ -191,8 +198,44 @@ To recap, we get two things out of the box with Knative Serving:
 
 ### Canary Releases
 
-In this section we will look into implementing different release strategies for our Notification Service, the same can be applied for all the other services of the Conference Application.
+In this section we will look into implementing different release strategies for our Conference Application, for that we will be deploying all the other application services also using Knative Services. 
 
+Before installing the other services we need to set up PostgreSQL and Redis, as we already installed Kafka before. Before installing PostgreSQL we need to create a ConfigMap containing the SQL statement create the `Proposals`` Table, so the Helm Chart can reference to the configMap and execute the statement when the database instance is started.
+
+```
+kubectl apply -f knative/c4p-sql-init.yaml
+```
+
+```
+helm install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql --version 12.5.7 --set "image.debug=true" --set "primary.initdb.user=postgres" --set "primary.initdb.password=postgres" --set "primary.initdb.scriptsConfigMap=c4p-init-sql" --set "global.postgresql.auth.postgresPassword=postgres"
+
+```
+
+and Redis: 
+
+```
+helm install redis oci://registry-1.docker.io/bitnamicharts/redis --version 17.11.3 --set "architecture=standalone"
+```
+
+Now we can install all the other services (frontend, c4p-service, and agenda-service) by running: 
+
+```
+kubectl apply -f knative/
+```
+
+Check that all the Knative Services are `READY`
+
+```
+> kubectl get ksvc
+NAME                    URL                                                       LATESTCREATED                 LATESTREADY                   READY   REASON
+agenda-service          http://agenda-service.default.127.0.0.1.sslip.io          agenda-service-00001          agenda-service-00001          True    
+c4p-service             http://c4p-service.default.127.0.0.1.sslip.io             c4p-service-00001             c4p-service-00001             True    
+frontend                http://frontend.default.127.0.0.1.sslip.io                frontend-00001                frontend-00001                True    
+notifications-service   http://notifications-service.default.127.0.0.1.sslip.io   notifications-service-00001   notifications-service-00001   True    
+
+```
+
+Access the Conference Application Frontend by pointing your browser to the following URL [http://frontend.default.127.0.0.1.sslip.io](http://frontend.default.127.0.0.1.sslip.io)
 
 ### A/B Testing
 
