@@ -237,6 +237,125 @@ notifications-service   http://notifications-service.default.127.0.0.1.sslip.io 
 
 Access the Conference Application Frontend by pointing your browser to the following URL [http://frontend.default.127.0.0.1.sslip.io](http://frontend.default.127.0.0.1.sslip.io)
 
+At this point the application should work as expected, with a small difference, services like the Agenda Service and the C4P Service will be downscaled when they are not being used. If you list the pods after 90 seconds of inactivity you should see the following: 
+```
+> kubectl get pods 
+NAME                                                     READY   STATUS    RESTARTS   AGE
+frontend-00002-deployment-7fdfb7b8c5-cw67t               2/2     Running   0          60s
+kafka-0                                                  1/1     Running   0          20m
+notifications-service-00002-deployment-c5787bc49-flcc9   2/2     Running   0          60s
+postgresql-0                                             1/1     Running   0          9m23s
+redis-master-0                                           1/1     Running   0          8m50s
+```
+
+Because the Agenda and C4P service are storing state into persistent storage (Redis and PostgreSQL) data is not lost when the service instance is downscaled. But the Notifications and Frontend services are keeping in-memory data (Notifications and consumed Events), hence we have configured our Knative service to keep at least one instance alive all the time. All the in-memory state kept like this will impact how the application can scale, but remember this is just a Walking Skeleton. 
+
+Now that we have the application up and running let's take a look at some different release strategies. 
+
+### Canary releases
+
+In this section we will run a simple example showing how to do canary releases by using Knative Services. We will start simple by looking into percentage-based traffic splitting to then follow and use a Tag/Header based approach.
+
+#### Percentage-based traffic splitting
+
+Percentage-based traffic-splitting functionalities provided out-of-the-box by Knative Services. We will be updating the Notification Service that we deployed before instead of changing the Frontend as dealing with multiple requests to fetch CCS and JavaScript files can get tricky when using percentage based traffic-splitting.
+
+To make sure that the service is still up and running you can run the following command: 
+
+```
+curl http://notifications-service.default.127.0.0.1.sslip.io/service/info
+```
+
+You should see the following output: 
+
+```
+{
+    "name": "NOTIFICATIONS",
+    "podIp": "10.244.0.16",
+    "podName": "notifications-service-00001-deployment-7ff76b4c77-qkk69",
+    "podNamespace": "default",
+    "podNodeName": "dev-control-plane",
+    "podServiceAccount": "default",
+    "source": "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service",
+    "version": "1.0.0"
+}
+
+```
+
+You can edit the Knative Service (ksvc) of the Notification Service and create a new revision by changing the container image that the service is using or changing any other configuration parameter such as environment variables:
+
+```
+kubectl edit ksvc notifications-service
+```
+
+And then change from: 
+
+```
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: notifications-service 
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/min-scale: "1"
+    spec:
+      containers:
+        - image: salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525:v1.0.0  
+      ...
+```
+
+To `v1.1.0`: 
+
+```
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: notifications-service 
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/min-scale: "1"
+    spec:
+      containers:
+        - image: salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525:v1.1.0  
+      ...
+```
+
+Before saving this change, that will create a new revision which we can use to split traffic, we need to add the following values into the traffic section:
+
+```
+ traffic:
+  - latestRevision: false
+    percent: 50
+    revisionName: notifications-service-00001
+  - latestRevision: true
+    percent: 50
+```
+
+Now if you start hitting the `service/info` endpoint again you will see that half of the traffic is being routed to version `v1.0.0` of our service and the other half to version `v1.1.0`.
+
+```
+> curl http://notifications-service.default.127.0.0.1.sslip.io/service/info
+{"name":"NOTIFICATIONS-IMPROVED","version":"1.1.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service","podName":"notifications-service-00003-deployment-59fb5bff6c-2gfqt","podNamespace":"default","podNodeName":"dev-control-plane","podIp":"10.244.0.34","podServiceAccount":"default"}
+
+> curl http://notifications-service.default.127.0.0.1.sslip.io/service/info
+{"name":"NOTIFICATIONS","version":"1.0.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service","podName":"notifications-service-00001-deployment-7ff76b4c77-h6ts4","podNamespace":"default","podNodeName":"dev-control-plane","podIp":"10.244.0.35","podServiceAccount":"default"}
+```
+
+This mechanism is really useful when you need to test a new version but you are not willing to route all the live traffic straightaway to the new version in case that problems arise.
+
+#### Tag/Header-based traffic splitting
+
+With Tag/Header-based routing we have more control about where request will go, as we can use an HTTP header to instruct Knative networking mechanisms to route traffic to specific version. This means that for this example we can change the Frontend of our application. 
+
+Make sure to access application Frontend by pointing your browser to [http://frontend.default.127.0.0.1.sslip.io](http://frontend.default.127.0.0.1.sslip.io)
+
+![frontend v1.0.0](imgs/frontend-v1.0.0.png)
+
+
 ### A/B Testing
 
 ### Blue/Green Deployments

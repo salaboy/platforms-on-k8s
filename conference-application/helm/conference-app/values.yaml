@@ -16,6 +16,8 @@ postgresql:
   image:
     debug: true
   primary: 
+    persistence:
+      size: "1Gi"
     initdb:
       user: postgres
       password: postgres
@@ -26,7 +28,12 @@ postgresql:
         postgresPassword: postgres
 redis: 
   architecture: standalone
+  master:
+    persistence:
+      size: "1Gi"
 kafka: 
+  persistence:
+    size: "1Gi"
   provisioning:
     topics:
     - name: events-topic
