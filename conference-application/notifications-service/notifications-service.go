@@ -48,8 +48,8 @@ func (s Notification) MarshalBinary() ([]byte, error) {
 }
 
 var (
-	VERSION             = getEnv("VERSION", "1.0.0")
-	SOURCE              = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service")
+	VERSION             = getEnv("VERSION", "1.1.0")
+	SOURCE              = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service")
 	POD_NAME            = getEnv("POD_NAME", "N/A")
 	POD_NAMESPACE       = getEnv("POD_NAMESPACE", "N/A")
 	POD_NODENAME        = getEnv("POD_NODENAME", "N/A")
@@ -257,7 +257,7 @@ func (s *server) CreateNotification(w http.ResponseWriter, r *http.Request) {
 // GetServiceInfo returns service information.
 func (s *server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 	var info ServiceInfo = ServiceInfo{
-		Name:              "NOTIFICATIONS",
+		Name:              "NOTIFICATIONS-IMPROVED",
 		Version:           VERSION,
 		Source:            SOURCE,
 		PodName:           POD_NAME,
