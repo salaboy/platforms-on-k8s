@@ -20,22 +20,22 @@
   --sizing-x20: calc(var(--sizing-block)*20);
   --sizing-x25: calc(var(--sizing-block)*25);
   --sizing-x30: calc(var(--sizing-block)*30);
-  /* COLORS */
-  --color-white: #FFFFFF;
-    
-  --color-blue-100: #F0F3FC;
-  --color-blue-300: #CBD8FB;
-  --color-blue-500: #0040E5;
+ /* COLORS */
+  --color-white: #DDDAE5;
+      
+  --color-blue-100: #DAC9FB;
+  --color-blue-300: #BB9CF8;
+  --color-blue-500: #5918DC;
 
-  --color-red-500: #E96868;
+  --color-red-500: #D94178;
 
-  --color-orange-100: #FCF8F2;
-  --color-orange-400: #FEC586;
-  --color-orange-900: #331B00;
+  --color-orange-100: #D7E0C3;
+  --color-orange-400: #69DBDB;
+  --color-orange-900: #043030;
 
-  --color-green-100: #EFFCF8;
-  --color-green-300: #C9FCED;
-  --color-green-500: #5BE3BB;
+  --color-green-100: #F9FCF1;
+  --color-green-300: #E0FBD3;
+  --color-green-500: #82E08F;
   /* TYPE */
   --text-font-size: 20px;
   --text-line-height:  var(--sizing-x10);
