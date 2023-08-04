@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: notifications-service-canary
+spec:
+  replicas: 3
+  strategy:
+    canary:
+      steps:
+      - setWeight: 25
+      - pause: {}
+      - setWeight: 75
+      - pause: {duration: 10}
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: notifications-service
+  template:
+    metadata:
+      labels:
+      
+        app: notifications-service
+    spec:
+      containers:
+      - name: notifications-service
+        image: salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525:v1.0.0
+        env: 
+          - name: KAFKA_URL
+            value: kafka.default.svc.cluster.local
+          - name: POD_NODENAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: POD_SERVICE_ACCOUNT
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.serviceAccountName   
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "1"
+            memory: 256Mi
+          requests:
+            cpu: "0.1"
+            memory: 256Mi
