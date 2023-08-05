@@ -97,8 +97,21 @@ export default async function About() {
                 />
               </div>
             </div>
-       
-          
+            <div className='col third'>
+              <div className={styles.maintainer}>
+                <h3>Marcos <br/> Nils </h3>
+                <p> <a href="https://twitter.com/marcosnils" target={"_blank"}> twitter.com/marcosnils </a></p>
+                
+                <ExportedImage
+                  src="/images/marcos.jpg"
+                  width={100}
+                  height={100}
+                  alt="Asare"
+                />
+              </div>
+            </div>
+
+            
           </div>
           <div className={styles.contribute}>
             <div className="grid content ">

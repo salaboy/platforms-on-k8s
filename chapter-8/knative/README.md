@@ -4,7 +4,7 @@ In this tutorial we will create a Kubernetes Cluster and install Knative Serving
 
 
 
-## Installation
+## Creating a Kubernetes with Knative Serving
 
 You need a Kubernetes Cluster to install [Knative Serving](https://knative.dev). You can create one using Kubernetes KinD, but instead of using the configurations provided in Chapter 2, we will use the following command:
 
