@@ -156,10 +156,10 @@ notifications-service   http://notifications-service.default.127.0.0.1.sslip.io 
 
 ```
 
-You can now curl the `service/info` URL of the service to make sure that it is working:
+You can now curl the `service/info` URL of the service to make sure that it is working, we are using [`jq`](https://jqlang.github.io/jq/download/) a popular json utility to pretty-print the output:
 
 ```
-curl http://notifications-service.default.127.0.0.1.sslip.io/service/info
+curl http://notifications-service.default.127.0.0.1.sslip.io/service/info | jq 
 ```
 
 You should see the following output: 
@@ -262,7 +262,7 @@ Percentage-based traffic-splitting functionalities provided out-of-the-box by Kn
 To make sure that the service is still up and running you can run the following command: 
 
 ```
-curl http://notifications-service.default.127.0.0.1.sslip.io/service/info
+curl http://notifications-service.default.127.0.0.1.sslip.io/service/info | jq
 ```
 
 You should see the following output: 
@@ -337,11 +337,29 @@ Before saving this change, that will create a new revision which we can use to s
 Now if you start hitting the `service/info` endpoint again you will see that half of the traffic is being routed to version `v1.0.0` of our service and the other half to version `v1.1.0`.
 
 ```
-> curl http://notifications-service.default.127.0.0.1.sslip.io/service/info
-{"name":"NOTIFICATIONS-IMPROVED","version":"1.1.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service","podName":"notifications-service-00003-deployment-59fb5bff6c-2gfqt","podNamespace":"default","podNodeName":"dev-control-plane","podIp":"10.244.0.34","podServiceAccount":"default"}
+> curl http://notifications-service.default.127.0.0.1.sslip.io/service/info | jq
+{
+    "name":"NOTIFICATIONS-IMPROVED",
+    "version":"1.1.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service",
+    "podName":"notifications-service-00003-deployment-59fb5bff6c-2gfqt",
+    "podNamespace":"default",
+    "podNodeName":"dev-control-plane",
+    "podIp":"10.244.0.34",
+    "podServiceAccount":"default"
+}
 
-> curl http://notifications-service.default.127.0.0.1.sslip.io/service/info
-{"name":"NOTIFICATIONS","version":"1.0.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service","podName":"notifications-service-00001-deployment-7ff76b4c77-h6ts4","podNamespace":"default","podNodeName":"dev-control-plane","podIp":"10.244.0.35","podServiceAccount":"default"}
+> curl http://notifications-service.default.127.0.0.1.sslip.io/service/info | jq
+{
+    "name":"NOTIFICATIONS",
+    "version":"1.0.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service",
+    "podName":"notifications-service-00001-deployment-7ff76b4c77-h6ts4",
+    "podNamespace":"default",
+    "podNodeName":"dev-control-plane",
+    "podIp":"10.244.0.35",
+    "podServiceAccount":"default"
+}
 ```
 
 This mechanism is really useful when you need to test a new version but you are not willing to route all the live traffic straightaway to the new version in case that problems arise.
@@ -364,7 +382,7 @@ The moment that one revision (version) doesn't has any traffic rule point to it,
 
 With A/B testing we want to run two or more versions of the same application/service at the same time to enable different group of users to test changes so we can decide which version works best for them. 
 
-With Knative Serving we have two options: Header-based routing and Tag-based routing, both uses the same mechanisms and configurations behind the covers, but let's see how these mechanisms can be used. 
+With Knative Serving we have two options: `Header-based` routing and `Tag-based` routing, both uses the same mechanisms and configurations behind the covers, but let's see how these mechanisms can be used. 
 
 With Tag/Header-based routing we have more control about where request will go, as we can use an HTTP header or a specific URL to instruct Knative networking mechanisms to route traffic to specific versions of the service. 
 
