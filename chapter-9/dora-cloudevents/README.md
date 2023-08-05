@@ -1,16 +1,16 @@
 # DORA Metrics + CloudEvents & CDEvents for Kubernetes
 
-This project consumes [CloudEvents](https://cloudevents.io) from multiple sources and allows you to track the DORA metrics, using  a Kubernetes-native architecture (cloud-agnostic).
-The main goal of this project is to demonstrate a transformation flow where:
+This tutorial install a set of components that consumes [CloudEvents](https://cloudevents.io) from multiple sources and allows you to track the DORA metrics, using  a Kubernetes-native architecture (cloud-agnostic).
+
+The main goal of this tutorial is to demonstrate a transformation flow where:
 - The inputs are [CloudEvents](https://cloudevents.io)
 - These CloudEvents can be mapped and transformed to [CDEvents](https://cdevents.dev) for further processing
 - Aggregation functions can be defined to calculate DORA (or other) metrics
 - Metrics can be exposed for consumption (in this example via REST endpoints)
 
-
 ## Installation
 
-We will be using a Kubernetes Cluster with Knative Serving for running our transformation functions. You can follow the instructions from [Chapter 8 to create a KinD cluster with Knative Serving installed in it](). 
+We will be using a Kubernetes Cluster with Knative Serving for running our transformation functions. You can follow the instructions from [Chapter 8 to create a KinD cluster with Knative Serving installed in it](https://github.com/salaboy/platforms-on-k8s/tree/main/chapter-8/knative#creating-a-kubernetes-with-knative-serving). 
 
 Then we will install Knative Eventing, this is optional, as we will use Knative Eventing to install the Kubernetes API Event Source, which takes internal Kubernetes Events and transform them in CloudEvents.
 
@@ -29,11 +29,11 @@ kubectl create ns dora-cloudevents
 1. Install PostgreSQL and Create Tables
 ```
 kubectl apply -f resources/dora-sql-init.yaml
-helm install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql --version 12.5.7 --set "image.debug=true" --set "primary.initdb.user=postgres" --set "primary.initdb.password=postgres" --set "primary.initdb.scriptsConfigMap=c4p-init-sql" --set "global.postgresql.auth.postgresPassword=postgres" --set "primary.persistence.size=1Gi"
+helm install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql --version 12.5.7 --namespace dora-cloudevents --set "image.debug=true" --set "primary.initdb.user=postgres" --set "primary.initdb.password=postgres" --set "primary.initdb.scriptsConfigMap=dora-init-sql" --set "global.postgresql.auth.postgresPassword=postgres" --set "primary.persistence.size=1Gi"
 ```
 
 
-1. Install Sockeye: 
+1. Install Sockeye, a simple CloudEvents monitor, it requires Knative Serving to be installed: 
 
 ```
 kubectl apply -f https://github.com/n3wscott/sockeye/releases/download/v0.7.0/release.yaml
@@ -46,6 +46,8 @@ kubectl apply -f api-serversource-deployments.yaml
 
 
 ## Components
+
+This demo deploys the following components to transform CloudEvents into CDEvents and then aggregate the available data. 
 
 - **CloudEvents Endpoint**: Endpoint to send all CloudEvents to; these CloudEvents will be stored in the SQL database to the `cloudevents-raw` table. 
 
@@ -64,7 +66,70 @@ kubectl apply -f api-serversource-deployments.yaml
 ![dora-cloudevents-architecture](../imgs/dora-cloudevents-architecture.png)
 
 
-## 
+## Deploying Components and generating data
+
+First deploy the components and transformation functions by running: 
+
+```
+kubectl apply -f resources/components.yaml
+```
+
+Open Sockeye to monitor CloudEvents by pointing your browser to [http://sockeye.default.127.0.0.1.sslip.io/](http://sockeye.default.127.0.0.1.sslip.io/).
+
+
+Then, create a new Deployment in the `default` namespace to test that your configuration is working.
+
+```
+kubectl apply -f test/example-deployment.yaml
+```
+
+At this point you should see tons of events in Sockeye:
+
+![sockeye](../imgs/sockeye.png)
+
+If the Deployment Frequency functions (transformation and calculation) are installed you should be able to query the deployment frequency endpoint and see the metric. Notice that this can take up to a couple of minutes, as Cron jobs are being used to aggregate the data periodically:  
+
+```
+curl http://dora-frequency-endpoint.dora-cloudevents.127.0.0.1.sslip.io/deploy-frequency/day | jq
+```
+And see something like this, depending on which deployments you created (I've created two deployments: `nginx-deployment` and `nginx-deployment-3`): 
+
+```
+[
+  {
+    "DeployName": "nginx-deployment",
+    "Deployments": 1,
+    "Time": "2023-08-05T00:00:00Z"
+  },
+  {
+    "DeployName": "nginx-deployment-3",
+    "Deployments": 1,
+    "Time": "2023-08-05T00:00:00Z"
+  }
+]
+
+```
+
+Try modifying the deployments or creating new ones, the components are configured to monitor all Deployments in the `default` Namespace.
+
+Notice that all the components were installed in the `dora-cloudevents` namespace. You check the pods and the URL for the Knative Services by running the following commands: 
+
+Check the URL for the Knative Services in the `dora-cloudevents` namespace:
+```
+kubectl get ksvc -n dora-cloudevents
+```
+
+Check which pods are running, I find this interesting as because we are using Knative Serving, all transformation functions that are not being used doesn't need to be running all the time: 
+
+```
+kubectl get pods -n dora-cloudevents
+```
+
+Finally you can check all the CronJob executions that aggregates data by running: 
+
+```
+kubectl get cronjobs -n dora-cloudevents
+```
 
 
 ## Development 
@@ -74,27 +139,6 @@ Deploy the `dora-cloudevents` components using `ko` for development:
 ```
 ko apply -f config/
 ```
-
-
-Create a new Deployment in the `default` namespace to test that your configuration is working.
-
-```
-kubectl apply -f ../test/example-deployment.yaml
-```
-
-If the Deployment Frequency functions (transformation and calculation) are installed you should be able to query the deployment frequency endpoint and see the metric: 
-
-```
-curl http://fourkeys-frequency-endpoint.four-keys.127.0.0.1.sslip.io/deploy-frequency/day
-```
-And see something like this: 
-
-```
-[{"DeployName":"nginx-deployment-3","Deployments":1,"Time":"2022-11-28T00:00:00Z"}]
-```
-
-Try modifying the deployment or creating new ones.
-
 
 # Metrics
 
@@ -117,7 +161,6 @@ graph TD
     F --> |writes to `deployments` table| G[Deployments Table]
     G --> |read from `deployments` table| H[Metrics Endpoint]
 ```
-
 
 Calculate buckets: Daily, Weekly, Monthly, Yearly.
 

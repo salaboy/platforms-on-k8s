@@ -16,6 +16,15 @@ kind delete clusters dev
 
 ## Next Steps
 
+- Check the [Knative Functions](https://knative.dev/docs/functions/) project if you are intereted in building a Function-as-a-Service platform, as this initiative is working on tooling to make Function developers life easier.
 
+- After tryingout Argo Rollouts, the next step is to create an example end-to-end showing the flow of Argo CD to Argo Rollouts. This requires to create a repository that contains your Rollouts definitions. Check the [FAQ section on the Argo Projects](https://argo-rollouts.readthedocs.io/en/latest/FAQ/) for more details about their integration.
+
+- Experiment with more complex examples using `AnalysisTemplates` and `AnalysisRuns` as this feature helps teams to deploy new versions with more confident. 
+
+- As both projects can work with a Service Mesh like [Istio](https://istio.io/), familiarize yourself with what Istio can do for you. 
 
 ## Sum up and Contribute
+
+
+Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.

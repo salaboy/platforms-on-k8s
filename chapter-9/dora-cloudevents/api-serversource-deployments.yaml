@@ -51,7 +51,7 @@ spec:
      apiVersion: serving.knative.dev/v1
      kind: Service
      name: cloudevents-raw-endpoint
-     namespace: four-keys
+     namespace: dora-cloudevents
 
 
 ---

@@ -1,0 +1,153 @@
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: api-server-to-service-deployment-function
+  namespace: dora-cloudevents
+spec:
+  template:
+    spec:
+      containers:
+        - image: salaboy/function-api-server-to-service-deployment.go-6521f17b15021f118b7fbb689f3d723c
+          env:
+            - name: CDEVENTS_ENDPOINT_URL
+              value: http://cdevents-raw-endpoint.dora-cloudevents.svc.cluster.local
+
+---
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: cloudevents-raw-endpoint
+  namespace: dora-cloudevents
+spec:
+  template:
+    spec:
+      containers:
+        - image: salaboy/cloudevents-endpoint.go-4e91632f7bfe12b4534b6b17fcf435d2
+          env:
+          - name: POSTGRESQL_HOST
+            value: postgresql
+          - name: POSTGRESQL_PASS
+            valueFrom:
+              secretKeyRef:
+                name: postgresql
+                key: postgres-password
+
+
+---
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: cdevents-raw-endpoint
+  namespace: dora-cloudevents
+spec:
+  template:
+    spec:
+      containers:
+        - image: salaboy/cdevents-endpoint.go-8bace45f915c627a5aedeaafd3db49ef
+          env:
+            - name: POSTGRESQL_HOST
+              value: postgresql
+            - name: POSTGRESQL_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: postgres-password
+
+
+---
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: dora-frequency-endpoint
+  namespace: dora-cloudevents
+spec:
+  template:
+    spec:
+      containers:
+        - image: salaboy/deployment-frequency-endpoint.go-e484609c9165cc59b9f8192d777292c6
+          env:
+            - name: POSTGRESQL_HOST
+              value: postgresql
+            - name: POSTGRESQL_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql
+                  key: postgres-password
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: routes
+  namespace: dora-cloudevents
+data:
+  ce-routes.yaml: |
+    routes:
+      "dev.knative.apiserver.resource.add":
+      - http://api-server-to-service-deployment-function.dora-cloudevents.svc.cluster.local
+      - http://sockeye.default.svc.cluster.local
+      "dev.knative.github.pr.new":
+      - http://sockeye.default.svc.cluster.local
+
+---
+
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cloudevents-router-cronjob
+  namespace: dora-cloudevents
+spec:
+  schedule: "* * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: cloudevents-router
+              image: salaboy/cloudevents-router.go-c05d2ec2386bb7cbe123007f1346a902
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: CE_ROUTES
+                  valueFrom:
+                    configMapKeyRef:
+                      name: routes
+                      key: ce-routes.yaml
+                - name: POSTGRESQL_HOST
+                  value: postgresql
+                - name: POSTGRESQL_PASS
+                  valueFrom:
+                    secretKeyRef:
+                      name: postgresql
+                      key: postgres-password
+          restartPolicy: OnFailure
+
+---
+
+ apiVersion: batch/v1
+ kind: CronJob
+ metadata:
+   name: cdevents-deployment-frequency-cronjob
+   namespace: dora-cloudevents
+ spec:
+   schedule: "* * * * *"
+   jobTemplate:
+     spec:
+       template:
+         spec:
+           containers:
+             - name: cdevents-deployment-frequency
+               image: salaboy/deployment-frequency.go-32570177dcd730f5ae5e54f3932c3fa4
+               imagePullPolicy: IfNotPresent
+               env:
+                 - name: POSTGRESQL_HOST
+                   value: postgresql
+                 - name: POSTGRESQL_PASS
+                   valueFrom:
+                     secretKeyRef:
+                       name: postgresql
+                       key: postgres-password
+           restartPolicy: OnFailure
