@@ -190,21 +190,57 @@ curl localhost/service/info
 Roughly, one in four requests should be answered by version `v1.1.0`:
 
 ```
-> curl localhost/service/info
+> curl localhost/service/info | jq
 
-{"name":"NOTIFICATIONS","version":"1.0.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service","podName":"notifications-service-canary-7f6b88b5fb-tw8fj","podNamespace":"default","podNodeName":"dev-worker2","podIp":"10.244.3.3","podServiceAccount":"default"}
+{
+    "name":"NOTIFICATIONS",
+    "version":"1.0.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service",
+    "podName":"notifications-service-canary-7f6b88b5fb-tw8fj",
+    "podNamespace":"default",
+    "podNodeName":"dev-worker2",
+    "podIp":"10.244.3.3",
+    "podServiceAccount":"default"
+}
 
-> curl localhost/service/info
+> curl localhost/service/info | jq
 
-{"name":"NOTIFICATIONS","version":"1.0.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service","podName":"notifications-service-canary-7f6b88b5fb-d86s2","podNamespace":"default","podNodeName":"dev-worker3","podIp":"10.244.1.5","podServiceAccount":"default"}
+{
+    "name":"NOTIFICATIONS",
+    "version":"1.0.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service",
+    "podName":"notifications-service-canary-7f6b88b5fb-tw8fj",
+    "podNamespace":"default",
+    "podNodeName":"dev-worker2",
+    "podIp":"10.244.3.3",
+    "podServiceAccount":"default"
+}
 
-> curl localhost/service/info
+> curl localhost/service/info | jq
 
-{"name":"NOTIFICATIONS-IMPROVED","version":"1.1.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service","podName":"notifications-service-canary-68fd6b4ff9-jrjxh","podNamespace":"default","podNodeName":"dev-worker","podIp":"10.244.2.4","podServiceAccount":"default"}
+{
+    "name":"NOTIFICATIONS-IMPROVED",
+    "version":"1.1.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service",
+    "podName":"notifications-service-canary-68fd6b4ff9-jrjxh",
+    "podNamespace":"default",
+    "podNodeName":"dev-worker",
+    "podIp":"10.244.2.4",
+    "podServiceAccount":"default"
+}
 
-> curl localhost/service/info
+> curl localhost/service/info | jq
 
-{"name":"NOTIFICATIONS","version":"1.0.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service","podName":"notifications-service-canary-7f6b88b5fb-tw8fj","podNamespace":"default","podNodeName":"dev-worker2","podIp":"10.244.3.3","podServiceAccount":"default"}
+{
+    "name":"NOTIFICATIONS",
+    "version":"1.0.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service",
+    "podName":"notifications-service-canary-7f6b88b5fb-tw8fj",
+    "podNamespace":"default",
+    "podNodeName":"dev-worker2",
+    "podIp":"10.244.3.3",
+    "podServiceAccount":"default"
+}
 
 ```
 
@@ -257,15 +293,42 @@ Now all requests should be answered by `v1.1.0`:
 
 > curl localhost/service/info
 
-{"name":"NOTIFICATIONS-IMPROVED","version":"1.1.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service","podName":"notifications-service-canary-68fd6b4ff9-jrjxh","podNamespace":"default","podNodeName":"dev-worker","podIp":"10.244.2.4","podServiceAccount":"default"}
+{
+    "name":"NOTIFICATIONS-IMPROVED",
+    "version":"1.1.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service",
+    "podName":"notifications-service-canary-68fd6b4ff9-jrjxh",
+    "podNamespace":"default",
+    "podNodeName":"dev-worker",
+    "podIp":"10.244.2.4",
+    "podServiceAccount":"default"
+}
 
 > curl localhost/service/info
 
-{"name":"NOTIFICATIONS-IMPROVED","version":"1.1.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service","podName":"notifications-service-canary-68fd6b4ff9-jrjxh","podNamespace":"default","podNodeName":"dev-worker","podIp":"10.244.2.4","podServiceAccount":"default"}
+{
+    "name":"NOTIFICATIONS-IMPROVED",
+    "version":"1.1.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service",
+    "podName":"notifications-service-canary-68fd6b4ff9-jrjxh",
+    "podNamespace":"default",
+    "podNodeName":"dev-worker",
+    "podIp":"10.244.2.4",
+    "podServiceAccount":"default"
+}
 
 > curl localhost/service/info
 
-{"name":"NOTIFICATIONS-IMPROVED","version":"1.1.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service","podName":"notifications-service-canary-68fd6b4ff9-jrjxh","podNamespace":"default","podNodeName":"dev-worker","podIp":"10.244.2.4","podServiceAccount":"default"}
+{
+    "name":"NOTIFICATIONS-IMPROVED",
+    "version":"1.1.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service",
+    "podName":"notifications-service-canary-68fd6b4ff9-jrjxh",
+    "podNamespace":"default",
+    "podNodeName":"dev-worker",
+    "podIp":"10.244.2.4",
+    "podServiceAccount":"default"
+}
 
 ```
 
@@ -354,9 +417,18 @@ NAME                                                         KIND        STATUS 
 We get two replicas of our Notification Service up and running. If we curl `localhost/service/info` we should get the Notification Service `v1.0.0` information: 
 
 ```
-> curl localhost/service/info
+> curl localhost/service/info | jq
 
-{"name":"NOTIFICATIONS","version":"1.0.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service","podName":"notifications-service-bluegreen-56bb777689-qzg9l","podNamespace":"default","podNodeName":"dev-worker3","podIp":"10.244.1.7","podServiceAccount":"default"}
+{
+    "name":"NOTIFICATIONS",
+    "version":"1.0.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service",
+    "podName":"notifications-service-canary-7f6b88b5fb-tw8fj",
+    "podNamespace":"default",
+    "podNodeName":"dev-worker2",
+    "podIp":"10.244.3.3",
+    "podServiceAccount":"default"
+}
 ```
 
 
@@ -411,7 +483,16 @@ At this point you can send requests to both services by using the Ingress routes
 ```
 > curl localhost/service/info
 
-{"name":"NOTIFICATIONS","version":"1.0.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service","podName":"notifications-service-bluegreen-56bb777689-k6qxk","podNamespace":"default","podNodeName":"dev-worker2","podIp":"10.244.3.6","podServiceAccount":"default"}
+{
+    "name":"NOTIFICATIONS",
+    "version":"1.0.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/notifications-service",
+    "podName":"notifications-service-canary-7f6b88b5fb-tw8fj",
+    "podNamespace":"default",
+    "podNodeName":"dev-worker2",
+    "podIp":"10.244.3.3",
+    "podServiceAccount":"default"
+}
 ```
 
 And now let's check Green Service: 
@@ -419,7 +500,16 @@ And now let's check Green Service:
 ```
 > curl localhost/green/service/info
 
-{"name":"NOTIFICATIONS-IMPROVED","version":"1.1.0","source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service","podName":"notifications-service-bluegreen-645d484596-fnbg7","podNamespace":"default","podNodeName":"dev-worker3","podIp":"10.244.1.8","podServiceAccount":"default"}
+{
+    "name":"NOTIFICATIONS-IMPROVED",
+    "version":"1.1.0",
+    "source":"https://github.com/salaboy/platforms-on-k8s/tree/v1.1.0/conference-application/notifications-service",
+    "podName":"notifications-service-canary-68fd6b4ff9-jrjxh",
+    "podNamespace":"default",
+    "podNodeName":"dev-worker",
+    "podIp":"10.244.2.4",
+    "podServiceAccount":"default"
+}
 ```
 
 If we are happy with the results we can promote our Green Service to be our new stable service, we do this by hitting the Promote button in the Argo Rollouts Dashboard or by running the following command: 
