@@ -15,8 +15,6 @@ spec:
         app.kubernetes.io/part-of: agenda-service
         app.kubernetes.io/version: {{ .Values.services.tag  }}
         keptn.sh/post-deployment-tasks: stdout-notification
-        ## TODO add the makefile into Chapter 9 removing argo etc
-        ##   just having prometheus and grafana and OpenTelemetry collector
     spec:
       containers:
       - name: agenda-service
