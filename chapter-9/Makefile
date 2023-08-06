@@ -27,11 +27,11 @@ port-forward-grafana:
 	make -C support/observability port-forward-grafana GRAFANA_PORT_FORWARD=$(GRAFANA_PORT_FORWARD)
 
 .PHONY: uninstall-observability
-uninstall-observability: undeploy-podtatohead
+uninstall-observability:
 	make -C support/observability uninstall
 
 .PHONY: uninstall
-uninstall: uninstall-observability uninstall-argo
+uninstall: uninstall-observability
 	@echo "-----------------------------------"
 	@echo "Uninstall Keptn-lifecycle-toolkit"
 	@echo "-----------------------------------"

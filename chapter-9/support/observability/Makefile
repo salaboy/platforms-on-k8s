@@ -1,7 +1,6 @@
 # renovate: datasource=github-tags depName=jaegertracing/jaeger-operator
 JAEGER_VERSION ?= v1.45.0
 TOOLKIT_NAMESPACE ?= keptn-lifecycle-toolkit-system
-PODTATO_NAMESPACE ?= podtato-kubectl
 GRAFANA_PORT_FORWARD ?= 3000
 
 .PHONY: install
@@ -48,7 +47,6 @@ install: install-cert-manager
 	@echo ""
 	@echo "#######################################################"
 	@echo "Observability Demo installed"
-	@echo "- Install PodTatoHead: make deploy-podtatohead"
 	@echo "- Port-Forward Grafana: make port-forward-grafana"
 	@echo "#######################################################"
 
