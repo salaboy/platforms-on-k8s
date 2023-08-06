@@ -2,6 +2,7 @@ apiVersion: lifecycle.keptn.sh/v1alpha3
 kind: KeptnTaskDefinition
 metadata:
   name: stdout-notification
+  namespace: {{ .Release.Namespace }}
 spec:
   function:
     inline:

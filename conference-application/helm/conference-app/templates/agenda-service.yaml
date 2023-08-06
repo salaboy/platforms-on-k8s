@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-agenda-service-deployment
-  namespace: conference-app
+  namespace: {{ .Release.Namespace }}
 spec:
   selector:
     matchLabels:
