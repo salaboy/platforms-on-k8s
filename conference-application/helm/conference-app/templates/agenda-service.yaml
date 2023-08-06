@@ -11,6 +11,9 @@ spec:
     metadata:
       labels:
         app: agenda-service
+        app.kubernetes.io/name: agenda-service
+        app.kubernetes.io/part-of: conference
+        app.kubernetes.io/version: {{ .Values.services.tag  }}
     spec:
       containers:
       - name: agenda-service
@@ -60,11 +63,11 @@ spec:
               fieldPath: spec.serviceAccountName      
         livenessProbe:
           httpGet:
-            path: /health/readiness
+            path: /health/liveness
             port: 8080
         readinessProbe:
           httpGet:
-            path: /health/liveness
+            path: /health/readiness
             port: 8080
         ports:
         - containerPort: 8080
