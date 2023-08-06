@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-notifications-service-deployment
-  namespace: {{ .Release.Namespace }}
+  namespace: conference-app
 spec:
   selector:
     matchLabels:
@@ -11,6 +11,10 @@ spec:
     metadata:
       labels:
         app: notifications-service
+        app.kubernetes.io/name: notifications-service
+        app.kubernetes.io/part-of: notifications-service
+        app.kubernetes.io/version: {{ .Values.services.tag  }}
+        keptn.sh/post-deployment-tasks: stdout-notification
     spec:
       containers:
       - name: notifications-service

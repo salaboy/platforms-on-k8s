@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ .Release.Name }}-frontend-deployment
-  namespace: {{ .Release.Namespace }}
+  namespace: conference-app
 spec:
   selector:
     matchLabels:
@@ -12,8 +12,9 @@ spec:
       labels:
         app: frontend
         app.kubernetes.io/name: frontend
-        app.kubernetes.io/part-of: conference
+        app.kubernetes.io/part-of: frontend
         app.kubernetes.io/version: {{ .Values.services.tag  }}
+        keptn.sh/post-deployment-tasks: stdout-notification
     spec:
       containers:
       - name: frontend
