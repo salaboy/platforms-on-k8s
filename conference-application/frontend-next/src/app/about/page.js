@@ -25,7 +25,7 @@ export default async function About() {
           
           <div>
             <h2>Repository</h2>
-            <p>You can find the links to the source code and tutorials by going to the main Github repository: <a href="https://github.com/salaboy/from-monolith-to-k8s">https://github.com/salaboy/from-monolith-to-k8s</a></p>
+            <p>You can find the links to the source code and tutorials by going to the main Github repository: <a href="https://github.com/salaboy/platforms-on-k8s">github.com/salaboy/platforms-on-k8s</a></p>
             <br/>
             <Button main external link="https://github.com/salaboy/platforms-on-k8s">Go to the repository</Button>
           </div>
@@ -62,7 +62,7 @@ export default async function About() {
             <div className='col third'>
               <div className={styles.maintainer}>
                 <h3>Mauricio Salatino</h3> 
-                <p> <a href="https://www.salaboy.com" target={"_blank"}> www.salaboy.com </a></p>
+                <p> <a href="https://www.salaboy.com" target={"_blank"}> salaboy.com </a></p>
                 <ExportedImage
                   src="/images/salaboy.png"
                   width={100}
@@ -74,7 +74,7 @@ export default async function About() {
             <div className='col third'>
               <div className={styles.maintainer}>
                 <h3>Ezequiel Salatino</h3>
-                <p> <a href="https://salatino.me" target={"_blank"}> www.salatino.me </a></p>
+                <p> <a href="https://salatino.me" target={"_blank"}> gsalatino.me </a></p>
                 
                 <ExportedImage
                   src="/images/esala.png"
@@ -99,14 +99,40 @@ export default async function About() {
             </div>
             <div className='col third'>
               <div className={styles.maintainer}>
-                <h3>Marcos <br/> Nils </h3>
-                <p> <a href="https://twitter.com/marcosnils" target={"_blank"}> twitter.com/marcosnils </a></p>
+                <h3>Asare <br/> Nkansah </h3>
+                <p> <a href="https://asarenkansah.github.io/asare-portfolio/" target={"_blank"}> asarenkansah.github.io/asare-portfolio/ </a></p>
                 
                 <ExportedImage
-                  src="/images/marcos.jpg"
+                  src="/images/asare.jpg"
                   width={100}
                   height={100}
                   alt="Asare"
+                />
+              </div>
+            </div>
+            <div className='col third'>
+              <div className={styles.maintainer}>
+                <h3>Marcos <br/> Lilljedahl </h3>
+                <p> <a href="https://twitter.com/marcosnils" target={"_blank"}> twitter.com/marcosnils </a></p>
+                
+                <ExportedImage
+                  src="/images/marcos.jpeg"
+                  width={100}
+                  height={100}
+                  alt="Marcos"
+                />
+              </div>
+            </div>
+            <div className='col third'>
+              <div className={styles.maintainer}>
+                <h3>Giovanni <br/> Liva </h3>
+                <p> <a href="https://twitter.com/thisthatDC" target={"_blank"}> twitter.com/thisthatDC </a></p>
+                
+                <ExportedImage
+                  src="/images/giovanni.jpg"
+                  width={100}
+                  height={100}
+                  alt="Giovani"
                 />
               </div>
             </div>

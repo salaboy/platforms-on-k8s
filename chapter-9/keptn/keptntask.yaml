@@ -1,0 +1,11 @@
+apiVersion: lifecycle.keptn.sh/v1alpha3
+kind: KeptnTaskDefinition
+metadata:
+  name: stdout-notification
+spec:
+  function:
+    inline:
+      code: |
+        let context = Deno.env.get("CONTEXT");
+        console.log("Keptn Task Executed with context: \n");
+        console.log(context);
