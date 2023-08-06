@@ -2,8 +2,10 @@
 
 This tutorial install a set of components that consumes [CloudEvents](https://cloudevents.io) from multiple sources and allows you to track the DORA metrics, using  a Kubernetes-native architecture (cloud-agnostic).
 
-The main goal of this tutorial is to demonstrate a transformation flow where:
-- The inputs are [CloudEvents](https://cloudevents.io)
+This demo focus on observing different event sources to then map these events to meaninful events related to our software delivery practices that can be aggregated to calculate DORA metrics.
+
+The Events transformation flow goes like this:
+- The inputs are [CloudEvents](https://cloudevents.io) coming from diffeerent sources
 - These CloudEvents can be mapped and transformed to [CDEvents](https://cdevents.dev) for further processing
 - Aggregation functions can be defined to calculate DORA (or other) metrics
 - Metrics can be exposed for consumption (in this example via REST endpoints)

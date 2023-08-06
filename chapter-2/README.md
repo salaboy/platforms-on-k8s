@@ -113,7 +113,7 @@ The Pod restarts show that maybe Kafka was slow and the service was started firs
 
 Now you can point your browser to [http://localhost](http://localhost) to see the application. 
 
-
+![conference app](imgs/conference-app-homepage.png)
 
 ## Clean up - Important !!! READ!!
 
