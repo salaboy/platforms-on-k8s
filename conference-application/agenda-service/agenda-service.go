@@ -334,7 +334,7 @@ func NewChiServer() *chi.Mux {
 
 // OpenAPIHandler returns a handler that serves the OpenAPI documentation.
 func OpenAPI(r *chi.Mux) {
-	dir := http.Dir("openapi")
+	dir := http.Dir("docs")
 	fs := http.FileServer(dir)
 	r.Handle("/openapi/*", http.StripPrefix("/openapi/", fs))
 }
