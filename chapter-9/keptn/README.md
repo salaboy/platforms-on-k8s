@@ -53,7 +53,7 @@ spec:
 
 ```
 
-As you can see this task is only printing the context from its execution, but here is where you can build any integration with other projects or call external systems. If you look at the Keptn examples, you will find KeptnTaskDefinition to connect for example to Slack or to validate that deployments are working as expected after being updated. These tasks uses [Deno](https://deno.land/), a secure JavaScript runtime with Typescript supported out-of-the-box. 
+As you can see this task is only printing the context from its execution, but here is where you can build any integration with other projects or call external systems. If you look at the Keptn examples, you will find KeptnTaskDefinition to connect for example to Slack, run load tests or to validate that deployments are working as expected after being updated. These tasks uses [Deno](https://deno.land/), a secure JavaScript runtime with Typescript supported out-of-the-box, Python 3 or directly a container image. 
 
 By running: 
 
