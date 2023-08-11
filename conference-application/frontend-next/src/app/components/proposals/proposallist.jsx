@@ -17,7 +17,7 @@ function ProposalList() {
       approved: approved,
     }
     console.log("Decision Made ...")
-    fetch('/api/c4p/' + id + "/decide", {
+    fetch('/api/c4p/proposals/' + id + "/decide/", {
       method: "POST",
       body: JSON.stringify(data),
       headers: {
@@ -41,7 +41,7 @@ function ProposalList() {
     setLoading(true);
     setIsError(false);
     console.log("Archiving Proposal ..." + id)
-    fetch('/api/c4p/' + id , {
+    fetch('/api/c4p/proposals/' + id , {
       method: "DELETE",
       headers: {
         'accept': 'application/json',
@@ -93,7 +93,7 @@ function ProposalList() {
 
   const fetchData = (filter) => {
     console.log("Fetching Proposals ... (" + filter + ").")
-    fetch('/api/c4p/' + filter)
+    fetch('/api/c4p/proposals/' + filter)
       .then((res) => res.json())
       .then((data) => {
         setProposalItems(data)
@@ -130,14 +130,14 @@ function ProposalList() {
         {
           proposalItems && proposalItems.map((item, index) => (
             <ProposalItem
-              key={item.Id}
-              id={item.Id}
-              title={item.Title}
-              author={item.Author}
-              description={item.Description}
-              email={item.Email}
-              approved={item.Approved}
-              status={item.Status.Status}
+              key={item.id}
+              id={item.id}
+              title={item.title}
+              author={item.author}
+              description={item.description}
+              email={item.email}
+              approved={item.approved}
+              status={item.status.status}
               actionHandler={ItemAction}
             />
 

@@ -4,10 +4,7 @@ In this short tutorial we will be installing the `Conference Application` using 
 
 Helm Charts can be published to Helm Chart repositories or also, since Helm 3.7 as OCI containers to container registries. 
 
-## Pre Requisites
-- [Install Docker](https://docs.docker.com/get-docker/): **check docker configurations for CPU and RAM allowences**
-- [Install KinD](https://kind.sigs.k8s.io/docs/user/quick-start/#installation)
-- [Install Helm](https://helm.sh/docs/intro/install/)
+Check the pre-requisites for all the totutorials [here](../chapter-1/README.md#pre-requisites-for-the-other-chapters)
 
 ## Creating a local cluster with Kubernetes KinD
 
@@ -38,6 +35,8 @@ nodes:
 EOF
 
 ```
+
+![3 worker nodes](imgs/cluster.png)
 
 ### Installing NGINX Ingress Controller
 
@@ -83,13 +82,13 @@ Once we have our cluster and our Ingress Controller installed and configured we 
 From Helm 3.7+, we can use OCI images to publish, download and install Helm Charts. This approach uses Docker Hub as a Helm Chart registry and to install the Conference Application you only need to run the following command:
 
 ```
-helm install conference oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0
+helm install conference oci://docker.io/salaboy/conference-app --version v1.0.0
 ```
 
 You can also run the following command to see the details of the chart: 
 
 ```
-helm show all oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0
+helm show all oci://docker.io/salaboy/conference-app --version v1.0.0
 ```
 
 Check that all the application pods are up and running. Notice that if your internet connection is slow it might take a while for the application to start. Since the application's services depend on some infrastructure components (Redis, Kafka, PostgreSQL), these components needs to start and be ready for the services to connect.
@@ -146,7 +145,6 @@ Finally, if you want to get rid of the KinD Cluster entirely, you can run:
 ```
 kind delete clusters dev
 ```
-
 
 
 ## Next Steps

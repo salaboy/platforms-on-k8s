@@ -250,16 +250,16 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/proposals", wrapper.GetProposals)
+		r.Get(options.BaseURL+"/proposals/", wrapper.GetProposals)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/proposals", wrapper.CreateProposal)
+		r.Post(options.BaseURL+"/proposals/", wrapper.CreateProposal)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/proposals/{proposalId}", wrapper.DeleteProposal)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/proposals/{proposalId}/decide", wrapper.DecideProposal)
+		r.Post(options.BaseURL+"/proposals/{proposalId}/decide/", wrapper.DecideProposal)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/service-info", wrapper.GetServiceInfo)
