@@ -10,9 +10,7 @@ import (
 	"os"
 
 	api "github.com/salaboy/platforms-on-k8s/conference-application/agenda-service/api"
-	"google.golang.org/genproto/googleapis/cloud/redis/v1"
 
-	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -336,7 +334,7 @@ func NewChiServer() *chi.Mux {
 
 // OpenAPIHandler returns a handler that serves the OpenAPI documentation.
 func OpenAPI(r *chi.Mux) {
-	dir := http.Dir("openapi")
+	dir := http.Dir("docs")
 	fs := http.FileServer(dir)
 	r.Handle("/openapi/*", http.StripPrefix("/openapi/", fs))
 }
