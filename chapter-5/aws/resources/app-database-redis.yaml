@@ -1,0 +1,43 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: keyvalue.db.local.salaboy.com
+  labels:
+    type: dev
+    provider: aws
+    kind: keyvalue
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: salaboy.com/v1alpha1
+    kind: Database
+  resources:
+    - name: redis
+      base:
+        apiVersion: cache.aws.crossplane.io/v1alpha1
+        kind: CacheCluster
+        metadata:
+          annotations:
+            crossplane.io/external-name: # patched
+        spec:
+          providerConfigRef:
+            name: default
+          forProvider:
+            region: us-west-2
+            numCacheNodes: 1
+            cacheNodeType: cache.t3.micro
+            engine: redis
+          writeConnectionSecretToRef:
+            namespace: crossplane-system
+            name: redis
+      patches:
+        - fromFieldPath: metadata.name
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
+          policy:
+            fromFieldPath: Required
+        - fromFieldPath: metadata.name
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-redis"
