@@ -466,6 +466,7 @@ func NewChiServer() *chi.Mux {
 
 	// Create a new server
 	server := NewServer(kafkaWriter, db)
+	OpenAPI(r)
 
 	// mount the API on the server
 	r.Mount("/", api.Handler(server))
@@ -476,15 +477,13 @@ func NewChiServer() *chi.Mux {
 	})
 
 	// add openapi spec
-	OpenAPI(r)
 
 	return r
 }
 
 // OpenAPI OpenAPIHandler returns a handler that serves the OpenAPI documentation.
 func OpenAPI(r *chi.Mux) {
-	dir := http.Dir("docs")
-	fs := http.FileServer(dir)
+	fs := http.FileServer(http.Dir(os.Getenv("KO_DATA_PATH") + "/docs/"))
 	r.Handle("/openapi/*", http.StripPrefix("/openapi/", fs))
 }
 

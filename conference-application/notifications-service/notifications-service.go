@@ -149,6 +149,9 @@ func NewChiServer() *chi.Mux {
 	// create new server
 	server := NewServer(kafkaWriter)
 
+	// add openapi spec
+	OpenAPI(r)
+
 	// add routes
 	r.Mount("/", api.Handler(server))
 
@@ -157,16 +160,12 @@ func NewChiServer() *chi.Mux {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
 
-	// add openapi spec
-	OpenAPI(r)
-
 	return r
 }
 
 // OpenApi returns a handler that serves the OpenAPI spec as JSON.
 func OpenAPI(r *chi.Mux) {
-	dir := http.Dir("docs")
-	fs := http.FileServer(dir)
+	fs := http.FileServer(http.Dir(os.Getenv("KO_DATA_PATH") + "/docs/"))
 	r.Handle("/openapi/*", http.StripPrefix("/openapi/", fs))
 }
 

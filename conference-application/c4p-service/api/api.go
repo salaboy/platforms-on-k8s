@@ -262,7 +262,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/proposals/{proposalId}/decide/", wrapper.DecideProposal)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/service-info", wrapper.GetServiceInfo)
+		r.Get(options.BaseURL+"/service/info", wrapper.GetServiceInfo)
 	})
 
 	return r
