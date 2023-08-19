@@ -267,12 +267,12 @@ func OpenAPI(r *chi.Mux) {
 // server implements api.ServerInterface interface.
 type server struct{}
 
-// GetEvents godoc.
+// GetEvents gets all events from the in-memory store.
 func (s *server) GetEvents(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, events)
 }
 
-// GetServiceInfo godoc.
+// GetServiceInfo gets service information.
 func (s *server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 	var info = ServiceInfo{
 		Name:              "FRONTEND",
