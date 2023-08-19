@@ -267,8 +267,13 @@ func OpenAPI(r *chi.Mux) {
 // server implements api.ServerInterface interface.
 type server struct{}
 
-// GetEvents gets all events from the in-memory store.
-func (s *server) GetEvents(w http.ResponseWriter, r *http.Request) {
+// GetEventsWithPost gets all events from the in-memory store.
+func (s *server) GetEventsWithPost(w http.ResponseWriter, r *http.Request) {
+	respondWithJSON(w, http.StatusOK, events)
+}
+
+// GetEventsWithGet gets all events from the in-memory store.
+func (s *server) GetEventsWithGet(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, events)
 }
 

@@ -26,9 +26,23 @@ paths:
                 items:
                   $ref: '#/components/schemas/ServiceInfo'
   /events:
+    get:
+      summary: Get events
+      operationId: getEventsWithPost
+      tags:
+        - event
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Event'
     post:
       summary: Get event
-      operationId: getEvents
+      operationId: getEventsWithGet
       tags:
         - event
       responses:

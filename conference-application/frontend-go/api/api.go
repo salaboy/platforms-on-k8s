@@ -12,9 +12,12 @@ import (
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Get events
+	// (GET /events)
+	GetEventsWithPost(w http.ResponseWriter, r *http.Request)
 	// Get event
 	// (POST /events)
-	GetEvents(w http.ResponseWriter, r *http.Request)
+	GetEventsWithGet(w http.ResponseWriter, r *http.Request)
 	// Get Service Info
 	// (GET /service/info)
 	GetServiceInfo(w http.ResponseWriter, r *http.Request)
@@ -29,12 +32,27 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
-// GetEvents operation middleware
-func (siw *ServerInterfaceWrapper) GetEvents(w http.ResponseWriter, r *http.Request) {
+// GetEventsWithPost operation middleware
+func (siw *ServerInterfaceWrapper) GetEventsWithPost(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		siw.Handler.GetEvents(w, r)
+		siw.Handler.GetEventsWithPost(w, r)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetEventsWithGet operation middleware
+func (siw *ServerInterfaceWrapper) GetEventsWithGet(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetEventsWithGet(w, r)
 	})
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -173,7 +191,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/events", wrapper.GetEvents)
+		r.Get(options.BaseURL+"/events", wrapper.GetEventsWithPost)
+	})
+	r.Group(func(r chi.Router) {
+		r.Post(options.BaseURL+"/events", wrapper.GetEventsWithGet)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/service/info", wrapper.GetServiceInfo)
