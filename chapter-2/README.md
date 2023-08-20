@@ -36,7 +36,7 @@ EOF
 
 ```
 
-![3 worker nodes](imgs/cluster.png)
+![3 worker nodes](imgs/cluster-topology.png)
 
 ### Installing NGINX Ingress Controller
 
