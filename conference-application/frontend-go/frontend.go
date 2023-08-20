@@ -65,9 +65,9 @@ type ServiceInfo struct {
 }
 
 type Event struct {
-	Id      int64
-	Type    string
-	Payload string
+	Id      string `json:"id"`
+	Payload string `json:"payload"`
+	Type    string `json:"type"`
 }
 
 type Features struct {
@@ -250,10 +250,12 @@ func consumeFromKafka(reader *kafka.Reader) {
 			log.Fatalln(err)
 		}
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-		var event = Event{
-			Id:      m.Offset,
-			Type:    string(m.Key),
-			Payload: string(m.Value),
+
+		var event Event
+		err = json.Unmarshal(m.Value, &event)
+		if err != nil {
+			log.Printf("failed to parse Event Data from Kafka Message: %v", err)
+
 		}
 		events = append(events, event)
 	}
