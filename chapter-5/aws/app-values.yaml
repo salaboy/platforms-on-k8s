@@ -1,0 +1,21 @@
+# install:
+#   infrastructure: false
+# frontend:
+#   kafka:
+#     url: aws-mb-kafka.default.svc.cluster.local
+# agenda:
+#   kafka:
+#     url: aws-mb-kafka.default.svc.cluster.local
+#   redis: 
+#     host: aws-db-keyavalue-redis-master.default.svc.cluster.local
+#     secretName: aws-db-keyavalue-redis
+# c4p: 
+#   kafka:
+#     url: aws-mb-kafka.default.svc.cluster.local
+#   postgresql:
+#     host: aws-db-sql-postgresql.default.svc.cluster.local
+#     secretName: aws-db-sql-postgresql
+
+# notifications: 
+#   kafka:
+#     url: aws-mb-kafka.default.svc.cluster.local
