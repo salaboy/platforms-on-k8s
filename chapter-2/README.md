@@ -149,7 +149,7 @@ kind delete clusters dev
 
 ## Next Steps
 
-I strongly recommend you to get your hands dirty with a real Kubernetes Cluster hosted in a Cloud Provider. You can try Civo Cloud, as they offer a free trial where you can create Kubernetes Clusters and run all these examples. 
+I strongly recommend you to get your hands dirty with a real Kubernetes Cluster hosted in a Cloud Provider. You can try most Cloud Providers, as they offer a free trial where you can create Kubernetes Clusters and run all these examples, [check this repository for more information](https://github.com/learnk8s/free-kubernetes). 
 
 If you can create a Cluster in a Cloud provider and get the application up and running you will gain real life experience on all the topics covered in Chapter 2.
 
