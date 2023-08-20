@@ -21,6 +21,13 @@ const (
 	ContentType     = "Content-Type"
 )
 
+// Event struct to encode events data
+type Event struct {
+	Id      string `json:"id"`
+	Payload string `json:"payload"`
+	Type    string `json:"type"`
+}
+
 type ServiceInfo struct {
 	Name              string `json:"name"`
 	Version           string `json:"version"`
@@ -236,9 +243,22 @@ func (s *server) CreateNotification(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	event := Event{
+		Id:      uuid.New().String(),
+		Type:    "notification-sent",
+		Payload: string(notificationJson),
+	}
+
+	eventJson, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("An error occured while marshalling the event for the notification to json: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
 	msg := kafka.Message{
 		Key:   []byte(fmt.Sprintf("notification-sent-%s", notification.Id)),
-		Value: notificationJson,
+		Value: eventJson,
 	}
 	err = s.KafkaWriter.WriteMessages(r.Context(), msg)
 
