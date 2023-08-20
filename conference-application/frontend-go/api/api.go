@@ -191,10 +191,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/events", wrapper.GetEventsWithPost)
+		r.Get(options.BaseURL+"/events/", wrapper.GetEventsWithPost)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/events", wrapper.GetEventsWithGet)
+		r.Post(options.BaseURL+"/events/", wrapper.GetEventsWithGet)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/service/info", wrapper.GetServiceInfo)

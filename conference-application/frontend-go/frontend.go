@@ -5,9 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/chi/v5"
-	"github.com/salaboy/platforms-on-k8s/conference-application/frontend-go/api"
 	"io"
 	"log"
 	"net/http"
@@ -15,6 +12,10 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/salaboy/platforms-on-k8s/conference-application/frontend-go/api"
 
 	kafka "github.com/segmentio/kafka-go"
 )
@@ -306,21 +307,23 @@ func NewChiServer() *chi.Mux {
 	r.Use(middleware.Logger)
 
 	fs := http.FileServer(http.Dir(KoDataPath))
-	r.Handle("/*", http.StripPrefix("/", fs))
 
 	server := NewServer()
-	r.Mount("/api", api.Handler(server))
-	r.HandleFunc("/api/agenda/", agendaServiceHandler)
-	r.HandleFunc("/api/c4p/", c4PServiceHandler)
-	r.HandleFunc("/api/notifications/", notificationServiceHandler)
-	r.HandleFunc("/api/features/", featureHandler)
+
+	OpenAPI(r)
+
+	r.HandleFunc("/api/agenda/*", agendaServiceHandler)
+	r.HandleFunc("/api/c4p/*", c4PServiceHandler)
+	r.HandleFunc("/api/notifications/*", notificationServiceHandler)
+	r.HandleFunc("/api/features/*", featureHandler)
+
+	r.Mount("/api/", api.Handler(server))
+	r.Handle("/*", http.StripPrefix("/", fs))
 
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
-
-	OpenAPI(r)
 
 	return r
 }
