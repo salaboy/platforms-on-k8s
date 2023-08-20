@@ -17,7 +17,7 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Install portman
-      run: npm install -g @apideck/portman && portman -l conference-application/notifications-service/docs/openapi.yaml -o conference-application/notifications-service/api/postman/notifications.postman.json
+      run: npm install -g @apideck/portman && portman -l conference-application/notifications-service/kodata/docs/openapi.yaml -o conference-application/notifications-service/api/postman/notifications.postman.json
     - name: Build the stack
       run: docker-compose -f conference-application/notifications-service/tests/docker-compose.yaml up -d  
     - name: Install newman
