@@ -1,0 +1,109 @@
+openapi: 3.0.3
+info:
+  title: Notifications Service
+  description: Notifications Service
+  version: 1.0.0
+  contact:
+    email: salaboy@gmail.com
+    name: Mauricio Salatino
+    url: https://salaboy.com
+servers:
+  - url: http://localhost:8080
+paths:
+  /notifications/:
+    post:
+      summary: Create a Notification
+      operationId: createNotification
+      tags:
+        - notifications
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Notification"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Notification"
+    get:
+      summary: Get All Notifications
+      operationId: getAllNotifications
+      tags:
+        - notifications
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+  /service/info:
+    get:
+      summary: Get Service Info
+      operationId: getServiceInfo
+      tags:
+        - service
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/ServiceInfo"
+components:
+  schemas:
+    Notification:
+      properties:
+        id:
+          type: string
+          description: Notification ID
+        proposalId:
+          type: string
+          description: Proposal ID
+        agendaItemId:
+          type: string
+          description: Agenda Item ID
+        title:
+          type: string
+          description: Notification Title
+        emailTo:
+          type: string
+          description: Email Address to send the email to
+        accepted:
+          type: boolean
+          description: Proposal Accepted
+        emailSubject:
+          type: string
+          description: Email Subject
+        emailBody:
+          type: string
+          description: Email Body
+    ServiceInfo:
+      properties:
+        name:
+          type: string
+          description: Service Name
+        version:
+          type: string
+          description: Service Version
+        source:
+          type: string
+          description: Service Source
+        podId:
+          type: string
+          description: Service Pod ID
+        podNamespace:
+          type: string
+          description: Service Pod Namespace
+        podNodeName:
+          type: string
+          description: Service Pod Node Name

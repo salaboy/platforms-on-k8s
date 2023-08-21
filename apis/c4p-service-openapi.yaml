@@ -1,0 +1,136 @@
+openapi: 3.0.3
+info:
+  title: Agenda Service
+  description: Agenda Service
+  version: 1.0.0
+  contact:
+    email: salaboy@salaboy.com
+    name: Mauricio Salatino
+    url: https://salaboy.com
+servers:
+  - url: "http://localhost:8080"
+paths:
+  /proposals/{proposalId}/decide/:
+    post:
+      summary: Decide a proposal
+      operationId: decideProposal
+      tags:
+        - proposals
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approved:
+                  type: boolean
+      responses:
+        "200":
+          description: OK
+  /proposals/:
+    post:
+      summary: Create a Proposal
+      operationId: createProposal
+      tags:
+        - proposals
+      responses:
+        "201":
+          description: CREATED
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: "#/components/schemas/Proposal"
+    get:
+      summary: Get all Proposals
+      operationId: getProposals
+      tags:
+        - proposals
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Proposal"
+  /proposals/{proposalId}:
+    delete:
+      summary: Delete a proposal
+      operationId: deleteProposal
+      tags:
+        - proposals
+      parameters:
+        - name: proposalId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: OK
+  /service/info:
+    get:
+      summary: Get Service Info
+      operationId: getServiceInfo
+      tags:
+        - service
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                $ref: "#/components/schemas/ServiceInfo"
+components:
+  schemas:
+    Proposal:
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        author:
+          type: string
+        email:
+          type: string
+        approved:
+          type: boolean
+        status:
+          type: object
+          $ref: "#/components/schemas/ProposalStatus"
+    ProposalStatus:
+      properties:
+        status:
+          type: string
+    ServiceInfo:
+      properties:
+        name:
+          type: string
+          description: Service Name
+        version: 
+          type: string
+          description: Service Version
+        source:
+          type: string
+          description: Service Source
+        podId: 
+          type: string
+          description: Service Pod ID
+        podNamespace:
+          type: string
+          description: Service Pod Namespace
+        podNodeName:
+          type: string
+          description: Service Pod Node Name

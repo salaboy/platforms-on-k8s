@@ -38,7 +38,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.0.0/swagger-ui-standalone-preset.js"></script>
     <script>
       const ui = SwaggerUIBundle({
-        url: "openapi.yaml",
+        urls: [
+          {url: "agenda-service-openapi.yaml", name: "Agenda Service"},
+          {url: "c4p-service-openapi.yaml", name: "Call For Proposals Service"},
+          {url: "notifications-service-openapi.yaml", name: "Notifications Service"},
+        ],
         dom_id: "#swagger-ui",
         deepLinking: true,
         presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
