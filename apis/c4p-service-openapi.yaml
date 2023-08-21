@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
-  title: Agenda Service
-  description: Agenda Service
+  title: Call For Proposals Service
+  description: Call For Proposals Service
   version: 1.0.0
   contact:
     email: salaboy@salaboy.com
