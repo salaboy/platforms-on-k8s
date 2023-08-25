@@ -24,8 +24,8 @@ spec:
             name: default
           forProvider:
             clusterName: kafka
-            kafkaVersion: 3.4.0
-            numberOfBrokerNodes: 3
+            kafkaVersion: 2.6.1
+            numberOfBrokerNodes: 2
             region: us-west-2
             brokerNodeGroupInfo:
               instanceType: kafka.t3.small
