@@ -35,6 +35,13 @@ type Proposal struct {
 	Status      ProposalStatus `json:"status"`
 }
 
+// Event struct to encode events data
+type Event struct {
+	Id      string `json:"id"`
+	Payload string `json:"payload"`
+	Type    string `json:"type"`
+}
+
 func (p *Proposal) MarshalBinary() ([]byte, error) {
 	return json.Marshal(p)
 }
@@ -220,9 +227,22 @@ func (s server) CreateProposal(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	event := Event{
+		Id:      uuid.New().String(),
+		Type:    "new-proposal",
+		Payload: string(proposalJson),
+	}
+
+	eventJson, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("An error occured while marshalling the event for the proposal to json: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
 	msg := kafka.Message{
 		Key:   []byte(fmt.Sprintf("new-proposal-%s", proposal.Id)),
-		Value: proposalJson,
+		Value: eventJson,
 	}
 	err = s.KafkaWriter.WriteMessages(r.Context(), msg)
 
@@ -274,9 +294,23 @@ func (s server) DeleteProposal(w http.ResponseWriter, r *http.Request, proposalI
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return
 	}
+
+	event := Event{
+		Id:      uuid.New().String(),
+		Type:    "proposal-archived",
+		Payload: string(proposalJson),
+	}
+
+	eventJson, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("An error occured while marshalling the event for the proposal to json: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
 	msg := kafka.Message{
 		Key:   []byte(fmt.Sprintf("proposal-archived-%s", proposal.Id)),
-		Value: proposalJson,
+		Value: eventJson,
 	}
 	err = s.KafkaWriter.WriteMessages(r.Context(), msg)
 
@@ -365,9 +399,23 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 			respondWithJSON(w, http.StatusInternalServerError, err)
 			return
 		}
+
+		event := Event{
+			Id:      uuid.New().String(),
+			Type:    "proposal-approved",
+			Payload: string(proposalJson),
+		}
+
+		eventJson, err := json.Marshal(event)
+		if err != nil {
+			log.Printf("An error occured while marshalling the event for the proposal to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
+
 		msg := kafka.Message{
 			Key:   []byte(fmt.Sprintf("proposal-approved-%s", proposal.Id)),
-			Value: proposalJson,
+			Value: eventJson,
 		}
 		err = s.KafkaWriter.WriteMessages(r.Context(), msg)
 
@@ -466,6 +514,7 @@ func NewChiServer() *chi.Mux {
 
 	// Create a new server
 	server := NewServer(kafkaWriter, db)
+	OpenAPI(r)
 
 	// mount the API on the server
 	r.Mount("/", api.Handler(server))
@@ -476,15 +525,13 @@ func NewChiServer() *chi.Mux {
 	})
 
 	// add openapi spec
-	OpenAPI(r)
 
 	return r
 }
 
 // OpenAPI OpenAPIHandler returns a handler that serves the OpenAPI documentation.
 func OpenAPI(r *chi.Mux) {
-	dir := http.Dir("docs")
-	fs := http.FileServer(dir)
+	fs := http.FileServer(http.Dir(os.Getenv("KO_DATA_PATH") + "/docs/"))
 	r.Handle("/openapi/*", http.StripPrefix("/openapi/", fs))
 }
 

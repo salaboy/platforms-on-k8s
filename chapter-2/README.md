@@ -36,7 +36,7 @@ EOF
 
 ```
 
-![3 worker nodes](imgs/cluster.png)
+![3 worker nodes](imgs/cluster-topology.png)
 
 ### Installing NGINX Ingress Controller
 
@@ -91,9 +91,9 @@ You can also run the following command to see the details of the chart:
 helm show all oci://docker.io/salaboy/conference-app --version v1.0.0
 ```
 
-Check that all the application pods are up and running. Notice that if your internet connection is slow it might take a while for the application to start. Since the application's services depend on some infrastructure components (Redis, Kafka, PostgreSQL), these components needs to start and be ready for the services to connect.
+Check that all the application pods are up and running. Notice that if your internet connection is slow it might take a while for the application to start. Since the application's services depend on some infrastructure components (Redis, Kafka, PostgreSQL), these components needs to start and be ready for the services to connect. Components like Kakfa are quite heavy with around 335+ MB, PostgreSQL 88+ MB, and Redis 35+ MB.
 
-Eventually you should see something like this: 
+Eventually you should see something like this, it can take a few minutes: 
 
 ```
 kubect get pods
@@ -149,7 +149,7 @@ kind delete clusters dev
 
 ## Next Steps
 
-I strongly recommend you to get your hands dirty with a real Kubernetes Cluster hosted in a Cloud Provider. You can try Civo Cloud, as they offer a free trial where you can create Kubernetes Clusters and run all these examples. 
+I strongly recommend you to get your hands dirty with a real Kubernetes Cluster hosted in a Cloud Provider. You can try most Cloud Providers, as they offer a free trial where you can create Kubernetes Clusters and run all these examples, [check this repository for more information](https://github.com/learnk8s/free-kubernetes). 
 
 If you can create a Cluster in a Cloud provider and get the application up and running you will gain real life experience on all the topics covered in Chapter 2.
 

@@ -13,24 +13,40 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/salaboy/platforms-on-k8s/conference-application/frontend-go/api"
+
 	kafka "github.com/segmentio/kafka-go"
 )
 
-var VERSION = getEnv("VERSION", "1.0.0")
-var SOURCE = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/frontend-go")
-var POD_NAME = getEnv("POD_NAME", "N/A")
-var POD_NAMESPACE = getEnv("POD_NAMESPACE", "N/A")
-var POD_NODENAME = getEnv("POD_NODENAME", "N/A")
-var POD_IP = getEnv("POD_IP", "N/A")
-var POD_SERVICE_ACCOUNT = getEnv("POD_SERVICE_ACCOUNT", "N/A")
-var AGENDA_SERVICE_URL = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
-var C4P_SERVICE_URL = getEnv("C4P_SERVICE_URL", "http://c4p-service.default.svc.cluster.local")
-var NOTIFICATIONS_SERVICE_URL = getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
+var (
+	Version = getEnv("VERSION", "1.0.0")
 
-var KAFKA_URL = getEnv("KAFKA_URL", "localhost:9094")
-var KAFKA_TOPIC = getEnv("KAFKA_TOPIC", "events-topic")
-var KAFKA_GROUP_ID = getEnv("KAFKA_GROUP_ID", "app")
+	Source                  = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/frontend-go")
+	PodName                 = getEnv("POD_NAME", "N/A")
+	PodNamespace            = getEnv("POD_NAMESPACE", "N/A")
+	PodNodeName             = getEnv("POD_NODENAME", "N/A")
+	PodIp                   = getEnv("POD_IP", "N/A")
+	PodServiceAccount       = getEnv("POD_SERVICE_ACCOUNT", "N/A")
+	AgendaServiceUrl        = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
+	C4pServiceUrl           = getEnv("C4P_SERVICE_URL", "http://c4p-service.default.svc.cluster.local")
+	NotificationsServiceUrl = getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
+	KafkaUrl                = getEnv("KAFKA_URL", "localhost:9094")
+	KafkaTopic              = getEnv("KAFKA_TOPIC", "events-topic")
+	KafkaGroupId            = getEnv("KAFKA_GROUP_ID", "app")
+	AppPort                 = getEnv("APP_PORT", "8080")
+
+	// FeatureGenerateProposal values:
+	// - PUBLIC (no filters)
+	// - GENERATE (Read Only Form - Generate Proposal)
+	// -GENERATE_ONLY (No Submit until Generated Proposal is created)
+	FeatureGenerateProposal = getEnv("FEATURE_DEBUG_ENABLED", "GENERATE")
+	FeatureDebugEnabled     = getEnv("FEATURE_DEBUG_ENABLED", "false")
+	KoDataPath              = getEnv("KO_DATA_PATH", "kodata")
+)
+
+var events = []Event{}
 
 const (
 	ApplicationJson = "application/json"
@@ -48,46 +64,60 @@ type ServiceInfo struct {
 	PodServiceAccount string `json:"podServiceAccount"`
 }
 
-var events = []Event{}
-
 type Event struct {
-	Id      int64
-	Type    string
-	Payload string
+	Id      string `json:"id"`
+	Payload string `json:"payload"`
+	Type    string `json:"type"`
 }
 
 type Features struct {
-	DEBUG_ENABLED     string
-	GENERATE_PROPOSAL string
+	DebugEnabled     string
+	GenerateProposal string
 }
 
-var FEATURE_DEBUG_ENABLED = getEnv("FEATURE_DEBUG_ENABLED", "false")
+func main() {
 
-// values: PUBLIC (no filters), GENERATE (Read Only Form - Generate Proposal), GENERATE_ONLY (No Submit until Generated Proposal is created)
-var FEATURE_GENERATE_PROPOSAL = getEnv("FEATURE_DEBUG_ENABLED", "GENERATE")
+	r := NewChiServer()
+	log.Printf("Connecting to Kafka Instance: %s, topic: %s., group: %s", KafkaUrl, KafkaTopic, KafkaGroupId)
+	reader := getKafkaReader(KafkaUrl, KafkaTopic, KafkaGroupId)
+
+	kafkaAlive := isKafkaAlive(KafkaUrl, KafkaTopic)
+	if !kafkaAlive {
+		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
+		return
+	}
+
+	go consumeFromKafka(reader)
+
+	defer reader.Close()
+
+	log.Printf("Starting Frontend Go in Port: %s", AppPort)
+
+	// Start the server; this is a blocking call
+	err := http.ListenAndServe(":"+AppPort, r)
+	if err != http.ErrServerClosed {
+		log.Panic(err)
+	}
+}
 
 func featureHandler(w http.ResponseWriter, r *http.Request) {
 	var features = Features{
-		DEBUG_ENABLED:     FEATURE_DEBUG_ENABLED,
-		GENERATE_PROPOSAL: FEATURE_GENERATE_PROPOSAL,
+		DebugEnabled:     FeatureDebugEnabled,
+		GenerateProposal: FeatureGenerateProposal,
 	}
 	respondWithJSON(w, http.StatusOK, features)
 }
 
-func eventsHandler(w http.ResponseWriter, r *http.Request) {
-	respondWithJSON(w, http.StatusOK, events)
-}
-
 func agendaServiceHandler(w http.ResponseWriter, r *http.Request) {
-	proxyRequest("api/agenda", AGENDA_SERVICE_URL, w, r)
+	proxyRequest("api/agenda", AgendaServiceUrl, w, r)
 }
 
 func c4PServiceHandler(w http.ResponseWriter, r *http.Request) {
-	proxyRequest("api/c4p", C4P_SERVICE_URL, w, r)
+	proxyRequest("api/c4p", C4pServiceUrl, w, r)
 }
 
 func notificationServiceHandler(w http.ResponseWriter, r *http.Request) {
-	proxyRequest("api/notifications", NOTIFICATIONS_SERVICE_URL, w, r)
+	proxyRequest("api/notifications", NotificationsServiceUrl, w, r)
 }
 
 func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
@@ -107,14 +137,14 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 func isKafkaAlive(kafkaURL string, topic string) bool {
 	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
 	if err != nil {
-		panic(err.Error())
+		panic(any(err.Error()))
 	}
 	defer conn.Close()
 
 	brokers, err := conn.Brokers()
 
 	if err != nil {
-		panic(err.Error())
+		panic(any(err.Error()))
 	}
 
 	for _, b := range brokers {
@@ -192,63 +222,7 @@ func proxyRequest(serviceName string, serviceUrl string, w http.ResponseWriter, 
 	}
 }
 
-func main() {
-	appPort := os.Getenv("APP_PORT")
-	if appPort == "" {
-		appPort = "8080"
-	}
-
-	r := mux.NewRouter()
-
-	r.PathPrefix("/api/agenda/").HandlerFunc(agendaServiceHandler)
-	r.PathPrefix("/api/c4p/").HandlerFunc(c4PServiceHandler)
-	r.PathPrefix("/api/notifications/").HandlerFunc(notificationServiceHandler)
-	r.PathPrefix("/api/events/").HandlerFunc(eventsHandler)
-	r.PathPrefix("/api/features/").HandlerFunc(featureHandler)
-	// Add handlers for readiness and liveness endpoints
-	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
-		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
-	})
-
-	r.HandleFunc("/service/info", func(w http.ResponseWriter, r *http.Request) {
-		var info ServiceInfo = ServiceInfo{
-			Name:              "FRONTEND",
-			Version:           VERSION,
-			Source:            SOURCE,
-			PodName:           POD_NAME,
-			PodNodeName:       POD_NODENAME,
-			PodNamespace:      POD_NAMESPACE,
-			PodIp:             POD_IP,
-			PodServiceAccount: POD_SERVICE_ACCOUNT,
-		}
-		w.Header().Set(ContentType, ApplicationJson)
-		json.NewEncoder(w).Encode(info)
-	})
-
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir(os.Getenv("KO_DATA_PATH"))))
-
-	log.Printf("Connecting to Kafka Instance: %s, topic: %s., group: %s", KAFKA_URL, KAFKA_TOPIC, KAFKA_GROUP_ID)
-	reader := getKafkaReader(KAFKA_URL, KAFKA_TOPIC, KAFKA_GROUP_ID)
-
-	kafkaAlive := isKafkaAlive(KAFKA_URL, KAFKA_TOPIC)
-	if !kafkaAlive {
-		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
-		return
-	}
-
-	go consumeFromKafka(reader)
-
-	defer reader.Close()
-
-	log.Printf("Starting Frontend Go in Port: %s", appPort)
-
-	// Start the server; this is a blocking call
-	err := http.ListenAndServe(":"+appPort, r)
-	if err != http.ErrServerClosed {
-		log.Panic(err)
-	}
-}
-
+// respondWithJSON is a helper function to write json response format.
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	response, _ := json.Marshal(payload)
 
@@ -257,6 +231,7 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	w.Write(response)
 }
 
+// getEnv is a helper function to get environment variable or return a default value.
 func getEnv(key, fallback string) string {
 	value, exists := os.LookupEnv(key)
 	if !exists {
@@ -265,6 +240,7 @@ func getEnv(key, fallback string) string {
 	return value
 }
 
+// consumeFromKafka consumes events from Kafka.
 func consumeFromKafka(reader *kafka.Reader) {
 	fmt.Println("Consuming Events ...")
 
@@ -274,11 +250,82 @@ func consumeFromKafka(reader *kafka.Reader) {
 			log.Fatalln(err)
 		}
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-		var event = Event{
-			Id:      m.Offset,
-			Type:    string(m.Key),
-			Payload: string(m.Value),
+
+		var event Event
+		err = json.Unmarshal(m.Value, &event)
+		if err != nil {
+			log.Printf("failed to parse Event Data from Kafka Message: %v", err)
+
 		}
 		events = append(events, event)
 	}
+}
+
+// OpenAPI OpenAPIHandler returns a handler that serves the OpenAPI documentation.
+func OpenAPI(r *chi.Mux) {
+	fs := http.FileServer(http.Dir(KoDataPath + "/docs/"))
+	r.Handle("/openapi/*", http.StripPrefix("/openapi/", fs))
+}
+
+// server implements api.ServerInterface interface.
+type server struct{}
+
+// GetEventsWithPost gets all events from the in-memory store.
+func (s *server) GetEventsWithPost(w http.ResponseWriter, r *http.Request) {
+	respondWithJSON(w, http.StatusOK, events)
+}
+
+// GetEventsWithGet gets all events from the in-memory store.
+func (s *server) GetEventsWithGet(w http.ResponseWriter, r *http.Request) {
+	respondWithJSON(w, http.StatusOK, events)
+}
+
+// GetServiceInfo gets service information.
+func (s *server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
+	var info = ServiceInfo{
+		Name:              "FRONTEND",
+		Version:           Version,
+		Source:            Source,
+		PodName:           PodName,
+		PodNodeName:       PodNodeName,
+		PodNamespace:      PodNamespace,
+		PodIp:             PodIp,
+		PodServiceAccount: PodServiceAccount,
+	}
+	w.Header().Set(ContentType, ApplicationJson)
+	json.NewEncoder(w).Encode(info)
+}
+
+// NewServer creates a new api.ServerInterface server.
+func NewServer() api.ServerInterface {
+	return &server{}
+}
+
+// NewChiServer creates a new chi.Mux server.
+func NewChiServer() *chi.Mux {
+
+	r := chi.NewRouter()
+
+	r.Use(middleware.Logger)
+
+	fs := http.FileServer(http.Dir(KoDataPath))
+
+	server := NewServer()
+
+	OpenAPI(r)
+
+	r.HandleFunc("/api/agenda/*", agendaServiceHandler)
+	r.HandleFunc("/api/c4p/*", c4PServiceHandler)
+	r.HandleFunc("/api/notifications/*", notificationServiceHandler)
+	r.HandleFunc("/api/features/*", featureHandler)
+
+	r.Mount("/api/", api.Handler(server))
+	r.Handle("/*", http.StripPrefix("/", fs))
+
+	// Add handlers for readiness and liveness endpoints
+	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
+		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	})
+
+	return r
 }

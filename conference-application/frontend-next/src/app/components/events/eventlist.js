@@ -51,10 +51,10 @@ function EventsList() {
                 {
                     events && events.map((item, index) => (
                         <EventItem
-                            key={item.Id}
-                            id={item.Id}
-                            type={item.Type}
-                            payload={item.Payload}
+                            key={item.id}
+                            id={item.id}
+                            type={item.type}
+                            payload={item.payload}
 
                         />
 

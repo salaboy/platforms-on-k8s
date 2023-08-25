@@ -10,7 +10,7 @@ info:
 servers:
   - url: "http://localhost:8080"
 paths:
-  /proposals/{proposalId}/decide:
+  /proposals/{proposalId}/decide/:
     post:
       summary: Decide a proposal
       operationId: decideProposal
@@ -33,7 +33,7 @@ paths:
       responses:
         "200":
           description: OK
-  /proposals:
+  /proposals/:
     post:
       summary: Create a Proposal
       operationId: createProposal
@@ -77,7 +77,7 @@ paths:
       responses:
         "200":
           description: OK
-  /service-info:
+  /service/info:
     get:
       summary: Get Service Info
       operationId: getServiceInfo

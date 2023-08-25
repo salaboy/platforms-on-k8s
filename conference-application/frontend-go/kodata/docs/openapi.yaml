@@ -1,0 +1,85 @@
+openapi: 3.0.3
+info:
+  title: Frontend Go
+  description: Frontend go
+  version: 1.0.0
+  contact:
+    email: salaboy@salaboy.com
+    name: Mauricio Salatino
+    url: https://salaboy.com
+servers:
+  - url: "http://localhost:8080"
+paths:
+  /service/info:
+    get:
+      summary: Get Service Info
+      operationId: getServiceInfo
+      tags:
+        - service-info
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/ServiceInfo'
+  /events/:
+    get:
+      summary: Get events
+      operationId: getEventsWithPost
+      tags:
+        - event
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Event'
+    post:
+      summary: Get event
+      operationId: getEventsWithGet
+      tags:
+        - event
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Event'
+components:
+  schemas:
+    ServiceInfo:
+      type: object
+      properties:
+        name:
+          type: string
+        version:
+          type: string
+        source:
+          type: string
+        podName:
+          type: string
+        podNamespace:
+          type: string
+        podNodeName:
+          type: string
+        podIp:
+          type: string
+        podServiceAccount:
+          type: string
+    Event:
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+        payload:
+          type: string

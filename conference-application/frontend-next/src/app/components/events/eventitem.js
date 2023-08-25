@@ -2,6 +2,7 @@
 'use client'
 import styles from '@/app/styles/events.module.css'
 import { useState } from 'react'
+import JSONPretty from 'react-json-pretty';
 
 function EventItem({id, type, payload}) {
   const [open, setOpen] = useState(false) // state hook
@@ -30,7 +31,7 @@ function EventItem({id, type, payload}) {
           {/* Maybe render using: https://www.npmjs.com/package/react-json-pretty */}
           <div className={styles.description}>
             <div className={styles.codeContainer}>
-             {payload}
+              <JSONPretty id="json-pretty" data={payload}></JSONPretty>
             </div>
           </div>
         
