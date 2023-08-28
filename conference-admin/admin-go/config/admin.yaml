@@ -14,7 +14,7 @@ spec:
       serviceAccountName: admin-dashboard
       containers:
       - name: admin
-        image: ko://github.com/salaboy/platforms-on-k8s/conference-admin/admin-go
+        image: matheuscruzdev/admin-go-4b1308c49d6627e0dc7e3ffd57f155cc@sha256:f04833b75bd98ff9612a624490586d67956060490e19650e1ce39582f5b1fd7a
         imagePullPolicy: Always  
         env: 
         - name: POD_NODENAME

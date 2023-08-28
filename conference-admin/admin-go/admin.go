@@ -110,17 +110,17 @@ func NewChiServer() *chi.Mux {
 	r.Use(middleware.RequestID)
 
 	fs := http.FileServer(http.Dir(KoDataPath))
-	r.Handle("/*", http.StripPrefix("/", fs))
 
 	server := NewServer(clientSet)
 
-	r.Mount("/api", api.Handler(server))
+	OpenAPI(r)
+
+	r.Mount("/api/", api.Handler(server))
+	r.Handle("/*", http.StripPrefix("/", fs))
 
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
-
-	OpenAPI(r)
 
 	log.Printf("Starting Conference Admin API in port: %s", AppPort)
 
@@ -217,7 +217,7 @@ func NewServer(client *clientV1alpha1.ConferenceAdminV1Alpha1Client) api.ServerI
 
 // OpenAPI OpenAPIHandler returns a handler that serves the OpenAPI documentation.
 func OpenAPI(r *chi.Mux) {
-	fs := http.FileServer(http.Dir(os.Getenv("KO_DATA_PATH") + "/docs/"))
+	fs := http.FileServer(http.Dir(KoDataPath + "/docs/"))
 	r.Handle("/openapi/*", http.StripPrefix("/openapi/", fs))
 }
 
