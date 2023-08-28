@@ -14,13 +14,13 @@ import (
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// List all environments
-	// (GET /api/environments)
+	// (GET /environments)
 	ListEnvironments(w http.ResponseWriter, r *http.Request)
 	// Create a new environment
-	// (POST /api/environments)
+	// (POST /environments)
 	CreateEnvironment(w http.ResponseWriter, r *http.Request)
 	// Delete an environment
-	// (DELETE /api/environments/{id})
+	// (DELETE /environments/{id})
 	DeleteEnvironment(w http.ResponseWriter, r *http.Request, id string)
 	// Get Service Info
 	// (GET /service/info)
@@ -221,13 +221,13 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/api/environments", wrapper.ListEnvironments)
+		r.Get(options.BaseURL+"/environments", wrapper.ListEnvironments)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/api/environments", wrapper.CreateEnvironment)
+		r.Post(options.BaseURL+"/environments", wrapper.CreateEnvironment)
 	})
 	r.Group(func(r chi.Router) {
-		r.Delete(options.BaseURL+"/api/environments/{id}", wrapper.DeleteEnvironment)
+		r.Delete(options.BaseURL+"/environments/{id}", wrapper.DeleteEnvironment)
 	})
 	r.Group(func(r chi.Router) {
 		r.Get(options.BaseURL+"/service/info", wrapper.GetServiceInfo)

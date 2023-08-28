@@ -10,7 +10,7 @@ info:
 servers:
   - url: http://localhost:8080
 paths:
-  /api/environments:
+  /environments:
     get:
       summary: List all environments
       operationId: listEnvironments
@@ -42,7 +42,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Environment'
-  /api/environments/{id}:
+  /environments/{id}:
     delete:
       summary: Delete an environment
       operationId: deleteEnvironment
