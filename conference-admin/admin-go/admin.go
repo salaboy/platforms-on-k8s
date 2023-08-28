@@ -4,11 +4,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/salaboy/platforms-on-k8s/conference-admin/admin-go/api"
 	"log"
 	"net/http"
 	"os"
 
-	"github.com/gorilla/mux"
 	"github.com/salaboy/platforms-on-k8s/conference-admin/admin-go/api/types/v1alpha1"
 	clientV1alpha1 "github.com/salaboy/platforms-on-k8s/conference-admin/admin-go/clientset/v1alpha1"
 
@@ -19,14 +21,16 @@ import (
 )
 
 var (
-	VERSION             = getEnv("VERSION", "1.0.0")
-	SOURCE              = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-admin/admin-go")
-	POD_NAME            = getEnv("POD_NAME", "N/A")
-	POD_NAMESPACE       = getEnv("POD_NAMESPACE", "N/A")
-	POD_NODENAME        = getEnv("POD_NODENAME", "N/A")
-	POD_IP              = getEnv("POD_IP", "N/A")
-	POD_SERVICE_ACCOUNT = getEnv("POD_SERVICE_ACCOUNT", "N/A")
-	kubeconfig          string
+	Version           = getEnv("VERSION", "1.0.0")
+	Source            = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-admin/admin-go")
+	PodName           = getEnv("POD_NAME", "N/A")
+	PodNamespace      = getEnv("POD_NAMESPACE", "N/A")
+	PodNodeName       = getEnv("POD_NODENAME", "N/A")
+	PodIp             = getEnv("POD_IP", "N/A")
+	PodServiceAccount = getEnv("POD_SERVICE_ACCOUNT", "N/A")
+	AppPort           = getEnv("APP_PORT", "8080")
+	KoDataPath        = getEnv("KO_DATA_PATH", "kodata")
+	kubeconfig        string
 )
 
 const (
@@ -66,11 +70,17 @@ func init() {
 }
 
 func main() {
-	appPort := os.Getenv("APP_PORT")
-	if appPort == "" {
-		appPort = "8080"
-	}
+	r := NewChiServer()
 
+	// Start the server; this is a blocking call
+	err := http.ListenAndServe(":"+AppPort, r)
+	if err != http.ErrServerClosed {
+		log.Panic(err)
+	}
+}
+
+// NewChiServer returns a new chi router with the API routes configured.
+func NewChiServer() *chi.Mux {
 	var config *rest.Config
 	var err error
 
@@ -83,115 +93,132 @@ func main() {
 	}
 
 	if err != nil {
-		panic(err)
+		panic(any(err))
 	}
 
 	v1alpha1.AddToScheme(scheme.Scheme)
 
 	clientSet, err := clientV1alpha1.NewForConfig(config)
+
 	if err != nil {
-		panic(err)
+		panic(any(err))
 	}
 
-	r := mux.NewRouter()
+	r := chi.NewRouter()
 
-	r.HandleFunc("/api/environments/", getAllEnvironmentsHandler(clientSet)).Methods("GET")
-	r.HandleFunc("/api/environments/", createEnvironmentHandler(clientSet)).Methods("POST")
-	r.HandleFunc("/api/environments/{id}/", deleteEnvironmentsHandler(clientSet)).Methods("DELETE")
-	// Add handlers for readiness and liveness endpoints
+	r.Use(middleware.Logger)
+	r.Use(middleware.RequestID)
+
+	fs := http.FileServer(http.Dir(KoDataPath))
+	r.Handle("/*", http.StripPrefix("/", fs))
+
+	server := NewServer(clientSet)
+
+	r.Mount("/api", api.Handler(server))
+
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
 
-	r.HandleFunc("/service/info", func(w http.ResponseWriter, r *http.Request) {
-		var info ServiceInfo = ServiceInfo{
-			Name:              "ADMIN",
-			Version:           VERSION,
-			Source:            SOURCE,
-			PodName:           POD_NAME,
-			PodNodeName:       POD_NODENAME,
-			PodNamespace:      POD_NAMESPACE,
-			PodIp:             POD_IP,
-			PodServiceAccount: POD_SERVICE_ACCOUNT,
-		}
-		w.Header().Set(ContentType, ApplicationJson)
-		json.NewEncoder(w).Encode(info)
-	})
+	OpenAPI(r)
 
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir(os.Getenv("KO_DATA_PATH"))))
+	log.Printf("Starting Conference Admin API in port: %s", AppPort)
 
-	// Start the server; this is a blocking call
-	err = http.ListenAndServe(":"+appPort, r)
-	if err != http.ErrServerClosed {
-		log.Panic(err)
+	return r
+}
+
+// server represents the Conference Admin API server.
+type server struct {
+	ClientSet *clientV1alpha1.ConferenceAdminV1Alpha1Client
+}
+
+// ListEnvironments returns a list of Environments.
+func (s *server) ListEnvironments(w http.ResponseWriter, r *http.Request) {
+	environments, err := s.ClientSet.Environments("default").List(metav1.ListOptions{})
+	if err != nil {
+		panic(any(err))
+	}
+
+	fmt.Printf("environments found: %+v\n", environments)
+
+	log.Printf("Environments retrieved from Kube API: %d", len(environments.Items))
+	respondWithJSON(w, http.StatusOK, environments.Items)
+}
+
+// CreateEnvironment creates a new Environment.
+func (s *server) CreateEnvironment(w http.ResponseWriter, r *http.Request) {
+	var env EnvironmentSimple
+	err := json.NewDecoder(r.Body).Decode(&env)
+	if err != nil {
+		log.Printf("There was an error decoding the request body into the struct: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
+	fullEnv := &v1alpha1.Environment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: env.Name,
+		},
+		Spec: v1alpha1.EnvironmentSpec{
+			WriteConnectionSecretToRef: v1alpha1.WriteConnectionSecretToRef{
+				Name: env.Name,
+			},
+			CompositionSelector: v1alpha1.CompositionSelector{
+				MatchLabels: map[string]string{
+					"type": env.Parameters.Type,
+				},
+			},
+			Parameters: v1alpha1.Parameters{
+				InstallInfra: env.Parameters.InstallInfra,
+				Frontend: v1alpha1.Frontend{
+					Debug: env.Parameters.Frontend.Debug,
+				},
+			},
+		},
+	}
+	result, err := s.ClientSet.Environments("default").Create(fullEnv)
+	if err != nil {
+		panic(any(err))
+	}
+
+	respondWithJSON(w, http.StatusOK, result)
+}
+
+// DeleteEnvironment deletes an environment.
+func (s *server) DeleteEnvironment(w http.ResponseWriter, r *http.Request, id string) {
+	err := s.ClientSet.Environments("default").Delete(id, metav1.DeleteOptions{})
+	if err != nil {
+		panic(any(err))
 	}
 }
 
-func deleteEnvironmentsHandler(clientSet *clientV1alpha1.ConferenceAdminV1Alpha1Client) func(w http.ResponseWriter, r *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
-		err := clientSet.Environments("default").Delete(vars["id"], metav1.DeleteOptions{})
-		if err != nil {
-			panic(err)
-		}
-	})
-
+// GetServiceInfo returns information about the service.
+func (s *server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
+	var info = ServiceInfo{
+		Name:              "ADMIN",
+		Version:           Version,
+		Source:            Source,
+		PodName:           PodName,
+		PodNodeName:       PodNodeName,
+		PodNamespace:      PodNamespace,
+		PodIp:             PodIp,
+		PodServiceAccount: PodServiceAccount,
+	}
+	w.Header().Set(ContentType, ApplicationJson)
+	json.NewEncoder(w).Encode(info)
 }
 
-func getAllEnvironmentsHandler(clientSet *clientV1alpha1.ConferenceAdminV1Alpha1Client) func(w http.ResponseWriter, r *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		environments, err := clientSet.Environments("default").List(metav1.ListOptions{})
-		if err != nil {
-			panic(err)
-		}
-
-		fmt.Printf("environments found: %+v\n", environments)
-
-		log.Printf("Environments retrieved from Kube API: %d", len(environments.Items))
-		respondWithJSON(w, http.StatusOK, environments.Items)
-	})
-
+// NewServer returns an instance of the api.ServerInterface implementation.
+func NewServer(client *clientV1alpha1.ConferenceAdminV1Alpha1Client) api.ServerInterface {
+	return &server{
+		ClientSet: client,
+	}
 }
 
-func createEnvironmentHandler(clientSet *clientV1alpha1.ConferenceAdminV1Alpha1Client) func(w http.ResponseWriter, r *http.Request) {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		var env EnvironmentSimple
-		err := json.NewDecoder(r.Body).Decode(&env)
-		if err != nil {
-			log.Printf("There was an error decoding the request body into the struct: %v", err)
-			respondWithJSON(w, http.StatusInternalServerError, err)
-			return
-		}
-
-		fullEnv := &v1alpha1.Environment{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: env.Name,
-			},
-			Spec: v1alpha1.EnvironmentSpec{
-				WriteConnectionSecretToRef: v1alpha1.WriteConnectionSecretToRef{
-					Name: env.Name,
-				},
-				CompositionSelector: v1alpha1.CompositionSelector{
-					MatchLabels: map[string]string{
-						"type": env.Parameters.Type,
-					},
-				},
-				Parameters: v1alpha1.Parameters{
-					InstallInfra: env.Parameters.InstallInfra,
-					Frontend: v1alpha1.Frontend{
-						Debug: env.Parameters.Frontend.Debug,
-					},
-				},
-			},
-		}
-		result, err := clientSet.Environments("default").Create(fullEnv)
-		if err != nil {
-			panic(err)
-		}
-
-		respondWithJSON(w, http.StatusOK, result)
-	})
-
+// OpenAPI OpenAPIHandler returns a handler that serves the OpenAPI documentation.
+func OpenAPI(r *chi.Mux) {
+	fs := http.FileServer(http.Dir(os.Getenv("KO_DATA_PATH") + "/docs/"))
+	r.Handle("/openapi/*", http.StripPrefix("/openapi/", fs))
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
