@@ -395,7 +395,7 @@ spec:
   - name: target-registry
     value: docker.io/salaboy
   - name: target-version
-    value: 1.0.0
+    value: v0.9.9
   workspaces:
     - name: sources
       volumeClaimTemplate: 
@@ -412,7 +412,7 @@ spec:
     name: app-helm-chart-pipeline
 ```
 
-Notice that the Application Helm Chart pipeline also uses the same `docker-credentials` to push the Helm Chart as an OCI container image. While the pipeline accepts the `target-version` parameter, the chart that is going to be built will read the version specified in the `Chart.yaml` file, this means that this version is only used to validate that the version we want to publish is the same version that is specified in the `Charts.yaml` file. It is up to the reader to update the Tekton Task to patch the `Chart.yaml` file with the specified version.
+Notice that the Application Helm Chart pipeline also uses the same `docker-credentials` to push the Helm Chart as an OCI container image. The pipeline accepts the `target-version` parameter, which is used to patch the `Chart.yaml`` file before packaging and pushing the helm chart to the OCI container registry. Notice that this pipeline doesn't patch the versions of the containers referenced by the chart, which means that is it up to the reader to adapt the pipeline to accept as parameters the versions of each service and validate that the referenced container images exists in the referenced container registry.
 
 
 **Note**: These pipelines are just examples to illustrate the work required to configure Tekton to build containers and charts. For example, the Application Helm Chart Pipeline doesn't change the version of the chart or the version of the container images referenced inside the chart. If we really want to automate all the process we can get the image versions and the chart version from a Git tag that represent the version that we want to release.

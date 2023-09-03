@@ -9,7 +9,7 @@ spec:
   - name: target-registry
     value: docker.io/salaboy
   - name: target-version
-    value: 1.0.0
+    value: v0.9.9
   workspaces:
     - name: sources
       volumeClaimTemplate: 
