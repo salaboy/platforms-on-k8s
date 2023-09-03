@@ -367,6 +367,12 @@ spec:
     name: service-pipeline
 ```
 
+Apply this `PipelineRun` definition to the cluster to create a new instance of the Service Pipeline: 
+
+```
+kubectl apply -f service-pipeline-run.yaml
+```
+
 Notice the `spec.params` section, that you will need to modify so the pipeline pushes the resulting container image to your own registry. In other words, replace `docker.io/salaboy` with your registry + username. The `target-service` parameter allows you to choose from which service from the conference application you want to build (from the available services: `notifications-service`, `agenda-service`, `c4p-service`, `frontend`).
 
 
@@ -410,6 +416,12 @@ spec:
         secretName: docker-credentials
   pipelineRef:
     name: app-helm-chart-pipeline
+```
+
+Apply this `PipelineRun`` definition to the cluster to create a new instance of the Application Helm Chart Pipeline: 
+
+```
+kubectl apply -f app-helm-chart-pipeline-run.yaml
 ```
 
 Notice that the Application Helm Chart pipeline also uses the same `docker-credentials` to push the Helm Chart as an OCI container image. The pipeline accepts the `target-version` parameter, which is used to patch the `Chart.yaml`` file before packaging and pushing the helm chart to the OCI container registry. Notice that this pipeline doesn't patch the versions of the containers referenced by the chart, which means that is it up to the reader to adapt the pipeline to accept as parameters the versions of each service and validate that the referenced container images exists in the referenced container registry.
