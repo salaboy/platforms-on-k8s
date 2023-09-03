@@ -22,7 +22,7 @@ spec:
           - ReadWriteOnce
           resources:
             requests:
-              storage: 1Gi 
+              storage: 100Mi 
     - name: docker-credentials
       secret:  
         secretName: docker-credentials
