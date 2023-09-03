@@ -15,12 +15,12 @@ spec:
       default: main
     - name: context
       description: The path to the docker context in the sources workspace
-      default: /
+      default: "."
     - name: target-registry
       description: The target container registry and path where to build the image
       default: docker.io/salaboy
-    - name: target-name
-      description: Name of the image to publish
+    - name: target-service
+      description: Name of the service that we want to build and publish
       default: notifications-service
     - name: target-version
       description: the target version to build
@@ -47,22 +47,32 @@ spec:
       workspaces: 
         - name: sources
           workspace: sources
-          subPath: conference-application/$(params.target-name)
+          subPath: conference-application/$(params.target-service)
         - name: dockerconfig
           workspace: docker-credentials
       params: 
         - name: target-version
           value: $(params.target-version)
-        - name: target-name
-          value: $(params.target-name)  
+        - name: target-service
+          value: $(params.target-service)  
+        - name: context
+          value: $(params.context)    
+        - name: target-registry
+          value: $(params.target-registry)      
       taskSpec:
         params: 
           - name: target-version
             description: the target version to build
             default: 1.0.0-service-pipeline    
-          - name: target-name
-            description: Name of the image to publish
+          - name: target-service
+            description: Name of the service that we want to build and publish
             default: notifications-service
+          - name: context
+            description: The path to the docker context in the sources workspace
+            default: "."  
+          - name: target-registry
+            description: The target container registry and path where to build the image
+            default: docker.io/salaboy  
         workspaces:
           - name: sources
           - name: dockerconfig
@@ -72,11 +82,13 @@ spec:
             script: |
               #!/bin/sh
               #set -ex
-              export KO_DOCKER_REPO=docker.io/salaboy
+              export KO_DOCKER_REPO=$(params.target-registry)
               mkdir ~/.docker
               cp $(workspaces.dockerconfig.path)/.dockerconfigjson ~/.docker/config.json
               cd $(workspaces.sources.path)
+              cd $(params.context)
               ko build -t $(params.target-version) . 
+    
     # - name: build-publish #NOT WORKING -> ISSUE: https://github.com/tektoncd/catalog/issues/1192
     #   runAfter: 
     #   - clone-repo

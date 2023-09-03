@@ -28,7 +28,7 @@ You can access the dashboard by port-forwarding using `kubectl`:
 kubectl port-forward svc/tekton-dashboard  -n tekton-pipelines 9097:9097
 ```
 
-![Tekton Dashboard](tekton-dashboard.png)
+![Tekton Dashboard](imgs/tekton-dashboard.png)
 
 Then you can access pointing your browser to [http://localhost:9097](http://localhost:9097)
 
@@ -135,7 +135,7 @@ Let's now look into how to sequence multiple tasks together using a Tekton Pipel
 
 Now we can use Pipelines to coordinate multiple tasks like the one that we defined before. We can also reuse Task definitions created by the Tekton community from the [Tekton Hub](https://hub.tekton.dev/).
 
-![](tekton-hub.png)
+![Tekton Hub](imgs/tekton-hub.png)
 
 
 Before creating the Pipeline we will install the `curl` Tekton task from the Tekton Hub by running: 
@@ -154,7 +154,7 @@ Now let's use our `Hello World` task and the `wget` task that we just installed 
 
 We will be creating this simple Pipeline Definition, that fetch a file, read its content and then uses the previously defined `Hello World` Task.
 
-![](hello-world-pipeline.png)
+![Hello World Pipeline](imgs/hello-world-pipeline.png)
 
 Let's create the following pipeline definition:
 
@@ -297,7 +297,7 @@ hello-world-pipeline-run-1   True        Succeeded   2m13s       114s
 
 
 Make sure you check the pipeline and task executions in the Tekton Dashboard if you installed it.
-![](tekton-dashboard-hello-world-pipeline.png)
+![Tekton Dashboard](imgs/tekton-dashboard-hello-world-pipeline.png)
 
 
 ## Tekton for Service Pipelines
@@ -307,56 +307,115 @@ Service Pipelines in real life are much more complex that the previous simple ex
 An example Service Pipeline definition can be found in this directory in a file called [service-pipeline.yaml](service-pipeline.yaml). 
 
 
-![Service Pipeline](service-pipeline.png) @TODO redo this image to show only push to container registry
+![Service Pipeline](imgs/service-pipeline.png)
 
 
 The example Service Pipelines uses [`ko`] to build and publish the container image for our Service. This pipeline is very specify to our Go Services, as if we were building services using a different programming language we will need to use other tools. The example service pipeline can be parameterized to build different services.
 
 To be able to run this Service Pipeline you need to set up credentials to a Container Registry, this means allowing the pipelines to push containers to a container registry such as Docker Hub. To authenticate with a container registry from a Tekton Task/Pipeline [check the official documentation](https://tekton.dev/docs/how-to-guides/kaniko-build-push/#container-registry-authentication).
 
-For this example we will create a Kubernetes Secret with our Docker Hub credentials. To get your credentials in Mac OS you can run:
+For this example we will create a Kubernetes Secret with our Docker Hub credentials:
 
 ```
-cat ~/.docker/config.json | base64
-```
-
-You need to copy this string into the file [`docker-credentials-secret.yaml`](docker-credentials-secret.yaml) and then apply it to the cluster: 
-
-```
-kubectl apply -f docker-credentials-secret.yaml
+kubectl create secret docker-registry docker-credentials --docker-server=https://index.docker.io/v1/ --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email>
 ```
 
 
-Then we will install the Git Clone and the `ko` Tekton Tasks: 
+Then we will install the `Git Clone` and the `ko` Tekton Tasks: 
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.9/git-clone.yaml
 kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/ko/0.1/ko.yaml
 ```
 
-Now we are ready to create our service pipeline definition and a pipeline run:
+Let's install our Service Pipeline defintion to our cluster:
 
 ```
 kubectl apply -f service-pipeline.yaml
-kubectl apply -f service-pipeline-run.yaml
 ```
 
+Now we can create new pipeline instances to build and publish our services container images. The folllowing `PipelineRun` resource configure our Service Pipeline to build the Notifications Service.
+
+```
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: service-pipeline-run-1
+  annotations:
+    kubernetes.io/ssh-auth: kubernetes.io/dockerconfigjson
+spec:
+  params:
+  - name: target-registry
+    value: docker.io/salaboy
+  - name: target-service
+    value: notifications-service
+  - name: target-version 
+    value: 1.0.0-from-pipeline-run
+  workspaces:
+    - name: sources
+      volumeClaimTemplate: 
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 100Mi 
+    - name: docker-credentials
+      secret:  
+        secretName: docker-credentials
+  pipelineRef:
+    name: service-pipeline
+```
+
+Notice the `spec.params` section, that you will need to modify so the pipeline pushes the resulting container image to your own registry. In other words, replace `docker.io/salaboy` with your registry + username. The `target-service` parameter allows you to choose from which service from the conference application you want to build (from the available services: `notifications-service`, `agenda-service`, `c4p-service`, `frontend`).
 
 
 There is a separate pipeline that package and publish the Helm Chart which includes all the application services. 
-
-![Helm Chart Application Pipeline](helm-chart-service-pipeline.png) @TODO  this image shows the helm package and push to container registry
-
-All the services' pipelines are structured in the same way and the Pipeline definition is just one. You can create different PipelineRuns for each service. If configured correctly, you end with each service container image published to the configured container registry. 
-
 When the team decides the combination of services and version that they want to bundle inside a helm chart they can run another pipeline to package and publish the chart to the same container registry where the services container images are published. 
 
+![Helm Chart Application Pipeline](imgs/app-helm-pipeline.png)
 
-To be able to run these pipelines you will need the following credentials to be configured:
-- A workpsace with enough space to host the application source code and all the dependencies that will be downloaded
-- Container Registry credentials to be used by the `ko` and `helm` Task that builds and push the container to a registry
+You can install the Application Helm Chart Pipeline by running: 
 
-**Note**: These pipelines are just examples to illustrate the work required to configure Tekton to build containers and charts.
+```
+kubectl apply -f app-helm-chart-pipeline.yaml
+```
+
+Then you can create new instances by creating new `PipelineRun` resources:
+
+```
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: app-helm-chart-pipeline-run-1
+  annotations:
+    kubernetes.io/ssh-auth: kubernetes.io/dockerconfigjson
+spec:
+  params:
+  - name: target-registry
+    value: docker.io/salaboy
+  - name: target-version
+    value: 1.0.0
+  workspaces:
+    - name: sources
+      volumeClaimTemplate: 
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 100Mi 
+    - name: dockerconfig
+      secret:  
+        secretName: docker-credentials
+  pipelineRef:
+    name: app-helm-chart-pipeline
+```
+
+Notice that the Application Helm Chart pipeline also uses the same `docker-credentials` to push the Helm Chart as an OCI container image. While the pipeline accepts the `target-version` parameter, the chart that is going to be built will read the version specified in the `Chart.yaml` file, this means that this version is only used to validate that the version we want to publish is the same version that is specified in the `Charts.yaml` file. It is up to the reader to update the Tekton Task to patch the `Chart.yaml` file with the specified version.
+
+
+**Note**: These pipelines are just examples to illustrate the work required to configure Tekton to build containers and charts. For example, the Application Helm Chart Pipeline doesn't change the version of the chart or the version of the container images referenced inside the chart. If we really want to automate all the process we can get the image versions and the chart version from a Git tag that represent the version that we want to release.
 
 
 ## Clean up

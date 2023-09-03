@@ -13,18 +13,12 @@ spec:
     - name: gitRevision
       description: The git revision to build
       default: main
-    - name: context
-      description: The path to the docker context in the sources workspace
-      default: /
     - name: target-registry
       description: The target container registry and path where to build the image
       default: docker.io/salaboy
-    - name: target-name
-      description: Name of the image to publish
-      default: your-service
     - name: target-version
       description: the target version to build
-      default: 1.0.0-service-pipeline
+      default: 1.0.0
   workspaces:
     - name: sources
       description: Workspace where the git repo is prepared for building
@@ -59,7 +53,7 @@ spec:
         params: 
           - name: target-version
             description: the target version to build
-            default: 1.0.0-app-pipeline
+            default: 1.0.0
           - name: target-registry
             description: The target container registry and path where to build the image
             default: docker.io/salaboy  
@@ -75,6 +69,7 @@ spec:
               mkdir ~/.docker
               cp $(workspaces.dockerconfig.path)/.dockerconfigjson ~/.docker/config.json
               cd $(workspaces.sources.path)
+              yq e -i '.version="$(params.target-version)"' Chart.yaml
               helm dependency build
               helm package .
               helm push conference-app-v$(params.target-version).tgz oci://$(params.target-registry)

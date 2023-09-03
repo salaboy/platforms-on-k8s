@@ -7,9 +7,9 @@ metadata:
 spec:
   params:
   - name: target-registry
-    value: salaboy
-  - name: context
-    value: "."
+    value: docker.io/salaboy
+  - name: target-version
+    value: 1.0.0
   workspaces:
     - name: sources
       volumeClaimTemplate: 
