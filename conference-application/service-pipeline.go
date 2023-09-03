@@ -79,24 +79,48 @@ func buildService(ctx context.Context, client *dagger.Client, dir string) ([]*da
 func testService(ctx context.Context, client *dagger.Client, dir string) error {
 	srcDir := client.Host().Directory(dir)
 
-	redisSvc := client.Container().
-		From("redis:6.2-alpine").
-		WithExposedPort(6379)
-
+	// Start Kafka for all services
 	kafkaSvc := client.Container().
-		From("docker.io/bitnami/kafka:3.4").
+		From("docker.io/bitnami/kafka:3.4.1-debian-11-r0").
 		WithEnvVariable("ALLOW_PLAINTEXT_LISTENER", "yes").
 		WithEnvVariable("KAFKA_CFG_LISTENERS", "PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094").
 		WithEnvVariable("KAFKA_CFG_ADVERTISED_LISTENERS", "PLAINTEXT://kafka:9092,EXTERNAL://kafka:9094").
 		WithEnvVariable("KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP", "CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT").
 		WithExposedPort(9092)
 
+	client.Container().
+		From("docker.io/bitnami/kafka:3.4.1-debian-11-r0").
+		WithEntrypoint([]string{"/bin/sh", "-c"}).
+		WithExec([]string{"kafka-topics.sh --bootstrap-server kafka:9092 --list",
+			"echo -e 'Creating kafka topics'",
+			"kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic events-topic --replication-factor 1 --partitions 1",
+			"echo -e 'Successfully created the following topics:'",
+			"kafka-topics.sh --bootstrap-server kafka:9092 --list"})
+
 	// accomplished by just not specifying a platform; the default
 	// is that of the host.
 	ctr := client.Container()
+
+	ctr = ctr.WithEnvVariable("KAFKA_URL", "kafka:9092")
+
 	ctr = ctr.From("golang:1.20-alpine").
-		WithServiceBinding("redis", redisSvc).
 		WithServiceBinding("kafka", kafkaSvc)
+
+	if dir == "agenda-service" {
+		redisSvc := client.Container().
+			From("docker.io/bitnami/redis:7.0.11-debian-11-r12").
+			WithExposedPort(6379)
+		ctr.WithServiceBinding("redis", redisSvc)
+		ctr = ctr.WithEnvVariable("REDIS_HOST", "redis")
+	}
+
+	if dir == "c4p-service" {
+		postgreSvc := client.Container().
+			From("bitnami/postgresql:15.3.0-debian-11-r17").
+			WithExposedPort(5432)
+		ctr.WithServiceBinding("postgres", postgreSvc)
+		ctr = ctr.WithEnvVariable("POSTGRESQL_HOST", "postgres")
+	}
 
 	// mount in our source code
 	ctr = ctr.WithDirectory("/src", srcDir)
@@ -109,8 +133,7 @@ func testService(ctx context.Context, client *dagger.Client, dir string) error {
 	// ensure the binary will be statically linked and thus executable
 	// in the final image
 	ctr = ctr.WithEnvVariable("CGO_ENABLED", "0")
-	ctr = ctr.WithEnvVariable("REDIS_HOST", "redis")
-	ctr = ctr.WithEnvVariable("KAFKA_URL", "kafka:9092")
+
 	// build the binary and put the result at the mounted output
 	// directory
 	ctr = ctr.WithWorkdir("/src")

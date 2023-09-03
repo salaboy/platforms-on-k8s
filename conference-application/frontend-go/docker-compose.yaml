@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   kafka:
-    image: docker.io/bitnami/kafka:3.4
+    image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
     ports:
       - "9094:9094"
     volumes:
@@ -17,7 +17,7 @@ services:
       timeout: 10s
       retries: 10   
   init-kafka:
-    image: docker.io/bitnami/kafka:3.4
+    image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
     depends_on:
       kafka:
         condition: service_healthy

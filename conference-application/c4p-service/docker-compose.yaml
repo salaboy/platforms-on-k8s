@@ -1,7 +1,7 @@
 version: "3.8"
 services:
   postgresql:
-    image: postgres
+    image: docker.io/bitnami/postgresql:15.3.0-debian-11-r17
     restart: always
     environment:
       - POSTGRES_USER=postgres
@@ -11,7 +11,7 @@ services:
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/create_tables.sql
   kafka:
-    image: docker.io/bitnami/kafka:3.4
+    image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
     ports:
       - "9094:9094"
     volumes:
@@ -27,7 +27,7 @@ services:
       timeout: 10s
       retries: 10   
   init-kafka:
-    image: docker.io/bitnami/kafka:3.4
+    image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
     depends_on:
       kafka:
         condition: service_healthy
