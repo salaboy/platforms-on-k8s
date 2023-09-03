@@ -370,7 +370,7 @@ spec:
 Notice the `spec.params` section, that you will need to modify so the pipeline pushes the resulting container image to your own registry. In other words, replace `docker.io/salaboy` with your registry + username. The `target-service` parameter allows you to choose from which service from the conference application you want to build (from the available services: `notifications-service`, `agenda-service`, `c4p-service`, `frontend`).
 
 
-There is a separate pipeline that package and publish the Helm Chart which includes all the application services. 
+There is a separate pipeline ([app-helm-chart-pipeline.yaml](app-helm-chart-pipeline.yaml)) that package and publish the Helm Chart which includes all the application services. 
 When the team decides the combination of services and version that they want to bundle inside a helm chart they can run another pipeline to package and publish the chart to the same container registry where the services container images are published. 
 
 ![Helm Chart Application Pipeline](imgs/app-helm-pipeline.png)
