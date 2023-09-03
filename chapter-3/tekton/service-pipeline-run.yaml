@@ -23,11 +23,9 @@ spec:
           resources:
             requests:
               storage: 1Gi 
-    - name: dockerconfig
+    - name: docker-credentials
       secret:  
-        secretName: regcred
+        secretName: docker-credentials
   pipelineRef:
-    name: conference-app-service-pipeline
-  taskRunTemplate:
-    serviceAccountName: pipelines-sa  
+    name: service-pipeline
   

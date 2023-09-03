@@ -304,13 +304,48 @@ Make sure you check the pipeline and task executions in the Tekton Dashboard if 
 
 Service Pipelines in real life are much more complex that the previous simple examples. This is mostly because the pipeline tasks will need to have special configurations and credentials to access external systems. 
 
-The Service Pipeline definition for each of the Conference Application services can be found in the Service repository. But they all implement the following steps:
+An example Service Pipeline definition can be found in this directory in a file called [service-pipeline.yaml](service-pipeline.yaml). 
 
 
-![Service Pipeline](service-pipeline.png)
+![Service Pipeline](service-pipeline.png) @TODO redo this image to show only push to container registry
 
 
-As you can see, for these example, the Service Pipelines finishes after publishing the container images using `ko`. There is a separate pipeline that package and publish the Helm Chart which includes all the application services. 
+The example Service Pipelines uses [`ko`] to build and publish the container image for our Service. This pipeline is very specify to our Go Services, as if we were building services using a different programming language we will need to use other tools. The example service pipeline can be parameterized to build different services.
+
+To be able to run this Service Pipeline you need to set up credentials to a Container Registry, this means allowing the pipelines to push containers to a container registry such as Docker Hub. To authenticate with a container registry from a Tekton Task/Pipeline [check the official documentation](https://tekton.dev/docs/how-to-guides/kaniko-build-push/#container-registry-authentication).
+
+For this example we will create a Kubernetes Secret with our Docker Hub credentials. To get your credentials in Mac OS you can run:
+
+```
+cat ~/.docker/config.json | base64
+```
+
+You need to copy this string into the file [`docker-credentials-secret.yaml`](docker-credentials-secret.yaml) and then apply it to the cluster: 
+
+```
+kubectl apply -f docker-credentials-secret.yaml
+```
+
+
+Then we will install the Git Clone and the `ko` Tekton Tasks: 
+
+```
+kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/git-clone/0.9/git-clone.yaml
+kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/ko/0.1/ko.yaml
+```
+
+Now we are ready to create our service pipeline definition and a pipeline run:
+
+```
+kubectl apply -f service-pipeline.yaml
+kubectl apply -f service-pipeline-run.yaml
+```
+
+
+
+There is a separate pipeline that package and publish the Helm Chart which includes all the application services. 
+
+![Helm Chart Application Pipeline](helm-chart-service-pipeline.png) @TODO  this image shows the helm package and push to container registry
 
 All the services' pipelines are structured in the same way and the Pipeline definition is just one. You can create different PipelineRuns for each service. If configured correctly, you end with each service container image published to the configured container registry. 
 

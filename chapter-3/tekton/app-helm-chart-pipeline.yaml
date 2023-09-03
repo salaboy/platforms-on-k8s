@@ -1,10 +1,10 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: conference-app-helm-chart-pipeline
+  name: app-helm-chart-pipeline
   annotations:
     description: |
-      Build the artifacts for the Conference application's services
+      Build and Publish the artthe Conference application's Helm Chart
 spec:
   params:
     - name: gitRepository
@@ -49,8 +49,20 @@ spec:
           workspace: dockerconfig  
         - name: sources
           workspace: sources
-          subPath: "conference-application/helm/conference-app/"
+          subPath: conference-application/helm/conference-app/
+      params: 
+        - name: target-version
+          value: $(params.target-version) 
+        - name: target-registry
+          value: $(params.target-registry)     
       taskSpec:
+        params: 
+          - name: target-version
+            description: the target version to build
+            default: 1.0.0-app-pipeline
+          - name: target-registry
+            description: The target container registry and path where to build the image
+            default: docker.io/salaboy  
         workspaces:
           - name: sources
           - name: dockerconfig
@@ -60,9 +72,9 @@ spec:
             script: |
               #!/bin/sh
               set -ex 
+              mkdir ~/.docker
+              cp $(workspaces.dockerconfig.path)/.dockerconfigjson ~/.docker/config.json
               cd $(workspaces.sources.path)
-              helm repo add bitnami https://charts.bitnami.com/bitnami
-              helm repo update
               helm dependency build
               helm package .
-              helm push conference-app-v1.0.0.tgz oci://docker.io/salaboy/
+              helm push conference-app-v$(params.target-version).tgz oci://$(params.target-registry)

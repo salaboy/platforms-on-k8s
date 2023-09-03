@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
-  name: helm-chart-pipeline-run-1
+  name: app-helm-chart-pipeline-run-1
   annotations:
     kubernetes.io/ssh-auth: kubernetes.io/dockerconfigjson
 spec:
@@ -18,12 +18,10 @@ spec:
           - ReadWriteOnce
           resources:
             requests:
-              storage: 1Gi 
+              storage: 100Mi 
     - name: dockerconfig
       secret:  
-        secretName: regcred
+        secretName: docker-credentials
   pipelineRef:
-    name: conference-app-helm-chart-pipeline
-  taskRunTemplate:
-    serviceAccountName: pipelines-sa    
+    name: app-helm-chart-pipeline
   

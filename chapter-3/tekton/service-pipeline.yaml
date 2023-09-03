@@ -1,7 +1,7 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  name: conference-app-service-pipeline
+  name: service-pipeline
   annotations:
     description: |
       Build the artifacts for the Conference application's services
@@ -21,14 +21,14 @@ spec:
       default: docker.io/salaboy
     - name: target-name
       description: Name of the image to publish
-      default: your-service
+      default: notifications-service
     - name: target-version
       description: the target version to build
       default: 1.0.0-service-pipeline
   workspaces:
     - name: sources
       description: Workspace where the git repo is prepared for building
-    - name: dockerconfig
+    - name: docker-credentials
       description: Docker config secret
   tasks:
     - name: clone-repo
@@ -43,18 +43,55 @@ spec:
         - name: output
           workspace: sources
     - name: build-publish
-      runAfter: 
-      - clone-repo
-      taskRef: 
-        name: ko
-      params: 
-        - name: KO_DOCKER_REPO
-          value: $(params.target-registry)  
-        - name: main
-          value: $(params.context)  
-      workspaces:
-        - name: source
+      runAfter: [clone-repo]
+      workspaces: 
+        - name: sources
           workspace: sources
-          subPath: "conference-application/notifications-service/"
+          subPath: conference-application/$(params.target-name)
         - name: dockerconfig
-          workspace: dockerconfig  
+          workspace: docker-credentials
+      params: 
+        - name: target-version
+          value: $(params.target-version)
+        - name: target-name
+          value: $(params.target-name)  
+      taskSpec:
+        params: 
+          - name: target-version
+            description: the target version to build
+            default: 1.0.0-service-pipeline    
+          - name: target-name
+            description: Name of the image to publish
+            default: notifications-service
+        workspaces:
+          - name: sources
+          - name: dockerconfig
+        steps:
+          - name: package
+            image: ghcr.io/ko-build/ko:latest
+            script: |
+              #!/bin/sh
+              #set -ex
+              export KO_DOCKER_REPO=docker.io/salaboy
+              mkdir ~/.docker
+              cp $(workspaces.dockerconfig.path)/.dockerconfigjson ~/.docker/config.json
+              cd $(workspaces.sources.path)
+              ko build -t $(params.target-version) . 
+    # - name: build-publish #NOT WORKING -> ISSUE: https://github.com/tektoncd/catalog/issues/1192
+    #   runAfter: 
+    #   - clone-repo
+    #   taskRef: 
+    #     name: ko
+    #   params: 
+    #     - name: KO_DOCKER_REPO
+    #       value: $(params.target-registry)  
+    #     - name: main
+    #       value: $(params.context) 
+    #     - name: extra-args
+    #       value: ["-t", $(params.target-version)]   
+    #   workspaces:
+    #     - name: source
+    #       workspace: sources
+    #       subPath: "conference-application/notifications-service/"
+    #     - name: dockerconfig
+    #       workspace: docker-credentials
