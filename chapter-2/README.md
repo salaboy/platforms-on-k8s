@@ -41,7 +41,13 @@ EOF
 ### Loading some container images before installing the application and other components
 
 The `kind-load.sh` script prefetch (pulls and load container images) that we will be using for our application to our KinD Cluster. 
-The idea here is to optimize the process for our Cluster, so when we install the application, we don't wait for 10+ minutes to fetch all the container images needed. With all images already pre-loaded into our KinD cluster, the application should start in around 1 minute, as we still need to wait for PostgreSQL, Redis and Kafka to bootstrap.  
+The idea here is to optimize the process for our Cluster, so when we install the application, we don't wait for 10+ minutes to fetch all the container images needed. With all images already pre-loaded into our KinD cluster, the application should start in around 1 minute, as we still need to wait for PostgreSQL, Redis and Kafka to bootstrap. 
+
+Run the script by copying this command into your terminal, from inside the `chapter-2` directory: 
+
+```
+./kind-load.sh
+```
 
 By running this script you will be fetching all the required images and then loading them into every node of your KinD cluster. If you are running the examples on a Cloud Provider, this might not be worth as Cloud Providers with Gigabyte connections to container registries might fetch these iamges in matter of seconds.
 
