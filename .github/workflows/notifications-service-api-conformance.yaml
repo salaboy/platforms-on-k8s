@@ -1,4 +1,4 @@
-name: postman-pull-request
+name: notifications-service-api-conformance-test
 on:
   push:
   pull_request:

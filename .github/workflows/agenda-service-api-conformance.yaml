@@ -1,4 +1,4 @@
-name: postman-pull-request
+name: agenda-service-api-conformance-test
 on:
   push:
   pull_request:
@@ -17,10 +17,10 @@ jobs:
     - name: Install dependencies
       run: npm install
     - name: Install portman
-      run: npm install -g @apideck/portman && portman -l conference-application/notifications-service/kodata/docs/openapi.yaml -o conference-application/notifications-service/api/postman/notifications.postman.json
+      run: npm install -g @apideck/portman && portman -l conference-application/agenda-service/kodata/docs/openapi.yaml -o conference-application/agenda-service/api/postman/agenda-service.postman.json
     - name: Build the stack
-      run: docker-compose -f conference-application/notifications-service/tests/docker-compose.yaml up -d  
+      run: docker-compose -f conference-application/agenda-service/tests/docker-compose.yaml up -d  
     - name: Install newman
-      run: npm install -g newman && newman run conference-application/notifications-service/api/postman/notifications.postman.json --env-var "baseUrl=http://localhost:8080"   
+      run: npm install -g newman && newman run conference-application/agenda-service/api/postman/agenda-service.postman.json --env-var "baseUrl=http://localhost:8080"   
     - name: Shutdown the stack
-      run: docker-compose -f conference-application/notifications-service/tests/docker-compose.yaml down 
+      run: docker-compose -f conference-application/agenda-service/tests/docker-compose.yaml down 
