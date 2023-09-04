@@ -29,8 +29,6 @@ func architectureOf(platform dagger.Platform) string {
 func buildService(ctx context.Context, client *dagger.Client, dir string) ([]*dagger.Container, error) {
 	srcDir := client.Host().Directory(dir)
 
-	fmt.Println("-----------------------------------------------> DIR", dir)
-
 	platformVariants := make([]*dagger.Container, 0, len(platforms))
 	for _, platform := range platforms {
 		// pull the golang image for the *host platform*. This is
