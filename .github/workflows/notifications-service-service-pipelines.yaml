@@ -31,4 +31,4 @@ jobs:
       - if: steps.changes.outputs.src == 'true'
         env: 
           KO_DOCKER_REPO: docker.io/salaboy
-        run: cd conference-application/notifications-service && ko build
+        run: cd conference-application/notifications-service && ko build -t v0.9.9-gh
