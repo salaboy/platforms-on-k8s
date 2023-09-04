@@ -38,12 +38,21 @@ EOF
 
 ![3 worker nodes](imgs/cluster-topology.png)
 
+### Loading some container images before installing the application and other components
+
+The `kind-load.sh` script prefetch (pulls and load container images) that we will be using for our application to our KinD Cluster. 
+The idea here is to optimize the process for our Cluster, so when we install the application, we don't wait for 10+ minutes to fetch all the container images needed. With all images already pre-loaded into our KinD cluster, the application should start in around 1 minute, as we still need to wait for PostgreSQL, Redis and Kafka to bootstrap.  
+
+By running this script you will be fetching all the required images and then loading them into every node of your KinD cluster. If you are running the examples on a Cloud Provider, this might not be worth as Cloud Providers with Gigabyte connections to container registries might fetch these iamges in matter of seconds.
+
+
+
 ### Installing NGINX Ingress Controller
 
 We need NGINGX Ingress Controller to route traffic from our laptop to the services that are running inside the cluster. NGINX Ingress Controller act as a router that is running inside the cluster, but exposed to the outside world. 
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/release-1.8/deploy/static/provider/kind/deploy.yaml
 ```
 
 Check that the pods inside the `ingress-nginx` are started correctly before proceeding: 
