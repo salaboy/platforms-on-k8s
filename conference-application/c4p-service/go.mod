@@ -2,6 +2,8 @@ module github.com/salaboy/platforms-on-k8s/conference-application/c4p-service
 
 go 1.21
 
+toolchain go1.21.0
+
 require (
 	github.com/deepmap/oapi-codegen v1.13.0
 	github.com/go-chi/chi v1.5.4
