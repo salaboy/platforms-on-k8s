@@ -24,13 +24,24 @@ function NewEnvironment() {
         setLoading(true);
         setIsError(false);
 
+        var name = document.getElementById("name").value
+        console.log("Name: " + name)
+        var e = document.getElementById("type");
+        var envType = e.value;
+        console.log("Type: " + envType)
+        var installInfra = document.getElementById("installInfra").checked
+        console.log("Install Infra? " + installInfra)
+
+        var debug = document.getElementById("debug").checked
+        console.log("debug? " + debug)
+
         const data = {
-            name: document.getElementById("name").value,
+            name: name,
             parameters: {
-                type: document.getElementById("type").value,
-                installInfra: (document.getElementById("installInfra").value).toLowerCase() === 'true',
+                type: envType,
+                installInfra: installInfra,
                 frontend: {
-                    debug: (document.getElementById("debug").value).toLowerCase() === 'true',
+                    debug: debug,
                 },
             }
         }
@@ -70,8 +81,7 @@ function NewEnvironment() {
 
                         <Textfield label="Name" id="name" name="name" />
                         <Select label="Type" id="type" name="type">
-                            <option value="value1">Development</option>
-                            <option value="value2" selected>Production</option>
+                            <option value="development">Development</option>
                         </Select>
                         <Switch label="Install Infrastructure" id="installInfra" name="installInfra" />
                         <Switch label="Frontend Debug" id="debug" name="debug" />

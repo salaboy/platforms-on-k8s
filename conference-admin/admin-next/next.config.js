@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
     trailingSlash: true,
-    //output: 'export', //-> this is to get static files
+    output: 'export', //-> this is to get static files
     images: {
       loader: "custom",
       imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
@@ -21,17 +21,17 @@ module.exports = {
       nextImageExportOptimizer_generateAndUseBlurImages: true,
     },
     //output: 'standalone', -> this is to get a server for nodejs
-    async rewrites() {
-      return [
-        {
-          source: '/api/environments/',
-          destination: 'http://982cc774-a5ca-4663-9a94-a1e243cb4bf6.k8s.civo.com/api/environments/',
-        },
-        {
-          source: '/api/environments/:path*/',
-          destination: 'http://982cc774-a5ca-4663-9a94-a1e243cb4bf6.k8s.civo.com/api/environments/:path*/',
-        },
+    // async rewrites() {
+    //   return [
+    //     {
+    //       source: '/api/environments/',
+    //       destination: 'http://982cc774-a5ca-4663-9a94-a1e243cb4bf6.k8s.civo.com/api/environments/',
+    //     },
+    //     {
+    //       source: '/api/environments/:path*/',
+    //       destination: 'http://982cc774-a5ca-4663-9a94-a1e243cb4bf6.k8s.civo.com/api/environments/:path*/',
+    //     },
         
-      ]
-    },
+    //   ]
+    // },
   }

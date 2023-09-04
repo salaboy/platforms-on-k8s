@@ -68,7 +68,7 @@ environment.salaboy.com/team-a-dev-env created
 You can always check the state of your Environments by running: 
 
 ```
-kubect get env
+> kubectl get env
 NAME             CONNECT-TO             TYPE          INFRA   DEBUG   SYNCED   READY   CONNECTION-SECRET   AGE
 team-a-dev-env   team-a-dev-env-jp7j4   development   true    true    True     False   team-a-dev-env      1s
 
@@ -77,7 +77,7 @@ team-a-dev-env   team-a-dev-env-jp7j4   development   true    true    True     F
 You can check that Crossplane is creating and managing resources related to the composition by running: 
 
 ```
-kubectl get managed
+> kubectl get managed
 NAME                            CHART            VERSION          SYNCED   READY   STATE      REVISION   DESCRIPTION        AGE
 team-a-dev-env-jp7j4-8lbtj      conference-app   v1.0.0           True     True    deployed   1          Install complete   57s
 team-a-dev-env-jp7j4-vcluster   vcluster         0.15.0-alpha.0   True     True    deployed   1          Install complete   57s
@@ -187,7 +187,7 @@ curl localhost:8081/api/environments/
 Or delete one environment running: 
 
 ```
-curl -X DELETE http://localhost:8081/api/environments/team-curl-dev-env/
+curl -X DELETE http://localhost:8081/api/environments/team-curl-dev-env
 ```
 
 This application serves as a facade between Kubernetes and the outside world. Depending on your organization needs, you might want to have this abstractions (APIs) early on, so the platform team can pivot on their tooling and workflow decisions under the covers.

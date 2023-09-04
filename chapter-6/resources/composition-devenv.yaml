@@ -24,11 +24,11 @@ spec:
             chart:
               name: vcluster
               repository: https://charts.loft.sh
-              version: "0.15.0-alpha.0"
+              version: "0.15.7"
             values:
               fallbackHostDns: true
               multiNamespaceMode:
-                enabled: false
+                enabled: true
               sync:
                 #used for plugins
               syncer:

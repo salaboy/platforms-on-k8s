@@ -221,10 +221,10 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 	}
 
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/environments", wrapper.ListEnvironments)
+		r.Get(options.BaseURL+"/environments/", wrapper.ListEnvironments)
 	})
 	r.Group(func(r chi.Router) {
-		r.Post(options.BaseURL+"/environments", wrapper.CreateEnvironment)
+		r.Post(options.BaseURL+"/environments/", wrapper.CreateEnvironment)
 	})
 	r.Group(func(r chi.Router) {
 		r.Delete(options.BaseURL+"/environments/{id}", wrapper.DeleteEnvironment)
