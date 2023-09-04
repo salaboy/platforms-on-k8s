@@ -93,19 +93,17 @@ type ServiceInfo struct {
 }
 
 var (
-	Version                 = getEnv("VERSION", "1.0.0")
-	Source                  = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/c4p-service")
-	PodName                 = getEnv("POD_NAME", "N/A")
-	PodNamespace            = getEnv("POD_NAMESPACE", "N/A")
-	PodNodeName             = getEnv("POD_NODENAME", "N/A")
-	PodIp                   = getEnv("POD_IP", "N/A")
-	PodServiceAccount       = getEnv("POD_SERVICE_ACCOUNT", "N/A")
-	PostgresqlHost          = getEnv("POSTGRES_HOST", "localhost")
-	PostgresqlPort          = getEnv("POSTGRES_PORT", "5432")
-	PostgresqlUsername      = getEnv("POSTGRES_USERNAME", "postgres")
-	PostgresqlPassword      = getEnv("POSTGRES_PASSWORD", "postgres")
-	AgendaServiceUrl        = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
-	NotificationsServiceUrl = getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
+	Version            = getEnv("VERSION", "1.0.0")
+	Source             = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/c4p-service")
+	PodName            = getEnv("POD_NAME", "N/A")
+	PodNamespace       = getEnv("POD_NAMESPACE", "N/A")
+	PodNodeName        = getEnv("POD_NODENAME", "N/A")
+	PodIp              = getEnv("POD_IP", "N/A")
+	PodServiceAccount  = getEnv("POD_SERVICE_ACCOUNT", "N/A")
+	PostgresqlHost     = getEnv("POSTGRES_HOST", "localhost")
+	PostgresqlPort     = getEnv("POSTGRES_PORT", "5432")
+	PostgresqlUsername = getEnv("POSTGRES_USERNAME", "postgres")
+	PostgresqlPassword = getEnv("POSTGRES_PASSWORD", "postgres")
 
 	KafkaUrl   = getEnv("KAFKA_URL", "localhost:9094")
 	KafkaTopic = getEnv("KAFKA_TOPIC", "events-topic")
@@ -154,8 +152,10 @@ func isKafkaAlive(kafkaURL string, topic string) bool {
 
 // server
 type server struct {
-	KafkaWriter *kafka.Writer
-	DB          *sql.DB
+	KafkaWriter             *kafka.Writer
+	DB                      *sql.DB
+	AgendaServiceURL        string
+	NotificationsServiceURL string
 }
 
 // GetProposals gets all proposals.
@@ -375,7 +375,7 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 		if err != nil {
 			log.Printf("There was an error marshalling the Agenda Item to JSON: %v", err)
 		}
-		r, err := http.NewRequest("POST", fmt.Sprintf("%s/%s/", AgendaServiceUrl, "agenda-items"), bytes.NewBuffer(agendaItemJson))
+		r, err := http.NewRequest("POST", fmt.Sprintf("%s/%s/", s.AgendaServiceURL, "agenda-items"), bytes.NewBuffer(agendaItemJson))
 		if err != nil {
 			log.Printf("There was an error creating the request to the Agenda Item Service: %v", err)
 		}
@@ -448,7 +448,7 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 		return
 	}
 
-	r, err = http.NewRequest("POST", fmt.Sprintf("%s/%s/", NotificationsServiceUrl, "notifications"), bytes.NewBuffer(notificationJson))
+	r, err = http.NewRequest("POST", fmt.Sprintf("%s/%s/", s.NotificationsServiceURL, "notifications"), bytes.NewBuffer(notificationJson))
 	if err != nil {
 		log.Printf("There was an error creating the request to the Notifications Service: %v", err)
 	}
@@ -495,6 +495,9 @@ func NewChiServer() *chi.Mux {
 	// create new chi router
 	r := chi.NewRouter()
 
+	AgendaServiceUrl := getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
+	NotificationsServiceUrl := getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
+
 	// add logger middleware
 	r.Use(middleware.Logger)
 
@@ -518,7 +521,7 @@ func NewChiServer() *chi.Mux {
 	kafkaWriter := NewKafkaWriter(KafkaUrl, KafkaTopic)
 
 	// Create a new server
-	server := NewServer(kafkaWriter, db)
+	server := NewServer(kafkaWriter, db, AgendaServiceUrl, NotificationsServiceUrl)
 	OpenAPI(r)
 
 	// mount the API on the server
@@ -541,10 +544,12 @@ func OpenAPI(r *chi.Mux) {
 }
 
 // NewServer creates a new api.ServerInterface.
-func NewServer(kafkaWriter *kafka.Writer, db *sql.DB) api.ServerInterface {
+func NewServer(kafkaWriter *kafka.Writer, db *sql.DB, agendaServiceURL string, notificationsServiceURL string) api.ServerInterface {
 	return &server{
-		KafkaWriter: kafkaWriter,
-		DB:          db,
+		KafkaWriter:             kafkaWriter,
+		DB:                      db,
+		AgendaServiceURL:        agendaServiceURL,
+		NotificationsServiceURL: notificationsServiceURL,
 	}
 }
 

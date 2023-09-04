@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,8 +19,8 @@ var disableTC = flag.Bool("disableTC", false, "disable testcontainers")
 
 func Test_API(t *testing.T) {
 
-	os.Setenv("AGENDA_SERVICE_URL", "http://localhost:8081")
-	os.Setenv("NOTIFICATIONS_SERVICE_URL", "http://localhost:8082")
+	t.Setenv("AGENDA_SERVICE_URL", "http://localhost:8081")
+	t.Setenv("NOTIFICATIONS_SERVICE_URL", "http://localhost:8082")
 
 	if !*disableTC {
 		// testcontainers
