@@ -1,0 +1,52 @@
+.select {
+    margin-bottom: var(--sizing-m);
+}
+
+.select label{
+    display: block;
+    margin-bottom:0;
+    font-size: var(--form-label-font-size);
+    line-height: var(--form-label-line-height);
+    
+}
+
+.select select{
+    -webkit-appearance: none;
+    display: block;
+    width: 100%;
+    cursor: pointer;
+    max-width: 400px;
+    font-size: var(--form-input-font-size);
+    line-height: var(--form-input-line-height);
+    border: var(--form-input-border);
+    border-radius: var(--form-input-border-radius);
+    background-color: var(--form-input-background);
+    padding: var(--form-input-padding);
+}
+
+.selectContainer {
+    position: relative;
+    display: inline-block;
+    min-width: 400px;
+}
+
+.selectContainer::before {
+    content: '';
+    position: absolute;
+    width: var(--sizing-x2);
+    height: var(--sizing-x2);
+    border-bottom: 2px solid;
+    border-left: 2px solid;
+    right: var(--sizing-s);
+    top: var(--sizing-x4);
+    transform: rotate(-45deg);
+}
+
+.select select:focus{
+   
+    border: var(--form-input-border-focus);
+    
+    background-color: var(--form-input-background-focus);
+}
+
+

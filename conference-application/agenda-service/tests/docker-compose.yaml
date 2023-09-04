@@ -1,0 +1,60 @@
+version: "3.8"
+services:
+  redis:
+    image: docker.io/bitnami/redis:7.0.11-debian-11-r12
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]      
+  kafka:
+    container_name: kafka
+    image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
+    ports:
+      - "9092:9092"
+      - "9094:9094"
+    volumes:
+      - "kafka_data:/bitnami"
+    environment:
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 10  
+  init-kafka:
+    image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
+    depends_on:
+      kafka: 
+        condition: service_healthy
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics.sh --bootstrap-server kafka:9092 --list
+      echo -e 'Creating kafka topics'
+      kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic events-topic --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics.sh --bootstrap-server kafka:9092 --list
+      "
+  agenda-service:
+    depends_on:
+      kafka: 
+        condition: service_healthy
+      redis:
+        condition: service_healthy  
+    container_name: agenda-service
+    image: salaboy/agenda-service-0967b907d9920c99918e2b91b91937b3 
+    environment:
+      KAFKA_URL: kafka:9092
+      REDIS_HOST: redis
+    ports: 
+    - "8080:8080" 
+volumes:
+  kafka_data:
+    driver: local            

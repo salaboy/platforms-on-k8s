@@ -3,6 +3,8 @@ import { useState, useEffect } from 'react'
 import styles from '@/app/styles/events.module.css'
 import Textfield from '../forms/textfield/textfield';
 import Button from '../forms/button/button';
+import Select from '../forms/select/select';
+import Switch from '../forms/switch/switch';
 
 
 function NewEnvironment() {
@@ -67,9 +69,13 @@ function NewEnvironment() {
                     <div>
 
                         <Textfield label="Name" id="name" name="name" />
-                        <Textfield label="Type" id="type" name="type" />
-                        <Textfield label="Install Infrastructure" id="installInfra" name="installInfra" />
-                        <Textfield label="Frontend Debug" id="debug" name="debug" />
+                        <Select label="Type" id="type" name="type">
+                            <option value="value1">Development</option>
+                            <option value="value2" selected>Production</option>
+                        </Select>
+                        <Switch label="Install Infrastructure" id="installInfra" name="installInfra" />
+                        <Switch label="Frontend Debug" id="debug" name="debug" />
+                        
 
                         {isError && <small className="mt-3 d-inline-block text-danger">Something went wrong. Please try again later.</small>}
 

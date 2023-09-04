@@ -1,0 +1,26 @@
+name: agenda-service-api-conformance-test
+on:
+  push:
+  pull_request:
+
+jobs:
+  api-compliance-test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out Git repositor
+      uses: actions/checkout@v1
+    - name: Set up Node.js
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+        registry-url: https://registry.npmjs.org/
+    - name: Install dependencies
+      run: npm install
+    - name: Install portman
+      run: npm install -g @apideck/portman && portman -l conference-application/agenda-service/kodata/docs/openapi.yaml -o conference-application/agenda-service/api/postman/agenda-service.postman.json
+    - name: Build the stack
+      run: docker-compose -f conference-application/agenda-service/tests/docker-compose.yaml up -d  
+    - name: Install newman
+      run: npm install -g newman && newman run conference-application/agenda-service/api/postman/agenda-service.postman.json --env-var "baseUrl=http://localhost:8080"   
+    - name: Shutdown the stack
+      run: docker-compose -f conference-application/agenda-service/tests/docker-compose.yaml down 

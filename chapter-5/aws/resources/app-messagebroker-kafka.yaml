@@ -1,0 +1,48 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: kafka.mb.aws.salaboy.com
+  labels:
+    type: dev
+    provider: aws
+    kind: kafka
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: salaboy.com/v1alpha1
+    kind: MessageBroker
+  resources:
+    - name: kafka
+      base:
+        apiVersion: kafka.aws.crossplane.io/v1alpha1
+        kind: Cluster
+        metadata:
+          annotations:
+            crossplane.io/external-name: # patched
+        spec:
+          providerConfigRef:
+            name: default
+          forProvider:
+            clusterName: kafka
+            kafkaVersion: 2.6.1
+            numberOfBrokerNodes: 2
+            region: us-west-2
+            brokerNodeGroupInfo:
+              instanceType: kafka.t3.small
+              storageInfo: 
+                ebsStorageInfo:
+                  volumeSize: 1
+          writeConnectionSecretToRef:
+            namespace: crossplane-system
+            name: kafka
+      patches:
+        - fromFieldPath: metadata.name
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
+          policy:
+            fromFieldPath: Required
+        - fromFieldPath: metadata.name
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-kafka"

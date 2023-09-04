@@ -1,0 +1,75 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: app-helm-chart-pipeline
+  annotations:
+    description: |
+      Build and Publish the artthe Conference application's Helm Chart
+spec:
+  params:
+    - name: gitRepository
+      description: The git repository that hosts the source code of the service
+      default: https://github.com/salaboy/platforms-on-k8s/
+    - name: gitRevision
+      description: The git revision to build
+      default: main
+    - name: target-registry
+      description: The target container registry and path where to build the image
+      default: docker.io/salaboy
+    - name: target-version
+      description: the target version to build
+      default: v1.0.0
+  workspaces:
+    - name: sources
+      description: Workspace where the git repo is prepared for building
+    - name: dockerconfig
+      description: Docker config secret
+  tasks:
+    - name: clone-repo
+      taskRef:
+        name: git-clone
+      params:
+        - name: url
+          value: $(params.gitRepository)
+        - name: revision
+          value: main
+      workspaces:
+        - name: output
+          workspace: sources
+    - name: helm-package
+      runAfter: [clone-repo]
+      workspaces:
+        - name: dockerconfig
+          workspace: dockerconfig  
+        - name: sources
+          workspace: sources
+          subPath: conference-application/helm/conference-app/
+      params: 
+        - name: target-version
+          value: $(params.target-version) 
+        - name: target-registry
+          value: $(params.target-registry)     
+      taskSpec:
+        params: 
+          - name: target-version
+            description: the target version to build
+            default: v1.0.0
+          - name: target-registry
+            description: The target container registry and path where to build the image
+            default: docker.io/salaboy  
+        workspaces:
+          - name: sources
+          - name: dockerconfig
+        steps:
+          - name: package
+            image: alpine/helm:3.11.1
+            script: |
+              #!/bin/sh
+              set -ex 
+              mkdir ~/.docker
+              cp $(workspaces.dockerconfig.path)/.dockerconfigjson ~/.docker/config.json
+              cd $(workspaces.sources.path)
+              sed -i 's/^version: v1.0.0/version: $(params.target-version)/g' Chart.yaml
+              helm dependency build
+              helm package .
+              helm push conference-app-$(params.target-version).tgz oci://$(params.target-registry)

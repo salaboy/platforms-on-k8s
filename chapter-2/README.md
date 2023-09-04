@@ -36,14 +36,29 @@ EOF
 
 ```
 
-![3 worker nodes](imgs/cluster.png)
+![3 worker nodes](imgs/cluster-topology.png)
+
+### Loading some container images before installing the application and other components
+
+The `kind-load.sh` script prefetch (pulls and load container images) that we will be using for our application to our KinD Cluster. 
+The idea here is to optimize the process for our Cluster, so when we install the application, we don't wait for 10+ minutes to fetch all the container images needed. With all images already pre-loaded into our KinD cluster, the application should start in around 1 minute, as we still need to wait for PostgreSQL, Redis and Kafka to bootstrap. 
+
+Run the script by copying this command into your terminal, from inside the `chapter-2` directory: 
+
+```
+./kind-load.sh
+```
+
+By running this script you will be fetching all the required images and then loading them into every node of your KinD cluster. If you are running the examples on a Cloud Provider, this might not be worth as Cloud Providers with Gigabyte connections to container registries might fetch these iamges in matter of seconds.
+
+
 
 ### Installing NGINX Ingress Controller
 
 We need NGINGX Ingress Controller to route traffic from our laptop to the services that are running inside the cluster. NGINX Ingress Controller act as a router that is running inside the cluster, but exposed to the outside world. 
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/master/deploy/static/provider/kind/deploy.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/release-1.8/deploy/static/provider/kind/deploy.yaml
 ```
 
 Check that the pods inside the `ingress-nginx` are started correctly before proceeding: 
@@ -91,9 +106,9 @@ You can also run the following command to see the details of the chart:
 helm show all oci://docker.io/salaboy/conference-app --version v1.0.0
 ```
 
-Check that all the application pods are up and running. Notice that if your internet connection is slow it might take a while for the application to start. Since the application's services depend on some infrastructure components (Redis, Kafka, PostgreSQL), these components needs to start and be ready for the services to connect.
+Check that all the application pods are up and running. Notice that if your internet connection is slow it might take a while for the application to start. Since the application's services depend on some infrastructure components (Redis, Kafka, PostgreSQL), these components needs to start and be ready for the services to connect. Components like Kakfa are quite heavy with around 335+ MB, PostgreSQL 88+ MB, and Redis 35+ MB.
 
-Eventually you should see something like this: 
+Eventually you should see something like this, it can take a few minutes: 
 
 ```
 kubect get pods
@@ -149,7 +164,7 @@ kind delete clusters dev
 
 ## Next Steps
 
-I strongly recommend you to get your hands dirty with a real Kubernetes Cluster hosted in a Cloud Provider. You can try Civo Cloud, as they offer a free trial where you can create Kubernetes Clusters and run all these examples. 
+I strongly recommend you to get your hands dirty with a real Kubernetes Cluster hosted in a Cloud Provider. You can try most Cloud Providers, as they offer a free trial where you can create Kubernetes Clusters and run all these examples, [check this repository for more information](https://github.com/learnk8s/free-kubernetes). 
 
 If you can create a Cluster in a Cloud provider and get the application up and running you will gain real life experience on all the topics covered in Chapter 2.
 

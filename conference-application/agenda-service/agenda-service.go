@@ -40,6 +40,13 @@ const (
 	ContentType     = "Content-Type"
 )
 
+// Event struct to encode events data
+type Event struct {
+	Id      string `json:"id"`
+	Payload string `json:"payload"`
+	Type    string `json:"type"`
+}
+
 // Proposal is a struct to represent a Proposal.
 type Proposal struct {
 	Id string `json:"id"`
@@ -166,9 +173,22 @@ func (s server) CreateAgendaItem(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	event := Event{
+		Id:      uuid.New().String(),
+		Type:    "new-agenda-item",
+		Payload: string(agendaItemJson),
+	}
+
+	eventJson, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("An error occured while marshalling the event for the agenda item to json: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
 	msg := kafka.Message{
 		Key:   []byte(fmt.Sprintf("new-agenda-item-%s", agendaItem.Id)),
-		Value: agendaItemJson,
+		Value: eventJson,
 	}
 	err = s.KafkaWriter.WriteMessages(r.Context(), msg)
 
@@ -259,9 +279,22 @@ func (s server) ArchiveAgendaItemById(w http.ResponseWriter, r *http.Request, id
 		return
 	}
 
+	event := Event{
+		Id:      uuid.New().String(),
+		Type:    "agenda-item-archived",
+		Payload: string(agendaItemJson),
+	}
+
+	eventJson, err := json.Marshal(event)
+	if err != nil {
+		log.Printf("An error occured while marshalling the event for the agenda item to json: %v", err)
+		respondWithJSON(w, http.StatusInternalServerError, err)
+		return
+	}
+
 	msg := kafka.Message{
 		Key:   []byte(fmt.Sprintf("agenda-item-archived-%s", agendaItem.Id)),
-		Value: agendaItemJson,
+		Value: eventJson,
 	}
 	err = s.KafkaWriter.WriteMessages(r.Context(), msg)
 

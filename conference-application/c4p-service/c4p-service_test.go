@@ -15,14 +15,12 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-func testServer() *httptest.Server {
-	chi := NewChiServer()
-	return httptest.NewServer(chi)
-}
-
 var disableTC = flag.Bool("disableTC", false, "disable testcontainers")
 
 func Test_API(t *testing.T) {
+
+	t.Setenv("AGENDA_SERVICE_URL", "http://localhost:8081")
+	t.Setenv("NOTIFICATIONS_SERVICE_URL", "http://localhost:8082")
 
 	if !*disableTC {
 		// testcontainers
@@ -39,11 +37,18 @@ func Test_API(t *testing.T) {
 		err = compose.
 			WaitForService("kafka", wait.ForListeningPort("9094")).
 			WaitForService("postgresql", wait.ForListeningPort("5432")).
+			WaitForService("redis", wait.ForListeningPort("6379")).
+			WaitForService("agenda-service", wait.ForListeningPort("8081")).
+			WaitForService("notifications-service", wait.ForListeningPort("8082")).
+			WaitForService("init-kafka", wait.ForLog("Successfully created the following topic: events-topic")).
 			Up(ctx, tc.Wait(true))
 
 		assert.NoError(t, err, "compose.Up()")
 	}
-	ts := testServer()
+
+	chi := NewChiServer()
+
+	ts := httptest.NewServer(chi)
 	defer ts.Close()
 
 	t.Run("It should return 200 when a GET request is made to '/health/readiness'", func(t *testing.T) {
@@ -62,7 +67,7 @@ func Test_API(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a GET request is made to '/service/info'", func(t *testing.T) {
+	t.Run("It should return 200 when a GET request is made to '/service/info/'", func(t *testing.T) {
 		// arrange, act
 		resp, _ := http.Get(fmt.Sprintf("%s/service/info", ts.URL))
 
@@ -70,44 +75,36 @@ func Test_API(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a GET request is made to '/proposals'", func(t *testing.T) {
+	t.Run("It should return 200 when a GET request is made to '/proposals/'", func(t *testing.T) {
+		// arrange
+		newProposal := Proposal{
+			Title:       "How to build a cloud native application",
+			Description: "Cloud native is the future",
+			Author:      "Mauricio Salatino",
+			Email:       "",
+			Status: ProposalStatus{
+				Status: "Submitted",
+			},
+		}
+
+		proposalAsBytes, _ := newProposal.MarshalBinary()
+
+		respPost, _ := http.Post(fmt.Sprintf("%s/proposals/", ts.URL), "application/json", bytes.NewBuffer(proposalAsBytes))
+		defer respPost.Body.Close()
+
+		var proposalOnResponse Proposal
+		json.NewDecoder(respPost.Body).Decode(&proposalOnResponse)
+
 		// arrange, act
 		resp, _ := http.Get(fmt.Sprintf("%s/proposals/", ts.URL))
 
+		var getProposals []Proposal
+		json.NewDecoder(resp.Body).Decode(&getProposals)
+
 		// assert
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
+		assert.Equal(t, 1, len(getProposals))
 	})
-
-	//t.Run("It should return 200 when a GET request is made to '/proposals/{id}'", func(t *testing.T) {
-	//	// arrange
-	//	newProposal := Proposal{
-	//		Title:       "How to build a cloud native application",
-	//		Description: "Cloud native is the future",
-	//		Author:      "Mauricio Salatino",
-	//		Email:       "",
-	//		Status: ProposalStatus{
-	//			Status: "Submitted",
-	//		},
-	//	}
-	//
-	//	proposalAsBytes, _ := newProposal.MarshalBinary()
-	//
-	//	respPost, _ := http.Post(fmt.Sprintf("%s/proposals/", ts.URL), "application/json", bytes.NewBuffer(proposalAsBytes))
-	//	defer respPost.Body.Close()
-	//
-	//	var proposalOnResponse Proposal
-	//	json.NewDecoder(respPost.Body).Decode(&proposalOnResponse)
-	//
-	//	// arrange, act
-	//	resp, _ := http.Get(fmt.Sprintf("%s/proposals/%s", ts.URL, proposalOnResponse.Id))
-	//
-	//	var getProposals []Proposal
-	//	json.NewDecoder(resp.Body).Decode(&getProposals)
-	//
-	//	// assert
-	//	assert.Equal(t, http.StatusOK, resp.StatusCode)
-	//	assert.Equal(t, 1, len(getProposals))
-	//})
 
 	t.Run("It should return 200 when a POST request is made to '/proposals/{proposalId}/decide/'", func(t *testing.T) {
 

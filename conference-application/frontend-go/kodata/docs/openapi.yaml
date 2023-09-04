@@ -25,7 +25,7 @@ paths:
                 type: object
                 items:
                   $ref: '#/components/schemas/ServiceInfo'
-  /events:
+  /events/:
     get:
       summary: Get events
       operationId: getEventsWithPost

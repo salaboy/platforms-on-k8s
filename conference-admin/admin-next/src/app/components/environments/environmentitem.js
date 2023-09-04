@@ -30,7 +30,7 @@ function EnvironmentItem({id, name, type,  installInfra, debug, status, synced, 
         <div className={styles.header}>
           <h5> <span>Environment:</span> {name}</h5>
           
-          <div className={styles.headerStatus}>
+          <div className={styles.headerStatusTags}>
             
               <div className={`${styles.headerStatusTag}  ${ styles.approved } ` }>Synced: {synced}</div>
             
@@ -50,13 +50,13 @@ function EnvironmentItem({id, name, type,  installInfra, debug, status, synced, 
             <span> Frontend Debug:</span> {debug.toString()}
           </div>
 
-          <div>
+          <div className={styles.descriptionSubject}>
             {status != "True" && (<p>Waiting for the Environment to be Ready.</p>) }
             {status == "True" && vclusterRef != null && (<p>Connect to this environment running <b>`vcluster connect {vclusterRef} --server https://localhost:8443 -- zsh`</b> </p>)}
             {status == "True" && secretRef != null && (<p>Use the secret called <b>`{secretRef}`</b> to connect</p>)}
             
           </div>
-          <div>
+          <div className={styles.descriptionAction}>
               <Button clickHandler={() => handleDelete(name)}>Delete</Button>
           </div>
       

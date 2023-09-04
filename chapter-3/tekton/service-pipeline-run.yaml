@@ -7,13 +7,11 @@ metadata:
 spec:
   params:
   - name: target-registry
-    value: salaboy
-  - name: target-name
+    value: docker.io/salaboy
+  - name: target-service
     value: notifications-service
   - name: target-version 
     value: 1.0.0-from-pipeline-run
-  - name: context
-    value: "."
   workspaces:
     - name: sources
       volumeClaimTemplate: 
@@ -22,12 +20,10 @@ spec:
           - ReadWriteOnce
           resources:
             requests:
-              storage: 1Gi 
-    - name: dockerconfig
+              storage: 100Mi 
+    - name: docker-credentials
       secret:  
-        secretName: regcred
+        secretName: docker-credentials
   pipelineRef:
-    name: conference-app-service-pipeline
-  taskRunTemplate:
-    serviceAccountName: pipelines-sa  
+    name: service-pipeline
   

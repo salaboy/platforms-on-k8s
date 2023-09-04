@@ -1,0 +1,13 @@
+apiVersion: salaboy.com/v1alpha1
+kind: Database
+metadata:
+  name: aws-db-keyavalue
+spec:
+  compositionSelector:
+    matchLabels:
+      provider: aws
+      type: dev
+      kind: keyvalue
+  parameters: 
+    size: small
+    mockData: false

@@ -45,7 +45,7 @@ The next section shows a simple setup of running Dagger pipelines remotely insid
 
 The Dagger Pipeline Engine can be run anywhere where you can run containers, that means that it can runs in Kubernetes without the need of complicated setups. 
 
-For this tutorial you need to have a Kubernetes Cluster, you can create one using [KinD as we did for Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind).
+For this tutorial you need to have a Kubernetes Cluster, you can create one using [KinD as we did for Chapter 2](../../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind).
 
 In this short tutorial we will run the pipelines that we were running locally with our local container runtime, now remotely against a Dagger Pipeline Engine that runs inside a Kuberneets Pod. This is an experimental feature, and not a recommended way to run Dagger, but it help us to prove the point. 
 
@@ -74,13 +74,13 @@ Now to run the projects pipelines against this remote service you only need to e
 export _EXPERIMENTAL_DAGGER_RUNNER_HOST=kube-pod://<podname>?context=<context>&namespace=<namespace>&container=<container>
 ```
 
-Where `<podname>` is `dagger` (because we created the pod manually), `<context>` is your Kubernetes Cluster context, if you are running against a KinD Cluster this might be `kind-kind`. You can find your current context name by running `kubectl config current-context`. Finally `<namespace>` is the namespace where you run the Dagger Container, and `<container>` is once again `dagger`. For my setup against KinD, this would look like this: 
+Where `<podname>` is `dagger` (because we created the pod manually), `<context>` is your Kubernetes Cluster context, if you are running against a KinD Cluster this might be `kind-dev`. You can find your current context name by running `kubectl config current-context`. Finally `<namespace>` is the namespace where you run the Dagger Container, and `<container>` is once again `dagger`. For my setup against KinD, this would look like this: 
 
 ```
-export _EXPERIMENTAL_DAGGER_RUNNER_HOST="kube-pod://dagger?context=kind-kind&namespace=default&container=dagger"
+export _EXPERIMENTAL_DAGGER_RUNNER_HOST="kube-pod://dagger?context=kind-dev&namespace=default&container=dagger"
 ```
 
-Notice also that my KinD cluster (named `kind-kind`) didn't had anything related to Pipelines. 
+Notice also that my KinD cluster (named `kind-dev`) didn't had anything related to Pipelines. 
 
 Now if you run in any of the projects: 
 ```

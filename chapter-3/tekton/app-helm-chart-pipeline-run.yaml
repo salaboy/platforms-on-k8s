@@ -1,0 +1,27 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  name: app-helm-chart-pipeline-run-1
+  annotations:
+    kubernetes.io/ssh-auth: kubernetes.io/dockerconfigjson
+spec:
+  params:
+  - name: target-registry
+    value: docker.io/salaboy
+  - name: target-version
+    value: v0.9.9
+  workspaces:
+    - name: sources
+      volumeClaimTemplate: 
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 100Mi 
+    - name: dockerconfig
+      secret:  
+        secretName: docker-credentials
+  pipelineRef:
+    name: app-helm-chart-pipeline
+  

@@ -1,11 +1,15 @@
 version: "3.8"
 services:
   redis:
-    image: redis:6.2-alpine
+    image: docker.io/bitnami/redis:7.0.11-debian-11-r12
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
     ports:
       - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]  
   kafka:
-    image: docker.io/bitnami/kafka:3.4
+    image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
     ports:
       - "9094:9094"
       - "9092:9092"
@@ -16,10 +20,16 @@ services:
       - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:9094
       - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT,PLAINTEXT:PLAINTEXT
+    healthcheck:
+      test: ["CMD", "kafka-topics.sh", "--bootstrap-server", "kafka:9092", "--list"]
+      interval: 10s
+      timeout: 10s
+      retries: 10  
   init-kafka:
-    image: docker.io/bitnami/kafka:3.4
+    image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
     depends_on:
-      - kafka
+      kafka:
+        condition: service_healthy
     entrypoint: [ '/bin/sh', '-c' ]
     command: |
       "
@@ -28,7 +38,7 @@ services:
       echo -e 'Creating kafka topics'
       kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic events-topic --replication-factor 1 --partitions 1
 
-      echo -e 'Successfully created the following topics:'
+      echo -e 'Successfully created the following topic: events-topic'
       kafka-topics.sh --bootstrap-server kafka:9092 --list
       "
 volumes:

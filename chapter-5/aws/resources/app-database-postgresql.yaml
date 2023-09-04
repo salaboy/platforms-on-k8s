@@ -1,0 +1,51 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: sql.db.aws.salaboy.com
+  labels:
+    type: dev
+    provider: aws
+    kind: sql
+spec:
+  writeConnectionSecretsToNamespace: crossplane-system
+  compositeTypeRef:
+    apiVersion: salaboy.com/v1alpha1
+    kind: Database
+  resources:  
+    - name: rdsinstance
+      base:
+        apiVersion: database.aws.crossplane.io/v1beta1
+        kind: RDSInstance
+        metadata:
+          annotations:
+            crossplane.io/external-name: # patched
+        spec:
+          providerConfigRef:
+            name: default
+          forProvider:
+            region: us-west-2
+            allocatedStorage: 5
+            dbInstanceClass: db.t3.micro
+            engine: postgres
+            engineVersion: "13"
+            masterUsername: salaboy
+            port: 5432
+          writeConnectionSecretToRef:
+            namespace: crossplane-system
+            name: postgresql
+      patches:
+        - fromFieldPath: metadata.name
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
+          policy:
+            fromFieldPath: Required
+        - fromFieldPath: metadata.name
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-postgres"
+      connectionDetails:
+        - fromConnectionSecretKey: username
+        - fromConnectionSecretKey: password
+        - fromConnectionSecretKey: endpoint
+        - fromConnectionSecretKey: port

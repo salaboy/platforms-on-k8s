@@ -58,7 +58,7 @@ export default function Backoffice() {
                   <Tab>Agenda Items</Tab>
                   <Tab>Notifications</Tab>
                   <Tab>Events</Tab>
-                  {features.DEBUG_ENABLED == "true" && (<Tab>Debug</Tab>)}
+                  {features.DebugEnabled == "true" && (<Tab>Debug</Tab>)}
                 </TabList>
 
                 <TabPanel>
@@ -73,7 +73,7 @@ export default function Backoffice() {
                 <TabPanel>
                   <EventsList />
                 </TabPanel>
-                {features.DEBUG_ENABLED == "true" && (<TabPanel>
+                {features.DebugEnabled == "true" && (<TabPanel>
                   <Debug />
                 </TabPanel>)}
               </Tabs>

@@ -74,7 +74,7 @@ export default async function About() {
             <div className='col third'>
               <div className={styles.maintainer}>
                 <h3>Ezequiel Salatino</h3>
-                <p> <a href="https://salatino.me" target={"_blank"}> gsalatino.me </a></p>
+                <p> <a href="https://salatino.me" target={"_blank"}> salatino.me </a></p>
                 
                 <ExportedImage
                   src="/images/esala.png"

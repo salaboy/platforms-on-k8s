@@ -45,9 +45,10 @@
     opacity: .5;
 }
 
-.EnvironmentItem .header .headerStatusTag {
-
+.EnvironmentItem .header .headerStatusTags {
+   display: flex;
 }
+
 
 .EnvironmentItem .header .headerStatusTag {
     background-color: var(--color-background);
@@ -90,6 +91,11 @@
 .EnvironmentItem .description .descriptionSubject {
     padding:  var(--sizing-xs) var(--sizing-m);
     border-bottom: 1px solid var(--color-text);
+}
+
+.EnvironmentItem .description .descriptionAction {
+    padding:  var(--sizing-m) var(--sizing-m);
+   
 }
 
 .EnvironmentItem .description .descriptionSubject span {

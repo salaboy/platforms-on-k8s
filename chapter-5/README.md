@@ -33,7 +33,7 @@ Then install the Crossplane Helm provider:
 kubectl crossplane install provider crossplane/provider-helm:v0.10.0
 ```
 
-We need the correct `ServiceAccount`` to create a new `ClusterRoleBinding`` so the Helm Provider can install Charts on our behalf. 
+We need the correct `ServiceAccount` to create a new `ClusterRoleBinding` so the Helm Provider can install Charts on our behalf. 
 
 ```
 SA=$(kubectl -n crossplane-system get sa -o name | grep provider-helm | sed -e 's|serviceaccount\/|crossplane-system:|g')
@@ -207,6 +207,9 @@ notifications:
 ```
 
 Notice that the `app-values.yaml` file relies on the names that we specified for our databases (`my-db-keyavalue` and `my-db-sql`) and our message brokers (`my-mb-kafka`) in the example files. If you request other databases and message brokers with other names you will need to adapt this file with the new names.
+
+Once the application pods started you should be access to the application by pointing your browser to [http://localhost](http://localhost). 
+If you made it this far, you can now provision multi-cloud infrastructure by using Crossplane Compositions. Check the [AWS Crossplane Compositions Tutorial](aws/) which was contributed by [@asarenkansah](https://github.com/asarenkansah). By separating the application infrastructure provisiniong from the Application Code you not only enable cross cloud provider portability but also enable teams to connect the application's services with infrastructure that can be managed by the platform team.
 
 
 ## Clean up

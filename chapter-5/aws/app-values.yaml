@@ -1,0 +1,21 @@
+install:
+  infrastructure: false
+frontend:
+  kafka:
+    url: #aws-kafka-endpoint
+agenda:
+  kafka:
+    url: #aws-kafka-endpoint
+  redis: 
+    host: #aws-redis-endpoint
+    secretName: #aws-redis-password
+c4p: 
+  kafka:
+    url: #aws-kafka-endpoint
+  postgresql:
+    host: #aws-psql-endpoint
+    secretName: #aws-psql-secret
+
+notifications: 
+  kafka:
+    url: #aws-kafka-endpoint

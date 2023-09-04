@@ -1,0 +1,14 @@
+apiVersion: salaboy.com/v1alpha1
+kind: Database
+metadata:
+  name: aws-db-sql
+spec:
+  compositionSelector:
+    matchLabels:
+      provider: aws
+      type: dev
+      kind: sql
+  parameters: 
+    size: small
+    mockData: false
+     

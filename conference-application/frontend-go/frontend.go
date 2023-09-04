@@ -5,9 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/go-chi/chi/middleware"
-	"github.com/go-chi/chi/v5"
-	"github.com/salaboy/platforms-on-k8s/conference-application/frontend-go/api"
 	"io"
 	"log"
 	"net/http"
@@ -15,6 +12,10 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/salaboy/platforms-on-k8s/conference-application/frontend-go/api"
 
 	kafka "github.com/segmentio/kafka-go"
 )
@@ -64,9 +65,9 @@ type ServiceInfo struct {
 }
 
 type Event struct {
-	Id      int64
-	Type    string
-	Payload string
+	Id      string `json:"id"`
+	Payload string `json:"payload"`
+	Type    string `json:"type"`
 }
 
 type Features struct {
@@ -249,10 +250,12 @@ func consumeFromKafka(reader *kafka.Reader) {
 			log.Fatalln(err)
 		}
 		fmt.Printf("message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
-		var event = Event{
-			Id:      m.Offset,
-			Type:    string(m.Key),
-			Payload: string(m.Value),
+
+		var event Event
+		err = json.Unmarshal(m.Value, &event)
+		if err != nil {
+			log.Printf("failed to parse Event Data from Kafka Message: %v", err)
+
 		}
 		events = append(events, event)
 	}
@@ -306,21 +309,23 @@ func NewChiServer() *chi.Mux {
 	r.Use(middleware.Logger)
 
 	fs := http.FileServer(http.Dir(KoDataPath))
-	r.Handle("/*", http.StripPrefix("/", fs))
 
 	server := NewServer()
-	r.Mount("/api", api.Handler(server))
-	r.HandleFunc("/api/agenda/", agendaServiceHandler)
-	r.HandleFunc("/api/c4p/", c4PServiceHandler)
-	r.HandleFunc("/api/notifications/", notificationServiceHandler)
-	r.HandleFunc("/api/features/", featureHandler)
+
+	OpenAPI(r)
+
+	r.HandleFunc("/api/agenda/*", agendaServiceHandler)
+	r.HandleFunc("/api/c4p/*", c4PServiceHandler)
+	r.HandleFunc("/api/notifications/*", notificationServiceHandler)
+	r.HandleFunc("/api/features/*", featureHandler)
+
+	r.Mount("/api/", api.Handler(server))
+	r.Handle("/*", http.StripPrefix("/", fs))
 
 	// Add handlers for readiness and liveness endpoints
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
 	})
-
-	OpenAPI(r)
 
 	return r
 }
