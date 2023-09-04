@@ -52,6 +52,7 @@ services:
     image: salaboy/agenda-service-0967b907d9920c99918e2b91b91937b3 
     environment:
       KAFKA_URL: kafka:9092
+      REDIS_HOST: redis:6379
     ports: 
     - "8080:8080" 
 volumes:
