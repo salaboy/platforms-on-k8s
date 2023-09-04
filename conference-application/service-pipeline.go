@@ -111,6 +111,7 @@ func testService(ctx context.Context, client *dagger.Client, dir string) error {
 	if dir == "agenda-service" {
 		redisSvc := client.Container().
 			From("docker.io/bitnami/redis:7.0.11-debian-11-r12").
+			WithEnvVariable("ALLOW_EMPTY_PASSWORD", "yes").
 			WithExposedPort(6379)
 		ctr = ctr.WithServiceBinding("redis", redisSvc)
 		ctr = ctr.WithEnvVariable("REDIS_HOST", "redis")
