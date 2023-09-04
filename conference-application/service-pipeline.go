@@ -35,7 +35,7 @@ func buildService(ctx context.Context, client *dagger.Client, dir string) ([]*da
 		// accomplished by just not specifying a platform; the default
 		// is that of the host.
 		ctr := client.Container()
-		ctr = ctr.From("golang:1.20-alpine")
+		ctr = ctr.From("golang:1.21-alpine")
 
 		// mount in our source code
 		ctr = ctr.WithDirectory("/src", srcDir)
@@ -91,11 +91,13 @@ func testService(ctx context.Context, client *dagger.Client, dir string) error {
 	client.Container().
 		From("docker.io/bitnami/kafka:3.4.1-debian-11-r0").
 		WithEntrypoint([]string{"/bin/sh", "-c"}).
-		WithExec([]string{"kafka-topics.sh --bootstrap-server kafka:9092 --list",
+		WithExec([]string{
+			"kafka-topics.sh --bootstrap-server kafka:9092 --list",
 			"echo -e 'Creating kafka topics'",
 			"kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic events-topic --replication-factor 1 --partitions 1",
 			"echo -e 'Successfully created the following topics:'",
-			"kafka-topics.sh --bootstrap-server kafka:9092 --list"})
+			"kafka-topics.sh --bootstrap-server kafka:9092 --list",
+		})
 
 	// accomplished by just not specifying a platform; the default
 	// is that of the host.
@@ -103,7 +105,7 @@ func testService(ctx context.Context, client *dagger.Client, dir string) error {
 
 	ctr = ctr.WithEnvVariable("KAFKA_URL", "kafka:9092")
 
-	ctr = ctr.From("golang:1.20-alpine").
+	ctr = ctr.From("golang:1.21-alpine").
 		WithServiceBinding("kafka", kafkaSvc)
 
 	if dir == "agenda-service" {
@@ -120,8 +122,7 @@ func testService(ctx context.Context, client *dagger.Client, dir string) error {
 			From("bitnami/postgresql:15.3.0-debian-11-r17").
 			WithEnvVariable("POSTGRES_USER", "postgres").
 			WithEnvVariable("POSTGRES_PASSWORD", "postgres").
-			// @TODO: I need to load the c4p-service/init.sql file into this directory for PostgreSQL to create tables
-			//WithDirectory("/docker-entrypoint-initdb.d/", srcDir).
+			WithFile("/docker-entrypoint-initdb.d/init.sql", srcDir.File("init.sql")).
 			WithExposedPort(5432)
 		ctr = ctr.WithServiceBinding("postgres", postgreSvc)
 		ctr = ctr.WithEnvVariable("POSTGRES_HOST", "postgres")
