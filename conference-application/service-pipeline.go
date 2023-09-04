@@ -29,6 +29,8 @@ func architectureOf(platform dagger.Platform) string {
 func buildService(ctx context.Context, client *dagger.Client, dir string) ([]*dagger.Container, error) {
 	srcDir := client.Host().Directory(dir)
 
+	fmt.Println("-----------------------------------------------> DIR", dir)
+
 	platformVariants := make([]*dagger.Container, 0, len(platforms))
 	for _, platform := range platforms {
 		// pull the golang image for the *host platform*. This is
@@ -110,16 +112,20 @@ func testService(ctx context.Context, client *dagger.Client, dir string) error {
 		redisSvc := client.Container().
 			From("docker.io/bitnami/redis:7.0.11-debian-11-r12").
 			WithExposedPort(6379)
-		ctr.WithServiceBinding("redis", redisSvc)
+		ctr = ctr.WithServiceBinding("redis", redisSvc)
 		ctr = ctr.WithEnvVariable("REDIS_HOST", "redis")
 	}
 
 	if dir == "c4p-service" {
 		postgreSvc := client.Container().
 			From("bitnami/postgresql:15.3.0-debian-11-r17").
+			WithEnvVariable("POSTGRES_USER", "postgres").
+			WithEnvVariable("POSTGRES_PASSWORD", "postgres").
+			// @TODO: I need to load the c4p-service/init.sql file into this directory for PostgreSQL to create tables
+			//WithDirectory("/docker-entrypoint-initdb.d/", srcDir).
 			WithExposedPort(5432)
-		ctr.WithServiceBinding("postgres", postgreSvc)
-		ctr = ctr.WithEnvVariable("POSTGRESQL_HOST", "postgres")
+		ctr = ctr.WithServiceBinding("postgres", postgreSvc)
+		ctr = ctr.WithEnvVariable("POSTGRES_HOST", "postgres")
 	}
 
 	// mount in our source code

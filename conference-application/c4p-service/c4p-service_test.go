@@ -62,23 +62,23 @@ func Test_API(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a GET request is made to '/service-info'", func(t *testing.T) {
+	t.Run("It should return 200 when a GET request is made to '/service/info'", func(t *testing.T) {
 		// arrange, act
-		resp, _ := http.Get(fmt.Sprintf("%s/service-info", ts.URL))
+		resp, _ := http.Get(fmt.Sprintf("%s/service/info", ts.URL))
 
 		// assert
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a GET request is made to '/proposals'", func(t *testing.T) {
+	t.Run("It should return 200 when a GET request is made to '/proposals/'", func(t *testing.T) {
 		// arrange, act
-		resp, _ := http.Get(fmt.Sprintf("%s/proposals", ts.URL))
+		resp, _ := http.Get(fmt.Sprintf("%s/proposals/", ts.URL))
 
 		// assert
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a GET request is made to '/proposals/{id}'", func(t *testing.T) {
+	t.Run("It should return 200 when a GET request is made to '/proposals/{id}/'", func(t *testing.T) {
 		// arrange
 		newProposal := Proposal{
 			Title:       "How to build a cloud native application",
@@ -99,7 +99,7 @@ func Test_API(t *testing.T) {
 		json.NewDecoder(respPost.Body).Decode(&proposalOnResponse)
 
 		// arrange, act
-		resp, _ := http.Get(fmt.Sprintf("%s/proposals", ts.URL))
+		resp, _ := http.Get(fmt.Sprintf("%s/proposals/", ts.URL))
 
 		var getProposals []Proposal
 		json.NewDecoder(resp.Body).Decode(&getProposals)
@@ -109,7 +109,7 @@ func Test_API(t *testing.T) {
 		assert.Equal(t, 1, len(getProposals))
 	})
 
-	t.Run("It should return 200 when a POST request is made to '/proposals/{proposalId}/decide'", func(t *testing.T) {
+	t.Run("It should return 200 when a POST request is made to '/proposals/{proposalId}/decide/'", func(t *testing.T) {
 
 		// arrange
 		newProposal := Proposal{
@@ -125,14 +125,14 @@ func Test_API(t *testing.T) {
 		proposalAsBytes, _ := newProposal.MarshalBinary()
 
 		// create new proposal
-		postProposalResponse, _ := http.Post(fmt.Sprintf("%s/proposals", ts.URL), "application/json", bytes.NewBuffer(proposalAsBytes))
+		postProposalResponse, _ := http.Post(fmt.Sprintf("%s/proposals/", ts.URL), "application/json", bytes.NewBuffer(proposalAsBytes))
 		defer postProposalResponse.Body.Close()
 
 		var proposal Proposal
 		json.NewDecoder(postProposalResponse.Body).Decode(&proposal)
 
 		// act
-		decideResponse, _ := http.Post(fmt.Sprintf("%s/proposals/%s/decide", ts.URL, proposal.Id), "application/json", bytes.NewBuffer([]byte(`{"approved": false}`)))
+		decideResponse, _ := http.Post(fmt.Sprintf("%s/proposals/%s/decide/", ts.URL, proposal.Id), "application/json", bytes.NewBuffer([]byte(`{"approved": false}`)))
 
 		// assert
 		assert.Equal(t, http.StatusOK, decideResponse.StatusCode)
