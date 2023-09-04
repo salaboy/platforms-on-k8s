@@ -1,5 +1,13 @@
 version: "3.8"
 services:
+  redis:
+    image: docker.io/bitnami/redis:7.0.11-debian-11-r12
+    environment:
+      - ALLOW_EMPTY_PASSWORD=yes
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli","ping"]
   postgresql:
     image: docker.io/bitnami/postgresql:15.3.0-debian-11-r17
     restart: always
@@ -42,6 +50,29 @@ services:
       echo -e 'Successfully created the following topic: events-topic'
       kafka-topics.sh --bootstrap-server kafka:9092 --list
       "
+  agenda-service:
+    depends_on:
+      kafka: 
+        condition: service_healthy
+      redis:
+        condition: service_healthy  
+    container_name: agenda-service
+    image: salaboy/agenda-service-0967b907d9920c99918e2b91b91937b3 
+    environment:
+      KAFKA_URL: kafka:9092
+      REDIS_HOST: redis
+    ports: 
+    - "8081:8080"   
+  notifications-service:
+    depends_on:
+      kafka: 
+        condition: service_healthy
+    container_name: notifications-service
+    image: salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525
+    environment:
+      KAFKA_URL: kafka:9092
+    ports: 
+    - "8082:8080"    
 volumes:
   kafka_data:
     driver: local      

@@ -38,7 +38,7 @@ services:
     depends_on:
       kafka: 
         condition: service_healthy
-    container_name: notifications-services
+    container_name: notifications-service
     image: salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525
     environment:
       KAFKA_URL: kafka:9092

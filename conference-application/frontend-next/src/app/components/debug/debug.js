@@ -76,8 +76,8 @@ function Debug() {
 
     const fetchFrontendServiceInfo = () => {
         setLoading(true);
-        console.log("Querying service/info")
-        fetch('/service/info')
+        console.log("Querying /api/service/info")
+        fetch('/api/service/info')
             .then((res) => res.json())
             .then((data) => {
                 data.Healthy = true;

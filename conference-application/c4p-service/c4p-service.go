@@ -457,7 +457,7 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 	res, err := client.Do(r)
 
 	if err != nil {
-		log.Printf("There was an error submitting the request to the Agenda Item Service: %v", err)
+		log.Printf("There was an error submitting the request to the Notifications Service: %v", err)
 	} else {
 		defer res.Body.Close()
 	}
@@ -482,6 +482,7 @@ func (s server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	r := NewChiServer()
+
 	// Start the server; this is a blocking call
 	err := http.ListenAndServe(":"+AppPort, r)
 	if err != http.ErrServerClosed {
@@ -498,6 +499,10 @@ func NewChiServer() *chi.Mux {
 	r.Use(middleware.Logger)
 
 	log.Printf("Starting C4P Service in Port: %s", AppPort)
+
+	fmt.Println("Environment Variables:")
+	fmt.Println("Agenda Service URL: ", AgendaServiceUrl)
+	fmt.Println("Notifications Service URL: ", NotificationsServiceUrl)
 
 	// connect to database
 	db := NewDB()
