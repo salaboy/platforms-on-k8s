@@ -39,7 +39,7 @@ services:
       echo -e 'Creating kafka topics'
       kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists --topic events-topic --replication-factor 1 --partitions 1
 
-      echo -e 'Successfully created the following topics:'
+      echo -e 'Successfully created the following topic: events-topic'
       kafka-topics.sh --bootstrap-server kafka:9092 --list
       "
 volumes:

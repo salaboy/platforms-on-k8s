@@ -38,6 +38,7 @@ func Test_API(t *testing.T) {
 
 		err = compose.
 			WaitForService("kafka", wait.ForListeningPort("9094")).
+			WaitForService("init-kafka", wait.ForLog("Successfully created the following topic: events-topic")).
 			WaitForService("postgresql", wait.ForListeningPort("5432")).
 			Up(ctx, tc.Wait(true))
 
