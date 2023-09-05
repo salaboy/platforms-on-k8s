@@ -118,6 +118,11 @@ func testService(ctx context.Context, client *dagger.Client, dir string) error {
 	}
 
 	if dir == "c4p-service" {
+		redisSvc := client.Container().
+			From("docker.io/bitnami/redis:7.0.11-debian-11-r12").
+			WithEnvVariable("ALLOW_EMPTY_PASSWORD", "yes").
+			WithExposedPort(6379)
+
 		postgreSvc := client.Container().
 			From("bitnami/postgresql:15.3.0-debian-11-r17").
 			WithEnvVariable("POSTGRES_USER", "postgres").
@@ -129,17 +134,20 @@ func testService(ctx context.Context, client *dagger.Client, dir string) error {
 
 		agendaSvc := client.Container().
 			From("salaboy/agenda-service-0967b907d9920c99918e2b91b91937b3:v1.0.0").
+			WithServiceBinding("kafka", kafkaSvc).
+			WithServiceBinding("redis", redisSvc).
 			WithEnvVariable("KAFKA_URL", "kafka:9092").
 			WithEnvVariable("REDIS_HOST", "redis").
-			WithExposedPort(8081)
+			WithExposedPort(8080)
 		ctr = ctr.WithServiceBinding("agenda-service", agendaSvc)
-		ctr = ctr.WithEnvVariable("AGENDA_SERVICE_URL", "http://agenda-service:8081")
+		ctr = ctr.WithEnvVariable("AGENDA_SERVICE_URL", "http://agenda-service:8080")
 		notificationsSvc := client.Container().
 			From("salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525:v1.0.0").
+			WithServiceBinding("kafka", kafkaSvc).
 			WithEnvVariable("KAFKA_URL", "kafka:9092").
-			WithExposedPort(8082)
+			WithExposedPort(8080)
 		ctr = ctr.WithServiceBinding("notifications-service", notificationsSvc)
-		ctr = ctr.WithEnvVariable("NOTIFICATIONS_SERVICE_URL", "http://notification-service:8082")
+		ctr = ctr.WithEnvVariable("NOTIFICATIONS_SERVICE_URL", "http://notification-service:8080")
 	}
 
 	// mount in our source code
