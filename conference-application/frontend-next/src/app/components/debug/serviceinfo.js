@@ -61,7 +61,7 @@ function ServiceInfo({ key, name, version, source, podName, nodeName, namespace,
             <span>
             Events Enabled: 
             </span>
-            {eventsEnabled}
+            {String(eventsEnabled)}
           </div>
 
         </div>

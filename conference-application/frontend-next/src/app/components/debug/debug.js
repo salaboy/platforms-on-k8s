@@ -5,7 +5,7 @@ import styles from '@/app/styles/debug.module.css'
 import { useState, useEffect } from 'react'
 import JSONPretty from 'react-json-pretty';
 
-function Debug(features) {
+function Debug() {
     const [isLoading, setLoading] = useState(false)
     const [frontendServiceInfo, setFrontendServiceInfo] = useState('') // state hook
     const [c4pServiceInfo, setC4pServiceInfo] = useState('') // state hook
@@ -13,6 +13,25 @@ function Debug(features) {
     const [notificationsServiceInfo, setNotificationsServiceInfo] = useState('') // state hook
 
     const [check, setCheck] = useState(0)
+
+    
+    const [features, setFeatures] = useState('') // state hook
+
+    const fetchFeatures = () => {
+        setLoading(true);
+        console.log("Querying /api/features/")
+        fetch('/api/features/')
+        .then((res) => res.json())
+        .then((data) => {
+            console.log("Features Data: " + data)
+            setFeatures(data)
+            setLoading(false)
+        }).catch((error) => {
+            setFeatures({})
+            console.log(error)
+        })
+    };
+
 
     const mockFrontendServiceInfo = {
         "name": "FRONTEND",
@@ -74,7 +93,7 @@ function Debug(features) {
             fetchAgendaServiceInfo()
             fetchC4PServiceInfo()
             fetchNotificationsServiceInfo()
-
+            fetchFeatures()
         }, 3000);
         return () => clearInterval(id);
     }, [check])

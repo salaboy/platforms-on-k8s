@@ -7,8 +7,8 @@ import Cloud from '../cloud/cloud'
 import { useState, useEffect } from 'react'
 
 function renderCallForProposalContent(pathname, features){
-    console.log("Call for proposals enabled? : "+ features.CALL_FOR_PROPOSALS_ENABLED)
-    if(features.CALL_FOR_PROPOSALS_ENABLED){
+    console.log("Call for proposals enabled? : "+ features.CallForProposalsEnabled)
+    if(features.CallForProposalsEnabled){
         return (
             <li className={styles.menuItem}><Link href="/proposals/" className={pathname === "/proposals" ? `${styles.active} ` : ' '} scroll={false}>Call for Proposals</Link></li>
          );

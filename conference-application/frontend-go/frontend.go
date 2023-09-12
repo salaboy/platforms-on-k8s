@@ -34,15 +34,9 @@ var (
 	NotificationsServiceUrl = getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
 
 	AppPort   = getEnv("APP_PORT", "8080")
-	FlagdHost = getEnv("FLAGD_HOST", "http://flagd.default.svc.cluster.local")
-	FlagdPort = getEnv("FLAGD_PORT", "8013")
-	// FeatureGenerateProposal values:
-	// - PUBLIC (no filters)
-	// - GENERATE (Read Only Form - Generate Proposal)
-	// -GENERATE_ONLY (No Submit until Generated Proposal is created)
-	FeatureGenerateProposal = getEnv("FEATURE_DEBUG_ENABLED", "GENERATE")
-	FeatureDebugEnabled     = getEnv("FEATURE_DEBUG_ENABLED", "false")
-	KoDataPath              = getEnv("KO_DATA_PATH", "kodata")
+	FlagdHost = getEnv("FLAGD_HOST", "flagd.default.svc.cluster.local")
+
+	KoDataPath = getEnv("KO_DATA_PATH", "kodata")
 )
 
 const (
@@ -59,6 +53,7 @@ type ServiceInfo struct {
 	PodNodeName       string `json:"podNodeName"`
 	PodIp             string `json:"podIp"`
 	PodServiceAccount string `json:"podServiceAccount"`
+	EventsEnabled     bool   `json:"eventsEnabled"`
 }
 
 type Event struct {
@@ -263,19 +258,36 @@ func (s *server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 		PodNamespace:      PodNamespace,
 		PodIp:             PodIp,
 		PodServiceAccount: PodServiceAccount,
+		EventsEnabled:     s.areEventsEnabled(),
 	}
 	w.Header().Set(ContentType, ApplicationJson)
 	json.NewEncoder(w).Encode(info)
 }
 
-// NewServer creates a new api.ServerInterface server.
-func NewServer() api.ServerInterface {
-	openfeature.SetProvider(flagd.NewProvider(
-		flagd.WithHost(FlagdHost),
-		flagd.WithPort(8013),
-	))
+func (s *server) areEventsEnabled() bool {
+	ctx := context.Background()
+	eventsEnabled, err := s.FeatureClient.ObjectValue(ctx, "eventsEnabled", EventsEnabled{}, openfeature.EvaluationContext{})
+	if err != nil {
+		log.Println("failed to find Feature Flag `eventsEnabled`.")
+		return false
+	}
 
-	openfeatureClient := openfeature.NewClient("frontend")
+	jsonData, err := json.Marshal(eventsEnabled)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var eventsEnabledStruct EventsEnabled
+	err = json.Unmarshal(jsonData, &eventsEnabledStruct)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return eventsEnabledStruct.NotificationsService
+}
+
+// NewServer creates a new api.ServerInterface server.
+func NewServer(openfeatureClient *openfeature.Client) api.ServerInterface {
 	return &server{
 		FeatureClient: openfeatureClient,
 	}
@@ -290,7 +302,14 @@ func NewChiServer() *chi.Mux {
 
 	fs := http.FileServer(http.Dir(KoDataPath))
 
-	server := NewServer()
+	openfeature.SetProvider(flagd.NewProvider(
+		flagd.WithHost(FlagdHost),
+		flagd.WithPort(8013),
+	))
+
+	openfeatureClient := openfeature.NewClient("frontend")
+
+	server := NewServer(openfeatureClient)
 
 	OpenAPI(r)
 

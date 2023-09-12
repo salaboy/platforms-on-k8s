@@ -213,7 +213,7 @@ func (s server) CreateProposal(w http.ResponseWriter, r *http.Request) {
 
 	insertStmt := `insert into Proposals("id", "title", "description", "email", "author", "approved", "status") values($1, $2, $3, $4, $5, $6, $7)`
 
-	_, err = s.DB.Exec(insertStmt, proposal.Id, proposal.Title, proposal.Description, proposal.Email, proposal.Author, false, proposal.Status)
+	_, err = s.DB.Exec(insertStmt, proposal.Id, proposal.Title, proposal.Description, proposal.Email, proposal.Author, false, proposal.Status.Status)
 
 	if err != nil {
 		log.Printf("An error occured while executing query: %v", err)
