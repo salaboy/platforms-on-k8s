@@ -15,10 +15,20 @@ import (
 	_ "github.com/lib/pq"
 
 	dapr "github.com/dapr/go-sdk/client"
-	"github.com/salaboy/platforms-on-k8s/conference-application/c4p-service/api"
 	flagd "github.com/open-feature/go-sdk-contrib/providers/flagd/pkg"
 	"github.com/open-feature/go-sdk/pkg/openfeature"
+	"github.com/salaboy/platforms-on-k8s/conference-application/c4p-service/api"
 )
+
+func main() {
+	r := NewChiServer()
+
+	// Start the server; this is a blocking call
+	err := http.ListenAndServe(":"+AppPort, r)
+	if err != http.ErrServerClosed {
+		log.Panic(err)
+	}
+}
 
 const (
 	ApplicationJson = "application/json"
@@ -81,18 +91,6 @@ type Notification struct {
 	Accepted     bool   `json:"accepted"`
 }
 
-type Event struct {
-	Id      string `json:"id"`
-	Payload string `json:"payload"`
-	Type    string `json:"type"`
-}
-
-type Event struct {
-	Id      string `json:"id"`
-	Payload string `json:"payload"`
-	Type    string `json:"type"`
-}
-
 type ServiceInfo struct {
 	Name              string `json:"name"`
 	Version           string `json:"version"`
@@ -130,23 +128,18 @@ var (
 	FlagdHost          = getEnv("FLAGD_HOST", "flagd.default.svc.cluster.local")
 )
 
-func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
-
-
 var db *sql.DB
 
 // server
 type server struct {
-	APIClient               *dapr.Client
-	DB                      *sql.DB
-	AgendaServiceURL        string
-	NotificationsServiceURL string
+	APIClient     dapr.Client
+	DB            *sql.DB
+	FeatureClient *openfeature.Client
 }
 
-func areEventsEnabled(featureClient *openfeature.Client) bool {
+func (s *server) areEventsEnabled() bool {
 	ctx := context.Background()
-	eventsEnabled, err := featureClient.ObjectValue(ctx, "eventsEnabled", EventsEnabled{}, openfeature.EvaluationContext{})
+	eventsEnabled, err := s.FeatureClient.ObjectValue(ctx, "eventsEnabled", EventsEnabled{}, openfeature.EvaluationContext{})
 	if err != nil {
 		log.Println("failed to find Feature Flag `eventsEnabled`.")
 		return false
@@ -236,26 +229,30 @@ func (s server) CreateProposal(w http.ResponseWriter, r *http.Request) {
 		respondWithJSON(w, http.StatusInternalServerError, err)
 		return
 	}
-	event := Event{
-		Id:      uuid.New().String(),
-		Type:    "new-proposal",
-		Payload: string(proposalJson),
-	}
-	eventJson, err := json.Marshal(event)
-	if err != nil {
-		log.Printf("An error occured while marshalling the event to json: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
+	eventsEnabled := s.areEventsEnabled()
+	log.Printf("Events Enabled? %s", eventsEnabled)
+	if eventsEnabled {
+		event := Event{
+			Id:      uuid.New().String(),
+			Type:    "new-proposal",
+			Payload: string(proposalJson),
+		}
+		eventJson, err := json.Marshal(event)
+		if err != nil {
+			log.Printf("An error occured while marshalling the event to json: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	//@TODO: add tenant to PUBSUB_TOPIC
-	if err := s.APIClient.PublishEvent(ctx, PubSubName, PubSubTopic, eventJson); err != nil {
-		log.Printf("An error occured while publishing the event: %v", err)
-		respondWithJSON(w, http.StatusInternalServerError, err)
-		return
-	}
+		//@TODO: add tenant to PUBSUB_TOPIC
+		if err := s.APIClient.PublishEvent(ctx, PubSubName, PubSubTopic, eventJson); err != nil {
+			log.Printf("An error occured while publishing the event: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
-	log.Printf("New Proposal Event published: %s", proposal)
+		log.Printf("New Proposal Event published: %s", proposal)
+	}
 	respondWithJSON(w, http.StatusOK, proposal)
 
 }
@@ -284,7 +281,6 @@ func (s server) DeleteProposal(w http.ResponseWriter, r *http.Request, proposalI
 
 	defer rows.Close()
 
-	
 	//@TODO: validate that only one result comes from the query
 	var proposal Proposal
 	for rows.Next() {
@@ -301,7 +297,7 @@ func (s server) DeleteProposal(w http.ResponseWriter, r *http.Request, proposalI
 		return
 	}
 
-	eventsEnabled := areEventsEnabled(s.FeatureClient)
+	eventsEnabled := s.areEventsEnabled()
 	log.Printf("Events Enabled? %s", eventsEnabled)
 	if eventsEnabled {
 		event := Event{
@@ -387,13 +383,13 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 			Data:        agendaItemJson,
 		}
 
-			res, err := APIClient.InvokeMethodWithContent(ctx, "agenda-service", "agenda-items/", "POST", content)
-			log.Printf("Response from calling agenda-service %s: ", res)
-			if err != nil {
-				log.Printf("There was an error creating the request to the Agenda Item Service: %v", err)
-				respondWithJSON(w, http.StatusInternalServerError, err)
-				return
-			}
+		res, err := s.APIClient.InvokeMethodWithContent(ctx, "agenda-service", "agenda-items/", "POST", content)
+		log.Printf("Response from calling agenda-service %s: ", res)
+		if err != nil {
+			log.Printf("There was an error creating the request to the Agenda Item Service: %v", err)
+			respondWithJSON(w, http.StatusInternalServerError, err)
+			return
+		}
 
 		var agendaItemResponse AgendaItem
 		err = json.Unmarshal(res, &agendaItemResponse)
@@ -402,7 +398,7 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 		}
 		decisionResponse.AgendaItem = agendaItemResponse
 
-		eventsEnabled := areEventsEnabled(s.FeatureClient)
+		eventsEnabled := s.areEventsEnabled()
 		log.Printf("Events Enabled? %s", eventsEnabled)
 		if eventsEnabled {
 			proposalJson, err := json.Marshal(proposal)
@@ -438,7 +434,7 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 
 		log.Printf("Proposal Id: %s was rejected!", proposalId)
 
-		eventsEnabled := areEventsEnabled(s.FeatureClient)
+		eventsEnabled := s.areEventsEnabled()
 		log.Printf("Events Enabled? %s", eventsEnabled)
 		if eventsEnabled {
 			proposalJson, err := json.Marshal(proposal)
@@ -461,7 +457,7 @@ func (s server) DecideProposal(w http.ResponseWriter, r *http.Request, proposalI
 				return
 			}
 
-			if err := APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); err != nil {
+			if err := s.APIClient.PublishEvent(ctx, PubSubName, PubSubTopic, eventJson); err != nil {
 				log.Printf("An error occured while publishing the event: %v", err)
 				respondWithJSON(w, http.StatusInternalServerError, err)
 				return
@@ -510,19 +506,10 @@ func (s server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 		PodNamespace:      PodNamespace,
 		PodIp:             PodIp,
 		PodServiceAccount: PodServiceAccount,
+		EventsEnabled:     s.areEventsEnabled(),
 	}
 	w.Header().Set(ContentType, ApplicationJson)
 	json.NewEncoder(w).Encode(info)
-}
-
-func main() {
-	r := NewChiServer()
-
-	// Start the server; this is a blocking call
-	err := http.ListenAndServe(":"+AppPort, r)
-	if err != http.ErrServerClosed {
-		log.Panic(err)
-	}
 }
 
 // NewChiServer creates a new *chi.Mux server.
@@ -561,6 +548,8 @@ func NewChiServer() *chi.Mux {
 	server := NewServer(APIClient, db, openfeatureClient)
 	OpenAPI(r)
 
+	// add routes
+	r.Mount("/", api.Handler(server))
 
 	// add health check
 	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
@@ -590,10 +579,28 @@ func NewDB() *sql.DB {
 	return db
 }
 
-func NewServer(daprClient *dapr.Client, db *sql.DB, openfeatureClient *openfeature.Client) api.ServerInterface {
+func NewServer(daprClient dapr.Client, db *sql.DB, openfeatureClient *openfeature.Client) api.ServerInterface {
 	return &server{
-		APIClient: daprClient,
-		DB:        db,
-		OpenFeatureClient: openfeatureClient
+		APIClient:     daprClient,
+		DB:            db,
+		FeatureClient: openfeatureClient,
 	}
+}
+
+// respondWithJSON is a helper function to write a JSON response.
+func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
+	response, _ := json.Marshal(payload)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	w.Write(response)
+}
+
+// getEnv returns the value of an environment variable, or a fallback value if not set.
+func getEnv(key, fallback string) string {
+	value, exists := os.LookupEnv(key)
+	if !exists {
+		value = fallback
+	}
+	return value
 }

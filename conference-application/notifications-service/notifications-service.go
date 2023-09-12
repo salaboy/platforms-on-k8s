@@ -52,12 +52,6 @@ type Notification struct {
 	EmailBody    string `json:"emailBody"`
 }
 
-type Event struct {
-	Id      string `json:"id"`
-	Payload string `json:"payload"`
-	Type    string `json:"type"`
-}
-
 type EventsEnabled struct {
 	AgendaService        bool `json:"agenda-service"`
 	NotificationsService bool `json:"notifications-service"`
@@ -175,7 +169,7 @@ func (s *server) GetAllNotifications(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusOK, notifications)
 }
 
-func (s server) areEventsEnabled() bool {
+func (s *server) areEventsEnabled() bool {
 	ctx := context.Background()
 	eventsEnabled, err := s.FeatureClient.ObjectValue(ctx, "eventsEnabled", EventsEnabled{}, openfeature.EvaluationContext{})
 	if err != nil {

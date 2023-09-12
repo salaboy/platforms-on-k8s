@@ -39,6 +39,22 @@ type ServerInterfaceWrapper struct {
 
 type MiddlewareFunc func(http.Handler) http.Handler
 
+
+// NewEvents operation middleware
+func (siw *ServerInterfaceWrapper) GetFeatures(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	var handler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetFeatures(w, r)
+	})
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
 // NewEvents operation middleware
 func (siw *ServerInterfaceWrapper) NewEvents(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()

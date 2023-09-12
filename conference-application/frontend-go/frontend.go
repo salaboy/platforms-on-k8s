@@ -81,6 +81,16 @@ type Features struct {
 
 var events = []Event{}
 
+func main() {
+	r := NewChiServer()
+
+	// Start the server; this is a blocking call
+	err := http.ListenAndServe(":"+AppPort, r)
+	if err != http.ErrServerClosed {
+		log.Panic(err)
+	}
+}
+
 func (s *server) GetFeatures(w http.ResponseWriter, r *http.Request) {
 
 	ctx := context.Background()
@@ -265,7 +275,7 @@ func NewServer() api.ServerInterface {
 		flagd.WithPort(8013),
 	))
 
-	openfeatureClient := openfeature.NewClient("notifications-service")
+	openfeatureClient := openfeature.NewClient("frontend")
 	return &server{
 		FeatureClient: openfeatureClient,
 	}

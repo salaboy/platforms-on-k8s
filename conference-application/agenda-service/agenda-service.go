@@ -55,12 +55,6 @@ type Proposal struct {
 	Id string `json:"id"`
 }
 
-type Event struct {
-	Id      string `json:"id"`
-	Payload string `json:"payload"`
-	Type    string `json:"type"`
-}
-
 // AgendaItem is a struct to represent an Agenda Item.
 type AgendaItem struct {
 	Id          string   `json:"id,omitempty"`
