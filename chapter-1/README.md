@@ -1,15 +1,19 @@
 # Chapter 1 :: (The rise of) Platforms on Top of Kubernetes
 
+Thanks to the fantastic cloud-native community, you can read these tutorials in the following languages:
+
+- [Chinese `zh-cn`](README.zh-cn.md) 🇨🇳
+
 ## Conference Application Scenario
 
-The application that we will be modifying and using throughtout all the book chapters represent a simple "walking skeleton" meaning that it is complex enough to allows us to test asumptions, tools and frameworks, but it is not the final product that our customers will use. 
+The application that we will modify and use throughout the book chapters represents a simple "walking skeleton", meaning that it is complex enough to allow us to test assumptions, tools, and frameworks. Still, it is not the final product that our customers will use. 
 
-The "Conference Application" walking skeleton implements a very simple use case, allowing potential speakers to submit proposals that will be evaluated by the conference organizers. 
+The "Conference Application" walking skeleton implements a straightforward use case, allowing potential speakers to submit proposals that the conference organizers will evaluate. 
 
 ![home](imgs/homepage.png)
 
 
-The flow is simple. Potential speakers can submit a new proposal by going to the **Call for Proposals** section of the application.
+The flow is simple. Potential speakers can submit a new proposal by going to the application's **Call for Proposals** section.
 
 ![proposals](imgs/proposals.png)
 
@@ -17,15 +21,15 @@ Once submitted, the conference organizers can review (approve or reject) submitt
 
 ![backoffice](imgs/backoffice.png)
 
-If the proposal is accepted it is automatically published into the conference **Agenda** page.
+If accepted, the proposal is automatically published on the conference **Agenda** page.
 
 ![agenda](imgs/agenda.png)
 
-In the **Backoffice** you can check the **Notifications** tab that shows all the notifications (emails) sent to the potential speakers. You will see both approval and rejection emails in this tab. 
+In the **Backoffice**, you can check the **Notifications** tab that shows all the notifications (emails) sent to the potential speakers. You will see both approval and rejection emails in this tab. 
 
 ![notifications](imgs/notifications-backoffice.png)
 
-Every action in the application emit events, hence, when a new proposal is submitted, when the proposal is accepted or rejected and when notifications are sent events are sent and captured by the application frontend. You can check these events into the **Events** tab in the **Backoffice** section.
+Every action in the application emits events. Hence, when a new proposal is submitted, when the proposal is accepted or rejected, and when notifications are sent, events are sent and captured by the application frontend. You can check these events in the **Events** tab in the **Backoffice** section.
 
 ![events](imgs/events-backoffice.png)
 
@@ -44,5 +48,5 @@ The following tools are required for the step-by-step tutorials linked in the bo
 
 ## Sum up and Contribute
 
-Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.
+Do you want to improve this tutorial? Create an issue, message me on [Twitter](https://twitter.com/salaboy), or send a Pull Request.
 
