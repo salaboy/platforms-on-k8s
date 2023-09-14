@@ -7,7 +7,7 @@
 本书的每一章都会包含一个手把手的教程，读者可以借此教程的帮助，亲手实践以理解书中的概念。
 
 - [第一章：在 Kubernetes 基础上构建平台](chapter-1/README.zh-cn.md)
-- [Chapter 2: Cloud-Native Application Challenges](chapter-2/README.md)
+- [第二章：来自云原生应用的挑战](chapter-2/README.zh-cn.md)
 - [Chapter 3: Service Pipelines: Building Cloud-Native applications](chapter-3/README.md)
 - [Chapter 4: Environment Pipelines: Deploying Cloud-Native applications](chapter-4/README.md)
 - [Chapter 5: Mulit-Cloud (App) infrastructure](chapter-5/README.md)
