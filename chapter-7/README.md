@@ -1,6 +1,6 @@
 # Chapter 7 :: Shared Applications Concerns
 
-On this step-by-step tutorials we will look into how to use [Dapr](https://dapr.io) to provide Application-level APIs to solve common challenges that most Distributed Applications will phase. 
+On this step-by-step tutorials we will look into how to use [Dapr](https://dapr.io) to provide Application-level APIs to solve common challenges that most Distributed Applications will face. 
 
 Then we will look at [OpenFeature](https://openfeature.dev) a project that aims to standardize Feature Flags, so developement teams can keep releasing new features and stakeholders can decide when to enable/disable these features for their customers. 
 
