@@ -94,7 +94,7 @@ nodes:
 
 ## 安装示例应用
 
-Helm 3.7 及后续版本，可以使用 OCI 镜像的方式发布、下载和部署 Helm Chart。这样就安装示例应用时，就可以用 Docker Hub 作为 Helm Chart 仓库，只需要运行如下命令：
+Helm 3.7 及后续版本，可以使用 OCI 镜像的方式发布、下载和部署 Helm Chart。这样就可以用 Docker Hub 充当 Helm Chart 仓库，运行如下命令就能安装我们的示例应用：
 
 ```
 helm install conference oci://docker.io/salaboy/conference-app --version v1.0.0
@@ -122,7 +122,7 @@ conference-postgresql-0                                        1/1     Running  
 conference-redis-master-0                                      1/1     Running   0             2m2s
 ```
 
-`RESTARTS` 列中的内容说明应用容器启动之后，因为 Kafka 无法访问，被迫重启来等待 Kafka 准备就绪。
+`RESTARTS` 列中的内容说明应用容器启动之后因为无法访问 Kafka，被迫重启来等待 Kafka 准备就绪。
 
 现在可以使用浏览器访问 [http://localhost](http://localhost) 来浏览应用的页面了。
 
@@ -130,7 +130,7 @@ conference-redis-master-0                                      1/1     Running  
 
 ## 重要：清理
 
-这个示例应用安装了 PostgreSQL、Redis 和 Kafka，所以要重新安装应用的话，要确对 PVC 执行删除操作。这三个组件会使用 PVC 存储数据。如果忘记删除 PVC，那么新安装的应用就会使用旧的凭据来连接新部署的数据库。
+这个示例应用安装了 PostgreSQL、Redis 和 Kafka，所以如果要重新安装应用，必须删除现有的 PVC。这三个组件会使用 PVC 存储数据。如果忘记删除 PVC，那么新安装的应用就会使用旧的凭据来连接新部署的数据库。
 
 在删除之前先列出 PVC：
 
