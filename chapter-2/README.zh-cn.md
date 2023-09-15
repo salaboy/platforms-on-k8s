@@ -111,7 +111,7 @@ helm show all oci://docker.io/salaboy/conference-app --version v1.0.0
 几分钟以后，你会看到类似下面的输出内容：
 
 ```
-kubect get pods
+kubectl get pods
 NAME                                                           READY   STATUS    RESTARTS      AGE
 conference-agenda-service-deployment-7cc9f58875-k7s2x          1/1     Running   4 (45s ago)   2m2s
 conference-c4p-service-deployment-54f754b67c-br9dg             1/1     Running   4 (65s ago)   2m2s

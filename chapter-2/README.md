@@ -114,7 +114,7 @@ Check that all the application pods are up and running. Notice that if your inte
 Eventually, you should see something like this, It can take a few minutes: 
 
 ```
-kubect get pods
+kubectl get pods
 NAME                                                           READY   STATUS    RESTARTS      AGE
 conference-agenda-service-deployment-7cc9f58875-k7s2x          1/1     Running   4 (45s ago)   2m2s
 conference-c4p-service-deployment-54f754b67c-br9dg             1/1     Running   4 (65s ago)   2m2s
