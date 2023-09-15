@@ -6,6 +6,9 @@ Helm Charts can be published to Helm Chart repositories or also, since Helm 3.7 
 
 Check the pre-requisites for all the tutorials [here](../chapter-1/README.md#pre-requisites-for-the-other-chapters)
 
+Thanks to the fantastic cloud-native community, you can read these tutorials in the following languages:
+- [Chinese `zh-cn`](README.zh-cn.md) :cn:
+
 ## Creating a local cluster with Kubernetes KinD
 
 Create a KinD Cluster with three worker nodes and 1 Control Plane.
