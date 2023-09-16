@@ -52,7 +52,15 @@ EOF
 
 脚本运行结束后，所有必要的镜像都会被拉取到本地并被加载到 Kind 集群的所有节点之中。如果你使用的是运供应商的 Kubernetes 集群，因为带宽足够，可能就没有必要使用这个脚本了。
 
-**注意：** 如果你是在 MacOS 运行的 Docker Desktop，请保证其虚拟磁盘至少有 15Gb 的可用空间。你可以在 Settings -> Resources 菜单栏修改 Virtual Disk limit 的值。
+**注意：** 如果你是在 MacOS 系统运行 Docker Desktop，虚拟磁盘设置过小时会遇到下面的报错：
+
+```
+$ ./kind-load.sh
+...
+Command Output: Error response from daemon: write /var/lib/docker/.../layer.tar: no space left on device
+```
+
+你可以在 ``Settings -> Resources`` 菜单栏修改 Virtual Disk limit 的值。
 
 ![MacOS Docker Desktop virtual disk limits](imgs/macos-docker-desktop-virtual-disk-setting.png)
 

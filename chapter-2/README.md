@@ -54,7 +54,15 @@ Run the script by copying this command into your terminal from inside the `chapt
 
 By running this script, you will fetch all the required images and then load them into every node of your KinD cluster. If you are running the examples on a Cloud Provider, this might not be worth it as Cloud Providers with Gigabyte connections to container registries might fetch these images in a matter of seconds.
 
-**Note:** If you are running Docker Desktop on MacOS, please make sure that the virtual disk has at least 15GB of available space. You can modify the value of the Virtual Disk limit in the Settings -> Resources menu.
+**Note:** If you are running Docker Desktop on MacOS and have set a smaller size for the virtual disk, you may encounter the following error:
+
+```
+$ ./kind-load.sh
+...
+Command Output: Error response from daemon: write /var/lib/docker/.../layer.tar: no space left on device
+```
+
+You can modify the value of the Virtual Disk limit in the ``Settings -> Resources`` menu.
 
 ![MacOS Docker Desktop virtual disk limits](imgs/macos-docker-desktop-virtual-disk-setting.png)
 
