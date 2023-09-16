@@ -54,7 +54,17 @@ Run the script by copying this command into your terminal from inside the `chapt
 
 By running this script, you will fetch all the required images and then load them into every node of your KinD cluster. If you are running the examples on a Cloud Provider, this might not be worth it as Cloud Providers with Gigabyte connections to container registries might fetch these images in a matter of seconds.
 
+**Note:** If you are running Docker Desktop on MacOS and have set a smaller size for the virtual disk, you may encounter the following error:
 
+```
+$ ./kind-load.sh
+...
+Command Output: Error response from daemon: write /var/lib/docker/.../layer.tar: no space left on device
+```
+
+You can modify the value of the Virtual Disk limit in the ``Settings -> Resources`` menu.
+
+![MacOS Docker Desktop virtual disk limits](imgs/macos-docker-desktop-virtual-disk-setting.png)
 
 ### Installing NGINX Ingress Controller
 
@@ -114,7 +124,7 @@ Check that all the application pods are up and running. Notice that if your inte
 Eventually, you should see something like this, It can take a few minutes: 
 
 ```
-kubect get pods
+kubectl get pods
 NAME                                                           READY   STATUS    RESTARTS      AGE
 conference-agenda-service-deployment-7cc9f58875-k7s2x          1/1     Running   4 (45s ago)   2m2s
 conference-c4p-service-deployment-54f754b67c-br9dg             1/1     Running   4 (65s ago)   2m2s

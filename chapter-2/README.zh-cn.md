@@ -52,6 +52,18 @@ EOF
 
 脚本运行结束后，所有必要的镜像都会被拉取到本地并被加载到 Kind 集群的所有节点之中。如果你使用的是运供应商的 Kubernetes 集群，因为带宽足够，可能就没有必要使用这个脚本了。
 
+**注意：** 如果你是在 MacOS 系统运行 Docker Desktop，虚拟磁盘设置过小时会遇到下面的报错：
+
+```
+$ ./kind-load.sh
+...
+Command Output: Error response from daemon: write /var/lib/docker/.../layer.tar: no space left on device
+```
+
+你可以在 ``Settings -> Resources`` 菜单栏修改 Virtual Disk limit 的值。
+
+![MacOS Docker Desktop virtual disk limits](imgs/macos-docker-desktop-virtual-disk-setting.png)
+
 ### 安装 NGINX Ingress 控制器
 
 我们要用 NGINX Ingress Controller 把笔记本电脑上的流量路由到集群内运行的服务。NGINX Ingress Controller 运行在集群内部，但向外界网络开放提供服务。
@@ -111,7 +123,7 @@ helm show all oci://docker.io/salaboy/conference-app --version v1.0.0
 几分钟以后，你会看到类似下面的输出内容：
 
 ```
-kubect get pods
+kubectl get pods
 NAME                                                           READY   STATUS    RESTARTS      AGE
 conference-agenda-service-deployment-7cc9f58875-k7s2x          1/1     Running   4 (45s ago)   2m2s
 conference-c4p-service-deployment-54f754b67c-br9dg             1/1     Running   4 (65s ago)   2m2s
