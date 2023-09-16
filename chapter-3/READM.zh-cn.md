@@ -1,4 +1,4 @@
-# 软件流水线
+# 使用流水线构建云原生应用
 
 这里的教程包含了 Tekton 和 Dagger 的流水线。Tekton 扩展了 Kubernetes API，提供了用于定义流水线和任务的能力；而 Dagger 让我们可以用可编程的方式定义流水线，这种流水线可以在 Kubernetes 集群上远程执行，也能在本地的开发环境中执行。最后还使用 Github Action 来对比不同的流水线方法。
 

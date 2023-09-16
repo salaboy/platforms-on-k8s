@@ -4,10 +4,10 @@ In this short tutorial we will set up our Staging Environment Pipeline using [Ar
 
 We will define the configuration of Staging environment using a Git repository. The [`argo-cd/staging` directory](argo-cd/staging/) contains the definition of a Helm chart that can be synced to multiple Kubernetes Clusters. 
 
-# Prerequisites and installation
+## Prerequisites and installation
 
 - We need a Kubernetes Cluster, we will use Kubernetes [KinD](https://kind.sigs.k8s.io/) in this tutorial
-- Install ArgoCD in your cluster, [follow this instructions](https://argo-cd.readthedocs.io/en/stable/getting_started/) and optionallyu install the argocd CLI 
+- Install ArgoCD in your cluster, [follow this instructions](https://argo-cd.readthedocs.io/en/stable/getting_started/) and optionally install the argocd CLI 
 - You can fork/copy [this repository](http://github.com/salaboy/platforms-on-k8s/) as if you want to change the configuration for the application you will need to have write access to the repository. We will be using the directory `chapter-4/argo-cd/staging/`
 
 [Create a KinD Cluster as we did in Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind).
