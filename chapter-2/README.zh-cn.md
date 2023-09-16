@@ -10,7 +10,7 @@
 
 创建一个 Kind 集群，其中包含三个工作节点和一个控制平面节点。
 
-```
+```yaml
 cat <<EOF | kind create cluster --name dev --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -72,7 +72,7 @@ ingress-nginx-controller-5bb6b499dc-7chfm   0/1     Running     0          62s
 
 这样，您就可以将来自 `http://localhost` 的流量路由到群集内部的服务。请注意，我们在创建群集时为控制面节点提供了额外的参数和标签：
 
-```
+```yaml
 nodes:
 - role: control-plane
   kubeadmConfigPatches:

@@ -138,7 +138,7 @@ Now we can use Pipelines to coordinate multiple tasks like the one that we defin
 ![Tekton Hub](imgs/tekton-hub.png)
 
 
-Before creating the Pipeline we will install the `curl` Tekton task from the Tekton Hub by running: 
+Before creating the Pipeline we will install the `wget` Tekton task from the Tekton Hub by running: 
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/tektoncd/catalog/main/task/wget/0.1/wget.yaml
@@ -158,7 +158,7 @@ We will be creating this simple Pipeline Definition, that fetch a file, read its
 
 Let's create the following pipeline definition:
 
-```
+```yaml
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -230,7 +230,7 @@ kubectl apply -f hello-world/hello-world-pipeline.yaml
 
 Then we can create a new `PipelineRun` everytime that we want to execute this pipeline:
 
-```
+```yaml
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
@@ -336,7 +336,7 @@ kubectl apply -f service-pipeline.yaml
 
 Now we can create new pipeline instances to build and publish our services container images. The folllowing `PipelineRun` resource configure our Service Pipeline to build the Notifications Service.
 
-```
+```yaml
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
@@ -389,7 +389,7 @@ kubectl apply -f app-helm-chart-pipeline.yaml
 
 Then you can create new instances by creating new `PipelineRun` resources:
 
-```
+```yaml
 apiVersion: tekton.dev/v1
 kind: PipelineRun
 metadata:
@@ -418,13 +418,13 @@ spec:
     name: app-helm-chart-pipeline
 ```
 
-Apply this `PipelineRun`` definition to the cluster to create a new instance of the Application Helm Chart Pipeline: 
+Apply this `PipelineRun` definition to the cluster to create a new instance of the Application Helm Chart Pipeline: 
 
 ```
 kubectl apply -f app-helm-chart-pipeline-run.yaml
 ```
 
-Notice that the Application Helm Chart pipeline also uses the same `docker-credentials` to push the Helm Chart as an OCI container image. The pipeline accepts the `target-version` parameter, which is used to patch the `Chart.yaml`` file before packaging and pushing the helm chart to the OCI container registry. Notice that this pipeline doesn't patch the versions of the containers referenced by the chart, which means that is it up to the reader to adapt the pipeline to accept as parameters the versions of each service and validate that the referenced container images exists in the referenced container registry.
+Notice that the Application Helm Chart pipeline also uses the same `docker-credentials` to push the Helm Chart as an OCI container image. The pipeline accepts the `target-version` parameter, which is used to patch the `Chart.yaml` file before packaging and pushing the helm chart to the OCI container registry. Notice that this pipeline doesn't patch the versions of the containers referenced by the chart, which means that is it up to the reader to adapt the pipeline to accept as parameters the versions of each service and validate that the referenced container images exists in the referenced container registry.
 
 
 **Note**: These pipelines are just examples to illustrate the work required to configure Tekton to build containers and charts. For example, the Application Helm Chart Pipeline doesn't change the version of the chart or the version of the container images referenced inside the chart. If we really want to automate all the process we can get the image versions and the chart version from a Git tag that represent the version that we want to release.
