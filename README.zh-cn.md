@@ -9,7 +9,7 @@
 - [第一章：在 Kubernetes 基础上构建平台](chapter-1/README.zh-cn.md)
 - [第二章：来自云原生应用的挑战](chapter-2/README.zh-cn.md)
 - [第三章：使用流水线构建云原生应用](chapter-3/README.zh-cn.md)
-- [Chapter 4: Environment Pipelines: Deploying Cloud-Native applications](chapter-4/README.md)
+- [第四章：使用 GitOps 管理环境](chapter-4/README.zh-cn.md)
 - [Chapter 5: Mulit-Cloud (App) infrastructure](chapter-5/README.md)
 - [Chapter 6: Let's build a Platform on Top of Kubernetes](chapter-6/README.md)
 - [Chapter 7: Platform Capabilities I: Shared Application Concerns](chapter-7/README.md)
