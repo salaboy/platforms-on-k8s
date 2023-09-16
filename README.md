@@ -2,9 +2,6 @@
 
 This repository contains all the source code, tutorials, and examples from the [Platform Engineering on Kubernetes](https://www.salaboy.com/book/) Book.
 
-Thanks to the fantastic cloud-native community, you can read these tutorials in the following languages:
-- [Chinese `zh-cn`](README.zh-cn.md) :cn:
-
 ## Chapters
 
 Each chapter of the book refers to a step-by-step tutorial that you can run to get your hands dirty with some Open Source projects. 
@@ -19,6 +16,10 @@ Each chapter of the book refers to a step-by-step tutorial that you can run to g
 - [Chapter 8: Platform Capabilities II: Enabling Teams to Experiment](chapter-8/README.md) 
 - [Chapter 9: Measure your Platforms](chapter-9/README.md) 
 
+## Translations
+
+Thanks to the fantastic cloud-native community, you can read these tutorials in the following languages:
+- [Chinese `zh-cn`](README.zh-cn.md) :cn:
 
 ## Code
 
