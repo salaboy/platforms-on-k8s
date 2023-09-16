@@ -1,8 +1,9 @@
 # Capítulo 1 :: (A ascensão das) Plataformas Baseadas em Kubernetes
 
 Graças à fantástica comunidade cloud-native, você tem acesso a estes tutoriais nas seguintes línguas:
-- [Chinese `zh-cn`](README.zh-cn.md) :cn:
-- [Portuguese (Brazil) `pt-BR`](README.zh-cn.md) :brazil:
+- [中国人 (Chinese) ](README.zh-cn.md)
+- [Inglês (English)](README.md)
+- [Português (Portuguese) ](README-pt.md) 
 
 ## Cenário: Aplicação de Conferência
 
@@ -16,7 +17,7 @@ O fluxo é simples. Palestrantes em potencial podem enviar uma nova proposta ind
 
 ![proposals](imgs/proposals.png)
 
-Uma vez submetida, os organizadores da conferência podem revisar (aprovar ou rejeitar) as propostas submetidas na are de **Backoffice** da aplicação.
+Uma vez submetida, os organizadores da conferência podem revisar (aprovar ou rejeitar) as propostas submetidas na área de **Backoffice** da aplicação.
 
 ![backoffice](imgs/backoffice.png)
 
@@ -37,7 +38,7 @@ Cada ação na aplicação emite eventos. Portanto, quando uma nova proposta é 
 As seguintes ferramentas são necessárias para os tutoriais passo a passo vinculados no livro.
 
 - [Docker](https://docs.docker.com/engine/install/)
-    - Nota: Você também pode tentar usar o [Podman](https://podman.io/), já que não há nada específico para o Docker, mas todos os tutoriais foram testados com o Docker.
+  > Uma vez que não há nada nos tutoriais que seja exclusivo da tecnologia Docker, você pode considerar também o [Podman](https://podman.io/). No entanto, tenha em mente que não foram efetuados testes destes projetos com a utilização desta tecnologia.
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/)
 - [Helm](https://helm.sh/docs/intro/install/)
