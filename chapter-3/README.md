@@ -1,13 +1,17 @@
 # Service Pipelines
 
+---
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README.zh-cn.md)
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
 These short tutorials cover both Tekton and Dagger for Service Pipelines. With Tekton we extend the Kubernetes APIs to define our Pipelines and Tasks. With Dagger we programatically define Pipelines that can be executed remotely in Kubernentes or locally in our development laptops. Finally, a pointer to a set of GitHub Actions is provided to be able to compare between these different approaches.
 
 - [Tekton for Service Pipelines Tutorial](tekton/README.md)
 - [Dagger for Service Pipelines Tutorial](dagger/README.md)
 - [GitHub Actions](github-actions/README.md)
 
-Thanks to the fantastic cloud-native community, you can read these tutorials in the following languages:
-- [Chinese zh-cn](README.zh-cn.md) 🇨🇳
 
 ## Clean up
 
