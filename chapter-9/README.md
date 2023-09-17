@@ -1,5 +1,12 @@
 # Chapter 9 :: Measuring your Platforms
 
+---
+_🌍 Available in_: [English](README.md)
+
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
 This chapter cover two different tutorials on how to use DORA metrics to measure your platform initiative performances. 
 
 - [DORA metrics and CloudEvents](dora-cloudevents/README.md)

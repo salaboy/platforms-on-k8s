@@ -1,5 +1,12 @@
 # Multi-Cloud (App) Infrastructure
 
+---
+_🌍 Available in_: [English](README.md)
+
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
 In this step-by-step tutorial, we will be using Crossplane to Provision the Redis, PostgreSQL and Kafka instances for our application services to use. 
 
 By using Crossplane and Crossplane Compositions, we aim to unify how these components are provisioned, hiding away where these components are for the end users (application teams).

@@ -1,5 +1,12 @@
 # Chapter 7 :: Shared Applications Concerns
 
+---
+_🌍 Available in_: [English](README.md)
+
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
 On this step-by-step tutorials we will look into how to use [Dapr](https://dapr.io) to provide Application-level APIs to solve common challenges that most Distributed Applications will face. 
 
 Then we will look at [OpenFeature](https://openfeature.dev) a project that aims to standardize Feature Flags, so developement teams can keep releasing new features and stakeholders can decide when to enable/disable these features for their customers. 
