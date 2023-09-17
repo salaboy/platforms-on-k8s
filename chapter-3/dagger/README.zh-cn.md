@@ -46,7 +46,7 @@ CONTAINER_REGISTRY=<YOUR_REGISTRY> CONTAINER_REGISTRY_USER=<YOUR_USER> go run se
 
 Dagger 流水线引擎能运行在支持容器的任何环境之中。无需复杂配置，就可以在 Kubernetes 中运行你的流水线。
 
-需要一个 Kubernetes 集群来完成后续步骤，可以[使用 Kind 创建一个集群](../../chapter-2/README.zh-cn.md)。
+需要一个 Kubernetes 集群来完成后续步骤，可以[使用 Kind 创建一个集群](../../chapter-2/README-zh.md)。
 
 接下来我们会把原本在本地容器运行时中运行的流水线，搬到 Kubernetes 里面去。这种方式还在试验阶段，但是对于我们的体验过程还是有帮助的。
 
