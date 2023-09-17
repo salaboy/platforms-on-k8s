@@ -6,6 +6,8 @@ These short tutorials cover both Tekton and Dagger for Service Pipelines. With T
 - [Dagger for Service Pipelines Tutorial](dagger/README.md)
 - [GitHub Actions](github-actions/README.md)
 
+Thanks to the fantastic cloud-native community, you can read these tutorials in the following languages:
+- [Chinese zh-cn](README.zh-cn.md) 🇨🇳
 
 ## Clean up
 
