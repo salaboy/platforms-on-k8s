@@ -1,6 +1,8 @@
 # Chapter 2 :: Cloud-Native Application Challenges
 
-_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README.zh-cn.md) 
+---
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md) 
+
 > **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
 
 In this short tutorial, we will be installing the `Conference Application` using Helm into a local KinD Kubernetes Cluster. 

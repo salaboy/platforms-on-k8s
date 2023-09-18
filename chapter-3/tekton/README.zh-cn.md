@@ -8,7 +8,7 @@
 
 ## 部署 Tekton
 
-下面的步骤会指导你在 Kubernetes 集群中部署和配置 Tekton。如果你没有 Kubernetes 集群，可以[用 Kind 创建 Kubernetes 集群](../../chapter-2/README.zh-cn.md)。
+下面的步骤会指导你在 Kubernetes 集群中部署和配置 Tekton。如果你没有 Kubernetes 集群，可以[用 Kind 创建 Kubernetes 集群](../../chapter-2/README-zh.md)。
 
 1. **部署 Tekton 流水线**
 

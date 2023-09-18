@@ -1,8 +1,10 @@
 # Chapter 1 :: (The rise of) Platforms on Top of Kubernetes
 
-Thanks to the fantastic cloud-native community, you can read these tutorials in the following languages:
+---
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README.zh-cn.md)
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
 
-- [Chinese `zh-cn`](README.zh-cn.md) 🇨🇳
+---
 
 ## Pre-requisites for the tutorials
 

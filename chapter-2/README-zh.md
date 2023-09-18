@@ -4,7 +4,7 @@
 
 可以把 Helm Chart 发布到 Helm Chart 仓库里。另外 Helm 3.7 之后的版本，还可以使用 OCI 格式把 Helm Chart 保存到容器镜像仓库之中。
 
-开始之前，请根据[前一章](../chapter-1/README.zh-cn.md#其它的先决条件)的介绍，检查一下运行后续教程的前置条件
+开始之前，请根据[前一章](../chapter-1/README-zh.md#其它的先决条件)的介绍，检查一下运行后续教程的前置条件
 
 ## 用 Kind 创建一个本地 Kubernetes 集群
 
