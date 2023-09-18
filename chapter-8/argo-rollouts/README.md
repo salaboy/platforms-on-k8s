@@ -8,7 +8,7 @@ You need a Kubernetes Cluster to install [Argo Rollouts](https://dapr.io). You c
 
 Once you have the cluster, we can install Argo Rollouts by running:
 
-```
+```shell
 kubectl create namespace argo-rollouts
 kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
 
@@ -20,7 +20,7 @@ You also need to install the [Argo Rollouts `kubectl` plugin](https://argoproj.g
 
 Once you have the plugin you can start a local version of the Argo Rollouts Dashboard, by running in a new terminal:
 
-```
+```shell
 kubectl argo rollouts dashboard
 ```
 
@@ -33,7 +33,7 @@ Then you can access the dashboard by pointing your browser to [http://localhost:
 
 Let's create an Argo Rollout resource to implement a Canary Release on the Notification Service of the Conference Application. You can find the [full definition here](canary-release/rollout.yaml).
 
-```
+```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
@@ -81,7 +81,7 @@ The `Rollout` resource replaces our Kubernetes `Deployment` resource. This means
 
 The previous `Rollout` defines a canary release with two steps: 
 
-```
+```yaml
 strategy:
     canary:
       steps:
@@ -95,26 +95,26 @@ First it will set the traffic split to 25 percent and wait the team to test the 
 
 Before applying the Rollout, Service and Ingress resources located in the `canary-release/` directory, let's install Kafka for the Notification Service to connect. 
 
-```
+```shell
 helm install kafka oci://registry-1.docker.io/bitnamicharts/kafka --version 22.1.5 --set "provisioning.topics[0].name=events-topic" --set "provisioning.topics[0].partitions=1" --set "persistence.size=1Gi" 
 
 ```
 
 Now when Kafka is running, let's apply all the resources in the `canary-releases/` directory: 
 
-```
+```shell
 kubectl apply -f canary-release/
 ```
 
 Using the argo rollouts plugin you can watch the rollout from the terminal: 
 
-```
+```shell
 kubectl argo rollouts get rollout notifications-service-canary --watch
 ```
 
 You should see something like this: 
 
-```
+```shell
 Name:            notifications-service-canary
 Namespace:       default
 Status:          ✔ Healthy
@@ -143,14 +143,14 @@ As you can see, because we just created the Rollouts, three replicas are created
 
 Let's update the Notification Service version to `v1.1.0` by running: 
 
-```
+```shell
 kubectl argo rollouts set image notifications-service-canary \
   notifications-service=salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525:v1.1.0
 ```
 
 Now you see the second revision (revision:2) created: 
 
-```
+```shell
 Name:            notifications-service-canary
 Namespace:       default
 Status:          ॥ Paused
@@ -184,12 +184,12 @@ Now the Rollout stops at step 1, where only 25 percent of the traffic is routed 
 
 Feel free to hit the `service/info` endpoint to see which version is answering your requests:
 
-```
+```shell
 curl localhost/service/info
 ```
 Roughly, one in four requests should be answered by version `v1.1.0`:
 
-```
+```shell
 > curl localhost/service/info | jq
 
 {
@@ -250,13 +250,13 @@ Also check the Argo Rollouts Dashboards now, it should show the Canary Release:
 
 You can move the canary forward by using the promote command or the promote button in the Dashboard. The command looks like this: 
 
-```
+```shell
 kubectl argo rollouts promote notifications-service-canary
 ```
 
 That should move the canary to 75% of the traffic and after 10 more seconds it should be at 100%, as the last puase step is just for 10 seconds. You should see in the terminal: 
 
-```
+```shell
 Name:            notifications-service-canary
 Namespace:       default
 Status:          ✔ Healthy
@@ -289,7 +289,7 @@ And in the Dashboard:
 
 Now all requests should be answered by `v1.1.0`:
 
-```
+```shell
 
 > curl localhost/service/info
 
@@ -334,7 +334,7 @@ Now all requests should be answered by `v1.1.0`:
 
 Before moving forward to Blue/Green deployments let's clean up the canary rollout by running: 
 
-```
+```shell
 kubectl delete -f canary-release/
 ```
 
@@ -344,7 +344,7 @@ With Blue/Green deployments we want to have two versions of our service running 
 
 Argo Rollouts provide a blueGreen strategy out-of-the-box: 
 
-```
+```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
@@ -378,7 +378,7 @@ Once again, we are using our Notifications Service to test the Rollout mechanism
 
 Check that you have Kafka already running from the previous section (Canary releases) and apply all the resources located inside the `blue-green/` directory: 
 
-```
+```shell
 kubectl apply -f blue-green/
 ```
 
@@ -386,7 +386,7 @@ This is creating the `Rollout` resource, two Kubernetes Services and two Ingress
 
 You can monitor the Rollout in the terminal by running: 
 
-```
+```shell
 kubectl argo rollouts get rollout notifications-service-bluegreen --watch
 ```
 
@@ -416,7 +416,7 @@ NAME                                                         KIND        STATUS 
 
 We get two replicas of our Notification Service up and running. If we curl `localhost/service/info` we should get the Notification Service `v1.0.0` information: 
 
-```
+```shell
 > curl localhost/service/info | jq
 
 {
@@ -438,14 +438,14 @@ And the Argo Rollouts Dashboard should show us our Blue/Green Rollout:
 
 As we did with the Canary Release, we can update our Rollout configuration, in this case setting the image for version `v1.1.0`.
 
-```
+```shell
 kubectl argo rollouts set image notifications-service-bluegreen \
   notifications-service=salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525:v1.1.0
 ```
 
 Now you should see in the terminal both versions of the Notification Service running in parallel: 
 
-```
+```shell
 Name:            notifications-service-bluegreen
 Namespace:       default
 Status:          ॥ Paused
@@ -480,7 +480,7 @@ Check the Argo Rollouts Dashboard, it should show both versions running too:
 
 At this point you can send requests to both services by using the Ingress routes that we defined. You can curl `localhost/service/info` to hit the Blue service (stable service) and curl `localhost/preview/service/info` to hit the Green service (preview service).
 
-```
+```shell
 > curl localhost/service/info
 
 {
@@ -497,7 +497,7 @@ At this point you can send requests to both services by using the Ingress routes
 
 And now let's check Green Service: 
 
-```
+```shell
 > curl localhost/green/service/info
 
 {
@@ -514,13 +514,13 @@ And now let's check Green Service:
 
 If we are happy with the results we can promote our Green Service to be our new stable service, we do this by hitting the Promote button in the Argo Rollouts Dashboard or by running the following command: 
 
-```
+```shell
 kubectl argo rollouts promote notifications-service-bluegreen
 ```
 
 You should see in the terminal: 
 
-```
+```shell
 Name:            notifications-service-bluegreen
 Namespace:       default
 Status:          ✔ Healthy
@@ -560,7 +560,7 @@ If you made it this far, you implemented Canary Releases and Blue/Green Deployme
 
 If you want to get rid of the KinD Cluster created for this tutorial, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 
