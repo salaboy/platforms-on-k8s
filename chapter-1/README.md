@@ -4,6 +4,18 @@ Thanks to the fantastic cloud-native community, you can read these tutorials in 
 
 - [Chinese `zh-cn`](README.zh-cn.md) 🇨🇳
 
+## Pre-requisites for the tutorials
+
+You'll need the tools below to follow the step-by-step tutorials linked in the book:
+- [Docker](https://docs.docker.com/engine/install/), v24.0.2
+- [kubectl](https://kubernetes.io/docs/tasks/tools/), Client v1.27.3
+- [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/), v0.20.0
+- [Helm](https://helm.sh/docs/intro/install/), v3.12.3
+
+These are technologies and versions used when testing the tutorials.
+
+> [!Warning]
+> If you want to use other technologies, like [Podman](https://podman.io/) instead of Docker, it should be possible as there is nothing specific to Docker.
 
 ## Conference Application Scenario
 
@@ -33,7 +45,6 @@ Check below how the application is commonly used:
 These events are sent and then captured by a frontend application. Luckily, you, the reader, can see these details in the app by accessing **Events** tab in the **Backoffice** section.
 
 ![events](imgs/events-backoffice.png)
-
 
 ## Sum up and Contribute
 
