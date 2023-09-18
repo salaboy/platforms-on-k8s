@@ -1,7 +1,7 @@
 # Chapter 2 :: Cloud-Native Application Challenges
 
 ---
-_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md) 
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md) | [Português (Portuguese)](README-pt.md) 
 
 > **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
 
