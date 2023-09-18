@@ -1,4 +1,4 @@
-# Chpater 6 :: Let's build a Platform on top of Kubernetes
+# Chapter 6 :: Let's build a Platform on top of Kubernetes
 
 On this step-by-step tutorial we will create the APIs of our platform by reusing the power of the Kubernetes APIs. The first use case where the platform can assist the development teams is by creating new development environments providing a self-service approach. 
 
@@ -22,13 +22,13 @@ For this tutorial we will define a Environment API and a Crossplane Composition 
 Check the Crossplane Composite Resource Definition (XRD) for our [Environments here](resources/env-resource-definition.yaml) and the Crossplane [Composition here](resources/composition-devenv.yaml). This resource configures the provisioning of a new `vcluster` using the Crossplane Helm Provider, [check this configuration here](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-6/resources/composition-devenv.yaml#L24). When a new `vcluster` is created then the composition install our Conference Application into it, once again using the Crossplane Helm Provider, but this time configured [pointing to the just created `vcluster` APIs](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-6/resources/composition-devenv.yaml#L87), you can [check this here](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-6/resources/composition-devenv.yaml#L117).
 
 Let's install both the XRD and the Composition by running: 
-```
+```shell
 kubectl apply -f resources/
 ```
 
 You should see: 
 
-```
+```shell
 composition.apiextensions.crossplane.io/dev.env.salaboy.com created
 compositeresourcedefinition.apiextensions.crossplane.io/environments.salaboy.com created
 ```
@@ -40,7 +40,7 @@ With the Environment resource and the Crossplane Composition using `vcluster` ou
 
 To request a new Environment teams can create new environment resources like this one: 
 
-```
+```yaml
 apiVersion: salaboy.com/v1alpha1
 kind: Environment
 metadata:
@@ -56,18 +56,18 @@ spec:
 
 Once sent to the cluster, the Crossplane Composition will kick in and create a new `vcluster` with an instance of the Conference Application inside. 
 
-```
+```shell
 kubectl apply -f team-a-dev-env.yaml
 ```
 You should see: 
 
-```
+```shell
 environment.salaboy.com/team-a-dev-env created
 ```
 
 You can always check the state of your Environments by running: 
 
-```
+```shell
 > kubectl get env
 NAME             CONNECT-TO             TYPE          INFRA   DEBUG   SYNCED   READY   CONNECTION-SECRET   AGE
 team-a-dev-env   team-a-dev-env-jp7j4   development   true    true    True     False   team-a-dev-env      1s
@@ -76,7 +76,7 @@ team-a-dev-env   team-a-dev-env-jp7j4   development   true    true    True     F
 
 You can check that Crossplane is creating and managing resources related to the composition by running: 
 
-```
+```shell
 > kubectl get managed
 NAME                            CHART            VERSION          SYNCED   READY   STATE      REVISION   DESCRIPTION        AGE
 team-a-dev-env-jp7j4-8lbtj      conference-app   v1.0.0           True     True    deployed   1          Install complete   57s
@@ -85,7 +85,7 @@ team-a-dev-env-jp7j4-vcluster   vcluster         0.15.0-alpha.0   True     True 
 
 These managed resources are no other than Helm Releases being created:
 
-```
+```shell
 kubectl get releases
 NAME                            CHART            VERSION          SYNCED   READY   STATE      REVISION   DESCRIPTION        AGE
 team-a-dev-env-jp7j4-8lbtj      conference-app   v1.0.0           True     True    deployed   1          Install complete   45s
@@ -94,13 +94,13 @@ team-a-dev-env-jp7j4-vcluster   vcluster         0.15.0-alpha.0   True     True 
 
 
 Then we can connect to the provisioned environment by running (use the CONNECT-TO column for the vcluster name): 
-```
+```shell
 vcluster connect team-a-dev-env-jp7j4 --server https://localhost:8443 -- zsh
 ```
 
 Once you are connected to the `vcluster` you are in a different Kubernetes Cluster, so if you list all the available namespaces you should see: 
 
-```
+```shell
 kubectl get ns
 NAME              STATUS   AGE
 default           Active   64s
@@ -111,7 +111,7 @@ kube-node-lease   Active   64s
 
 As you can see, Crossplane is not installed here. But if you list all the pods in this cluster, you should see all the application pods running: 
 
-```
+```shell
 NAME                                                              READY   STATUS    RESTARTS      AGE
 conference-app-kafka-0                                            1/1     Running   0             103s
 conference-app-postgresql-0                                       1/1     Running   0             103s
@@ -123,7 +123,7 @@ conference-app-notifications-service-deployment-64ff7bcdf8nbvhl   1/1     Runnin
 ```
 
 You can also do port-forwarding to this cluster, to access the application using:
-```
+```shell
 kubectl port-forward svc/frontend 8080:80
 ```
 Now your application is available at [http://localhost:8080](http://localhost:8080)
@@ -142,13 +142,13 @@ Before installing the Admin User Interface you need to make sure that you are no
 
 You can install this Admin User Interface using Helm:
 
-```
+```shell
 helm install admin oci://docker.io/salaboy/conference-admin --version v1.0.0
 ```
 
 Once installed you can port-forward to the Admin UI by running: 
 
-```
+```shell
 kubectl port-forward svc/admin 8081:80
 ```
 
@@ -160,7 +160,7 @@ By using this simple interface, development teams will not need to access the Ku
 
 Besides the User interface, the Platform Admin application offers you a simplified set of REST endpoints where you have full flexibility to define how the resources looks like instead of following the Kubernetes Resource Model. For example, instead of having a Kubernetes Resource with all the metadata needed by the Kubernetes API, we can use the following JSON payload to create a new Environment: 
 
-```
+```json
 {
     "name": "team-curl-dev-env",
     "parameters":{
@@ -175,18 +175,18 @@ Besides the User interface, the Platform Admin application offers you a simplifi
 
 You can create this environment by running:
 
-```
+```shell
 curl -X POST -H "Content-Type: application/json" -d @team-a-dev-env-simple.json http://localhost:8081/api/environments/
 ```
 
 Then list all the environments with: 
-```
+```shell
 curl localhost:8081/api/environments/
 ```
 
 Or delete one environment running: 
 
-```
+```shell
 curl -X DELETE http://localhost:8081/api/environments/team-curl-dev-env
 ```
 
@@ -197,7 +197,7 @@ This application serves as a facade between Kubernetes and the outside world. De
 
 If you want to get rid of the KinD Cluster created for these tutorials, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 
