@@ -1,5 +1,11 @@
 # Environment Pipelines
 
+---
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README.zh-cn.md)
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
 In this short tutorial we will set up our Staging Environment Pipeline using [ArgoCD](https://argo-cd.readthedocs.io/en/stable/). We will configure the environment to contain an instance of the Conference Application.
 
 We will define the configuration of Staging environment using a Git repository. The [`argo-cd/staging` directory](argo-cd/staging/) contains the definition of a Helm chart that can be synced to multiple Kubernetes Clusters. 

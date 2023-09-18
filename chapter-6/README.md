@@ -1,5 +1,13 @@
 # Chpater 6 :: Let's build a Platform on top of Kubernetes
 
+---
+_🌍 Available in_: [English](README.md)
+
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
+
 On this step-by-step tutorial we will create the APIs of our platform by reusing the power of the Kubernetes APIs. The first use case where the platform can assist the development teams is by creating new development environments providing a self-service approach. 
 
 To build this example we will be using Crossplane and `vcluster`, two Open Source projects hosted in the Cloud-Native Computing Foundation. 
