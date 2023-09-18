@@ -8,7 +8,7 @@ This chart doesn't depend on anything to be installed in the target Kubernetes C
 ## Installation 
 
 
-```
+```shell
 helm install conference oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0 -n chapter02
 ```
 
@@ -20,7 +20,7 @@ Chart parameters:
 
 ## Packaging and distributing the chart
 
-```
+```shell
 helm dependency build
 helm package .
 helm push conference-app-v1.0.0.tgz oci://registry-1.docker.io/salaboy/
@@ -28,7 +28,7 @@ helm push conference-app-v1.0.0.tgz oci://registry-1.docker.io/salaboy/
 
 ## Interacting with the application
 
-```
+```shell
 kubectl port-forward svc/frontend -n chapter02 8080:80
 ```
 
