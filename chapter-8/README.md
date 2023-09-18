@@ -1,5 +1,12 @@
 # Chapter 8 :: Enabling Teams to Experiment
 
+---
+_🌍 Available in_: [English](README.md)
+
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
 In these tutorials you will install Knative Serving and Argo Rollouts on a Kubernetes cluster to implement Canary Releases, A/B testing and Blue/Green Deployments. The release strategies discussed here aim to enable teams to have more control when releasing new versions of their services. By applying different techniques when releasing software, teams can experiment and test their new versions in a controlled setup, without pushing all the live traffic to a new version at a single point in time. 
 
 - [Release Strategies using Knative Serving](knative/README.md)
