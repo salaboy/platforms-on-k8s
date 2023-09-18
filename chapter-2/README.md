@@ -1,16 +1,17 @@
 # Chapter 2 :: Cloud-Native Application Challenges
 
-In this tutorial, we install the `Conference Application` into a local KinD Kubernetes Cluster, using Helm. 
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README.zh-cn.md) 
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+In this short tutorial, we will be installing the `Conference Application` using Helm into a local KinD Kubernetes Cluster. 
 
 > [!NOTE]
 > Helm Charts can be published to Helm Chart repositories or also, since Helm 3.7, as OCI containers to container registries. 
 
-Check the pre-requisites for all the tutorials [here](../chapter-1/README.md#pre-requisites-for-the-other-chapters)
-
-Thanks to the fantastic cloud-native community, you can read these tutorials in the following languages:
-- [Chinese `zh-cn`](README.zh-cn.md) :cn:
-
 ## Creating a local cluster with Kubernetes KinD
+
+> [!Important]
+> Make sure you have the pre-requisites for all the tutorials. You can find them [here](../chapter-1/README.md#pre-requisites-for-the-tutorials).
 
 Use the command below to create a KinD Cluster with three worker nodes and 1 Control Plane.
 

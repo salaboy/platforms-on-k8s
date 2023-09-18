@@ -37,13 +37,13 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 ## To generate a static distribution
 
 First make sure that  `next.config.js` has: 
-```
+```js
 output: 'export', 
 ```
 
 Run
 
-```
+```shell
 npm run build
 ```
 

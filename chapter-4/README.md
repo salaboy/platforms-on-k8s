@@ -1,5 +1,11 @@
 # Environment Pipelines
 
+---
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README.zh-cn.md)
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
 In this short tutorial we will set up our Staging Environment Pipeline using [ArgoCD](https://argo-cd.readthedocs.io/en/stable/). We will configure the environment to contain an instance of the Conference Application.
 
 We will define the configuration of Staging environment using a Git repository. The [`argo-cd/staging` directory](argo-cd/staging/) contains the definition of a Helm chart that can be synced to multiple Kubernetes Clusters. 
@@ -15,14 +21,14 @@ We will define the configuration of Staging environment using a Git repository. 
 
 Once you have the cluster up and running with the nginx-ingress controller, let's install Argo CD in the cluster: 
 
-```
+```shell
 kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
 You should see something like this: 
 
-```
+```shell
 > kubectl create namespace argocd
 kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 namespace/argocd created
@@ -86,7 +92,7 @@ networkpolicy.networking.k8s.io/argocd-server-network-policy created
 
 You can access the ArgoCD User Interface by using port-forward, in a **new terminal** run:
 
-```
+```shell
 kubectl port-forward svc/argocd-server -n argocd 8080:443
 ```
 
@@ -106,7 +112,7 @@ That should take you to the Login Page:
 
 The user is `admin`, and to get the password for the ArgoCD Dashboard by running: 
 
-```
+```shell
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
 ```
 
@@ -123,13 +129,13 @@ For this tutorial we will use a single namespace to represent our Staging Enviro
 
 First let's create a namespace for our Staging Environment:
 
-```
+```shell
 kubectl create ns staging
 ```
 
 You should see something like this: 
 
-```
+```shell
 > kubectl create ns staging
 namespace/staging created
 ```
@@ -168,7 +174,7 @@ You can expand the app by clicking on it to see the full view of all the resourc
 
 If you are running in a local environment, you can always access the application using `port-forward`, in a **new terminal** run:
 
-```
+```shell
 kubectl port-forward svc/frontend -n staging 8081:80
 ```
 
@@ -179,13 +185,13 @@ Wait for the applicatons pod to be up and running and then you can access the ap
 
 As usual, you can monitor the status of the pods and services using `kubectl`. To check if the application pods are ready you can run: 
 
-```
+```shell
 kubectl get pods -n staging
 ```
 
 You should see something like this: 
 
-```
+```shell
 > kubectl get pods -n staging
 NAME                                                              READY   STATUS    RESTARTS        AGE
 stating-environment-agenda-service-deployment-6c9cbb9695-xj99z    1/1     Running   5 (6m ago)      8m4s
@@ -215,7 +221,7 @@ Go ahead and edit the Application Details / Parameters and select `values-debug-
 
 Because we were using port-forwarding, you might need to run this command again: 
 
-```
+```shell
 kubectl port-forward svc/frontend -n staging 8081:80
 ```
 
@@ -229,7 +235,7 @@ Once the frontend is up and running you should see the Debug tab in the Back Off
 
 If you want to get rid of the KinD Cluster created for this tutorial, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 

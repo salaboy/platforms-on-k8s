@@ -18,18 +18,18 @@ Then we will install Knative Eventing, this is optional, as we will use Knative 
 
 
 1. Install [Knative Eventing](https://knative.dev/docs/install/yaml-install/eventing/install-eventing-with-yaml/)
-```
+```shell
 kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.11.0/eventing-crds.yaml
 kubectl apply -f https://github.com/knative/eventing/releases/download/knative-v1.11.0/eventing-core.yaml
 ```
 
 1. Create your "dora-cloudevents" namespace: 
-```
+```shell
 kubectl create ns dora-cloudevents
 ```
 
 1. Install PostgreSQL and Create Tables
-```
+```shell
 kubectl apply -f resources/dora-sql-init.yaml
 helm install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql --version 12.5.7 --namespace dora-cloudevents --set "image.debug=true" --set "primary.initdb.user=postgres" --set "primary.initdb.password=postgres" --set "primary.initdb.scriptsConfigMap=dora-init-sql" --set "global.postgresql.auth.postgresPassword=postgres" --set "primary.persistence.size=1Gi"
 ```
@@ -37,12 +37,12 @@ helm install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql --ve
 
 1. Install Sockeye, a simple CloudEvents monitor, it requires Knative Serving to be installed: 
 
-```
+```shell
 kubectl apply -f https://github.com/n3wscott/sockeye/releases/download/v0.7.0/release.yaml
 ```
 
 1. Install the [Kubernetes API Server CloudEvent Event Source](https://knative.dev/docs/eventing/sources/apiserversource/getting-started/#create-an-apiserversource-object): 
-```
+```shell
 kubectl apply -f api-serversource-deployments.yaml
 ```
 
@@ -72,7 +72,7 @@ This demo deploys the following components to transform CloudEvents into CDEvent
 
 First deploy the components and transformation functions by running: 
 
-```
+```shell
 kubectl apply -f resources/components.yaml
 ```
 
@@ -81,7 +81,7 @@ Open Sockeye to monitor CloudEvents by pointing your browser to [http://sockeye.
 
 Then, create a new Deployment in the `default` namespace to test that your configuration is working.
 
-```
+```shell
 kubectl apply -f test/example-deployment.yaml
 ```
 
@@ -91,12 +91,12 @@ At this point you should see tons of events in Sockeye:
 
 If the Deployment Frequency functions (transformation and calculation) are installed you should be able to query the deployment frequency endpoint and see the metric. Notice that this can take up to a couple of minutes, as Cron jobs are being used to aggregate the data periodically:  
 
-```
+```shell
 curl http://dora-frequency-endpoint.dora-cloudevents.127.0.0.1.sslip.io/deploy-frequency/day | jq
 ```
 And see something like this, depending on which deployments you created (I've created two deployments: `nginx-deployment` and `nginx-deployment-3`): 
 
-```
+```shell
 [
   {
     "DeployName": "nginx-deployment",
@@ -117,19 +117,19 @@ Try modifying the deployments or creating new ones, the components are configure
 Notice that all the components were installed in the `dora-cloudevents` namespace. You check the pods and the URL for the Knative Services by running the following commands: 
 
 Check the URL for the Knative Services in the `dora-cloudevents` namespace:
-```
+```shell
 kubectl get ksvc -n dora-cloudevents
 ```
 
 Check which pods are running, I find this interesting as because we are using Knative Serving, all transformation functions that are not being used doesn't need to be running all the time: 
 
-```
+```shell
 kubectl get pods -n dora-cloudevents
 ```
 
 Finally you can check all the CronJob executions that aggregates data by running: 
 
-```
+```shell
 kubectl get cronjobs -n dora-cloudevents
 ```
 
@@ -138,7 +138,7 @@ kubectl get cronjobs -n dora-cloudevents
 
 Deploy the `dora-cloudevents` components using `ko` for development:
 
-```
+```shell
 ko apply -f config/
 ```
 
@@ -169,7 +169,7 @@ Calculate buckets: Daily, Weekly, Monthly, Yearly.
 
 This counts the number of deployments per day: 
 
-```
+```sql
 SELECT
 distinct deploy_name AS NAME,
 DATE_TRUNC('day', time_created) AS day,
