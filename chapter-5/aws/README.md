@@ -9,8 +9,7 @@ To install Crossplane you need to have a Kubernetes Cluster, you can create one 
 
 Let's install [Crossplane](https://crossplane.io) into its own namespace using Helm: 
 
-```
-
+```shell
 helm repo add crossplane-stable https://charts.crossplane.io/stable
 helm repo update
 
@@ -19,19 +18,19 @@ helm install crossplane --namespace crossplane-system --create-namespace crosspl
 
 Install the `kubectl crossplane` plugin: 
 
-```
+```shell
 curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | sh
 sudo mv kubectl-crossplane /usr/local/bin
 ```
 
 Then install the Crossplane AWS provider: 
-```
+```shell
 kubectl crossplane install provider crossplane/provider-aws:v0.21.2
 ```
 
 After a few seconds, if you check the configured providers, you should see the Helm `INSTALLED` and `HEALTHY`: 
 
-```
+```shell
 > kubectl get providers.pkg.crossplane.io
 NAME                             INSTALLED   HEALTHY   PACKAGE                               AGE
 crossplane-provider-aws         True        True      crossplane/provider-aws:v0.21.2       49s
@@ -43,7 +42,7 @@ Now we are ready to install our Databases and Message Brokers Crossplane composi
 
 We need to install our Crossplane Compositions for our Key-Value Database (Redis), our SQL Database (PostgreSQL) and our Message Broker(Kafka). 
 
-```
+```shell
 kubectl apply -f resources/
 ```
 
@@ -53,7 +52,7 @@ Check the [resources/](resources/) directory for the Compositions and the Compos
 
 Create a text file containing the AWS account aws_access_key_id and aws_secret_access_key.
 
-```
+```text
 [default]
 aws_access_key_id = 
 aws_secret_access_key = 
@@ -61,7 +60,7 @@ aws_secret_access_key =
 
 Create a Kubernetes secret with the AWS credentials 
 
-```
+```shell
 kubectl create secret \
 generic aws-secret \
 -n crossplane-system \
@@ -70,7 +69,7 @@ generic aws-secret \
 
 Create a ProviderConfig 
 
-```
+```shell
 cat <<EOF | kubectl apply -f -
 apiVersion: aws.upbound.io/v1beta1
 kind: ProviderConfig
@@ -90,7 +89,7 @@ EOF
 
 We can provision a new Key-Value Database for our team to use by executing the following commands to create all the infrastructure necessary: 
 
-```
+```shell
 kubectl apply -f my-db-keyvalue.yaml
 kubectl apply -f my-db-sql.yaml
 kubectl apply -f aws-messagebroker-kafka.yaml
@@ -102,14 +101,14 @@ Ok, now that we have our two databases and our message broker running, we need t
 
 For that, we will use the `app-values.yaml` file containing the configurations for the services to connect to our newly created databases:
 
-```
+```shell
 helm install conference oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0 -f app-values.yaml
 ```
 
 Make sure to fill in the commented out aspects of the yaml file based off values from newly created AWS infrastructure.
 
 The `app-values.yaml` content looks like this: 
-```
+```shell
 install:
   infrastructure: false
 frontend:

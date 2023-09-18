@@ -11,7 +11,7 @@ export default function Select({label, id, name, value, children}) {
         <div className={styles.select}>
             <label>{label}</label>
             <div className={styles.selectContainer}>
-            <select name={name}>
+            <select name={name} id={id}>
                 {children}
             </select>
             </div>

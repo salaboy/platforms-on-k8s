@@ -1,0 +1,9 @@
+{
+  "request": {
+    "urlPath": "/agenda-items",
+    "method": "POST"
+  },
+  "response": {
+    "status": 200
+  }
+}

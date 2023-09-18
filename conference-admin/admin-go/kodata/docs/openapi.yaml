@@ -1,0 +1,102 @@
+openapi: 3.0.3
+info:
+  title: Admin GO
+  description: Admin GO
+  version: 1.0.0
+  contact:
+    email: salaboy@salaboy.com
+    name: Mauricio Salatino
+    url: https://salaboy.com
+servers:
+  - url: http://localhost:8080
+paths:
+  /environments:
+    get:
+      summary: List all environments
+      operationId: listEnvironments
+      tags:
+        - environments
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Environment'
+    post:
+      summary: Create a new environment
+      operationId: createEnvironment
+      tags:
+        - environments
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Environment'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+  /environments/{id}:
+    delete:
+      summary: Delete an environment
+      operationId: deleteEnvironment
+      tags:
+        - environments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Environment ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Environment'
+  /service/info:
+    get:
+      summary: Get Service Info
+      operationId: getServiceInfo
+      tags:
+        - service
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceInfo'
+
+components:
+  schemas:
+    Environment:
+      type: object
+    ServiceInfo:
+      properties:
+        name:
+          type: string
+          description: Service Name
+        version:
+          type: string
+          description: Service Version
+        source:
+          type: string
+          description: Service Source
+        podId:
+          type: string
+          description: Service Pod ID
+        podNamespace:
+          type: string
+          description: Service Pod Namespace
+        podNodeName:
+          type: string
+          description: Service Pod Node Name

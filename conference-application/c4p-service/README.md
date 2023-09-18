@@ -15,11 +15,11 @@
 
 ## Build & Run from source
 
-```
+```shell
 docker-compose up 
 ```
 
-```
+```shell
 go run c4p-service.go
 ```
 ## Create Container

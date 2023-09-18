@@ -148,7 +148,7 @@ func isKafkaAlive(kafkaURL string, topic string) bool {
 	}
 
 	for _, b := range brokers {
-		log.Printf("Available Broker: %s", b)
+		log.Printf("Available Broker: %v", b)
 	}
 	if len(brokers) > 0 {
 		return true

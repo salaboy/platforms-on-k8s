@@ -11,7 +11,7 @@ Then we can install the Keptn Lifecycle Toolkit (KLT). This can be usually done 
 
 Run: 
 
-```
+```shell
 make install
 ```
 
@@ -19,7 +19,7 @@ make install
 
 Finally, we need to let KLT know which namespace we want to monitor, and for that we need to annotate the namespaces:
 
-```
+```shell
 kubectl annotate ns default keptn.sh/lifecycle-toolkit="enabled"
 ```
 
@@ -28,7 +28,7 @@ kubectl annotate ns default keptn.sh/lifecycle-toolkit="enabled"
 Keptn uses standard Kubernetes annotation to recognized and monitor our workloads. 
 The Kubernetes Deployments used by the Conference Application are annotated with the following annotations, for example the Agenda Service: 
 
-```
+```shell
         app.kubernetes.io/name: agenda-service
         app.kubernetes.io/part-of: agenda-service
         app.kubernetes.io/version: {{ .Values.services.tag  }}
@@ -38,7 +38,7 @@ These annotations allow tools to understand a bit more about our workloads, for 
 
 On this example we will be also using a KeptnTask, that enable us to perform pre and post deployment tasks. You can deploy the following extremely simple example `KeptnTaskDefinition`:
 
-```
+```yaml
 apiVersion: lifecycle.keptn.sh/v1alpha3
 kind: KeptnTaskDefinition
 metadata:
@@ -57,19 +57,19 @@ As you can see this task is only printing the context from its execution, but he
 
 By running: 
 
-```
+```shell
 kubectl apply -f keptntask.yaml
 ```
 
 KeptnTaskDefinitions allow Platform Teams to create reusable tasks that can be hooked into Pre/Post deployment hooks of our applications. By adding the following annotation to our workloads (deployments in this case), Keptn will execute the `stdout-notification` automatically, in this case after performing the deployment (and after any update): 
 
-```
+```shell
   keptn.sh/post-deployment-tasks: stdout-notification
 ``` 
 
 Let's deploy the Conference application, and lets open Jaeger and Grafana Dashboards. In separate tabs run: 
 
-```
+```shell
 make port-forward-jaeger
 ```
 
@@ -80,7 +80,7 @@ You can point your browser to [http://localhost:16686/](http://localhost:16686/)
 
 and then in a separate terminal: 
 
-```
+```shell
 make port-forward-grafana
 ```
 
@@ -91,7 +91,7 @@ You can point your browser to [http://localhost:3000/](http://localhost:3000/). 
 
 Let's now deploy the Conference Application as we did in Chapter 2: 
 
-```
+```shell
 helm install conference oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0
 ```
 
@@ -101,7 +101,7 @@ In Grafana go to `Dashboards` -> `Keptn Applications`.  You will see a drop down
 
 For example, edit the notifications-service deployment and update the `app.kubernetes.io/version` annotation to have the value `v1.1.0` and update the tag used for the container image to be `v1.1.0`
 
-```
+```shell
 kubectl edit deploy conference-notifications-service-deployment
 ```
 
@@ -116,7 +116,7 @@ If you look at the traces in Jaeger, you will see that the `lifecycle-operator` 
 
 These tasks are executed as Kubernetes Jobs in the same namespace where the workloads are running. You can take a look at the logs from this tasks by tailing the jobs pod's logs. 
 
-```
+```shell
 kubectl get jobs
 NAME                                   COMPLETIONS   DURATION   AGE
 post-stdout-notification-25899-78387   1/1           3s         66m
@@ -129,7 +129,7 @@ post-stdout-notification-93609-30317   1/1           3s         23m
 
 The Job with id `post-stdout-notification-93609-30317` was executed after I've performed the update on the Notification Service deployment. 
 
-```
+```shell
 > kubectl logs -f post-stdout-notification-93609-30317-vvwp4
 Keptn Task Executed with context: 
 

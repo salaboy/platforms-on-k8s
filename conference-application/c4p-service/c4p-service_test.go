@@ -6,24 +6,19 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
 	tc "github.com/testcontainers/testcontainers-go/modules/compose"
 	"github.com/testcontainers/testcontainers-go/wait"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
 var disableTC = flag.Bool("disableTC", false, "disable testcontainers")
 
 func Test_API(t *testing.T) {
 
-	t.Setenv("AGENDA_SERVICE_URL", "http://localhost:8081")
-	t.Setenv("NOTIFICATIONS_SERVICE_URL", "http://localhost:8082")
-
 	if !*disableTC {
-		// testcontainers
 		compose, err := tc.NewDockerCompose("docker-compose.yaml")
 		assert.NoError(t, err, "NewDockerComposeAPI()")
 
@@ -37,16 +32,17 @@ func Test_API(t *testing.T) {
 		err = compose.
 			WaitForService("kafka", wait.ForListeningPort("9094")).
 			WaitForService("postgresql", wait.ForListeningPort("5432")).
-			WaitForService("redis", wait.ForListeningPort("6379")).
-			WaitForService("agenda-service", wait.ForListeningPort("8081")).
-			WaitForService("notifications-service", wait.ForListeningPort("8082")).
+			WaitForService("wiremock", wait.ForListeningPort("8080")).
 			WaitForService("init-kafka", wait.ForLog("Successfully created the following topic: events-topic")).
 			Up(ctx, tc.Wait(true))
 
 		assert.NoError(t, err, "compose.Up()")
 	}
 
-	chi := NewChiServer()
+	chi := NewChiServer(&Config{
+		AgendaServiceUrl:        "http://localhost:3001",
+		NotificationsServiceUrl: "http://localhost:3001",
+	})
 
 	ts := httptest.NewServer(chi)
 	defer ts.Close()
@@ -75,7 +71,7 @@ func Test_API(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a GET request is made to '/proposals/'", func(t *testing.T) {
+	t.Run("It should return 200 when a GET request is made to '/proposals/{proposalId}'", func(t *testing.T) {
 		// arrange
 		newProposal := Proposal{
 			Title:       "How to build a cloud native application",
