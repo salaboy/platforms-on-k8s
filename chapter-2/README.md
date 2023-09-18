@@ -11,8 +11,11 @@ Helm Charts can be published to Helm Chart repositories or also, since Helm 3.7 
 
 Check the pre-requisites for all the tutorials [here](../chapter-1/README.md#pre-requisites-for-the-other-chapters)
 
-
 ## Creating a local cluster with Kubernetes KinD
+
+> [!Important]
+> Make sure you have the pre-requisites for all the tutorials. You can find them [here](../chapter-1/README.md#pre-requisites-for-the-tutorials).
+
 
 Create a KinD Cluster with three worker nodes and 1 Control Plane.
 
