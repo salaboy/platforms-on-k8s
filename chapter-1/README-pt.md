@@ -1,48 +1,41 @@
 # Capítulo 1 :: (A ascensão das) Plataformas Baseadas em Kubernetes
 
-Graças à fantástica comunidade cloud-native, você tem acesso a estes tutoriais nas seguintes línguas:
-- [中国人 (Chinese) ](README.zh-cn.md)
-- [Inglês (English)](README.md)
-- [Português (Portuguese) ](README-pt.md) 
+---
+_🌍 Disponível em_: [English](README.md) | [中文 (Chinese)](README-zh.md) | [Português (Portuguese)](README-pt.md)
 
-## Cenário: Aplicação de Conferência
+> **Nota:** Trago a você pela fantástica comunidade cloud-native e seus [ 🌟 contribuidores](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+---
 
-A aplicação que modificaremos e usaremos ao longo dos capítulos do livro representa um "esqueleto em funcionamento", o que significa que é complexa o suficiente para nos permitir testar suposições, ferramentas e frameworks. No entanto, não é o produto final que nossos clientes usarão.
+## Cenário da Conference Application
 
-O "esqueleto em funcionamento" da Aplicação de Conferência implementa um caso de uso bem simples, permitindo que potenciais palestrantes submetam propostas que os organizadores da conferência avaliarão.
+A aplicação que vamos modificar e utilizar ao longo dos capítulos do livro é um simples "esqueleto funcional", o que significa que ela é complexa o suficiente para nos permitir testar suposições, ferramentas e frameworks. No entanto, ela não é o produto final que nossos clientes usarão.
+
+A "Conference Application" representa um caso de uso bem simples, e permite que potenciais _palestrantes_ enviem propostas que os _organizadores_ da conferência avaliarão. Veja abaixo a página inicial da aplicação:
 
 ![home](imgs/homepage.png)
 
-O fluxo é simples. Palestrantes em potencial podem enviar uma nova proposta indo à area de **Call for Papers** da aplicação.
+Veja como a aplicação é comumente usada:
 
-![proposals](imgs/proposals.png)
+1. **C4P:** Potenciais _palestrantes_ podem enviar uma nova proposta indo à seção **Chamada para Propostas** (C4P) da aplicação.
+   ![proposals](imgs/proposals.png)
+2. **Revisão & Aprovação**: Uma vez que uma proposta é enviada, os _organizadores_ da conferência podem revisar (aprovar ou rejeitar) usando a seção **Backoffice** da aplicação.
+   ![backoffice](imgs/backoffice.png)
+3. **Anúncio**: Se aceita pelos _organizadores_, a proposta é automaticamente publicada na página **Agenda** da conferência.
+   ![agenda](imgs/agenda.png)
+4. **Notificação do Palestrante**: No **Backoffice**, um _palestrante_ pode verificar a aba **Notifications**. Lá, potenciais _palestrantes_ podem encontrar todas as notificações (e-mails) enviadas a eles. Um palestrante verá e-mails de aprovação e rejeição nesta aba.
+   ![notifications](imgs/notifications-backoffice.png)
 
-Uma vez submetida, os organizadores da conferência podem revisar (aprovar ou rejeitar) as propostas submetidas na área de **Backoffice** da aplicação.
+### Uma aplicação orientada a eventos
 
-![backoffice](imgs/backoffice.png)
+**Cada ação na aplicação resulta em novos eventos sendo emitidos.** Por exemplo, é esperado que eventos sejam emitidos quando:
+-  uma nova proposta é enviada;
+-  a proposta é aceita ou rejeitada;
+-  notificações são enviadas.
 
-Se aceita, a proposta é automaticamente publicada na página de **Agenda** da conferência.
-
-![agenda](imgs/agenda.png)
-
-No **Backoffice**, você pode verificar a aba **Notificações** que mostra todas as notificações (e-mails) enviadas aos potenciais palestrantes. Você verá e-mails de aprovação e rejeição nesta aba.
-
-![notifications](imgs/notifications-backoffice.png)
-
-Cada ação na aplicação emite eventos. Portanto, quando uma nova proposta é submetida, quando a proposta é aceita ou rejeitada, e quando notificações são enviadas, eventos são enviados e capturados pela interface do usuário da aplicação. Você pode verificar esses eventos na aba **Eventos** na seção **Backoffice**.
+Esses eventos são enviados e depois capturados por uma aplicação frontend. Felizmente, você, o leitor, pode ver esses detalhes na aplicação acessando a aba **Events** na seção **Backoffice**.
 
 ![events](imgs/events-backoffice.png)
 
-## Pré-requisitos para os outros capítulos
-
-As seguintes ferramentas são necessárias para os tutoriais passo a passo vinculados no livro.
-
-- [Docker](https://docs.docker.com/engine/install/)
-  > Uma vez que não há nada nos tutoriais que seja exclusivo da tecnologia Docker, você pode considerar também o [Podman](https://podman.io/). No entanto, tenha em mente que não foram efetuados testes destes projetos com a utilização desta tecnologia.
-- [kubectl](https://kubernetes.io/docs/tasks/tools/)
-- [KinD](https://kind.sigs.k8s.io/docs/user/quick-start/)
-- [Helm](https://helm.sh/docs/intro/install/)
-
 ## Resumo e Contribuição
 
-Quer melhorar este tutorial? Abre uma issue, envie uma mensagem via [Twitter](https://twitter.com/salaboy) ou submeta um Pull Request.
+Quer melhorar este tutorial? Abra uma [issue](https://github.com/salaboy/platforms-on-k8s/issues/new), mande-me uma mensagem no [Twitter](https://twitter.com/salaboy), ou envie um [Pull Request](https://github.com/salaboy/platforms-on-k8s/compare).
