@@ -92,6 +92,11 @@ type ServiceInfo struct {
 	PodServiceAccount string `json:"podServiceAccount"`
 }
 
+type Config struct {
+	AgendaServiceUrl        string
+	NotificationsServiceUrl string
+}
+
 var (
 	Version            = getEnv("VERSION", "1.0.0")
 	Source             = getEnv("SOURCE", "https://github.com/salaboy/platforms-on-k8s/tree/main/conference-application/c4p-service")
@@ -108,6 +113,9 @@ var (
 	KafkaUrl   = getEnv("KAFKA_URL", "localhost:9094")
 	KafkaTopic = getEnv("KAFKA_TOPIC", "events-topic")
 	AppPort    = getEnv("APP_PORT", "8080")
+
+	AgendaServiceUrl        = getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
+	NotificationsServiceUrl = getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
 )
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -481,7 +489,10 @@ func (s server) GetServiceInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	r := NewChiServer()
+	r := NewChiServer(&Config{
+		AgendaServiceUrl:        AgendaServiceUrl,
+		NotificationsServiceUrl: NotificationsServiceUrl,
+	})
 
 	// Start the server; this is a blocking call
 	err := http.ListenAndServe(":"+AppPort, r)
@@ -491,12 +502,9 @@ func main() {
 }
 
 // NewChiServer creates a new *chi.Mux server.
-func NewChiServer() *chi.Mux {
+func NewChiServer(conf *Config) *chi.Mux {
 	// create new chi router
 	r := chi.NewRouter()
-
-	AgendaServiceUrl := getEnv("AGENDA_SERVICE_URL", "http://agenda-service.default.svc.cluster.local")
-	NotificationsServiceUrl := getEnv("NOTIFICATIONS_SERVICE_URL", "http://notifications-service.default.svc.cluster.local")
 
 	// add logger middleware
 	r.Use(middleware.Logger)
@@ -504,8 +512,8 @@ func NewChiServer() *chi.Mux {
 	log.Printf("Starting C4P Service in Port: %s", AppPort)
 
 	fmt.Println("Environment Variables:")
-	fmt.Println("Agenda Service URL: ", AgendaServiceUrl)
-	fmt.Println("Notifications Service URL: ", NotificationsServiceUrl)
+	fmt.Println("Agenda Service URL: ", conf.AgendaServiceUrl)
+	fmt.Println("Notifications Service URL: ", conf.NotificationsServiceUrl)
 
 	// connect to database
 	db := NewDB()
@@ -521,7 +529,7 @@ func NewChiServer() *chi.Mux {
 	kafkaWriter := NewKafkaWriter(KafkaUrl, KafkaTopic)
 
 	// Create a new server
-	server := NewServer(kafkaWriter, db, AgendaServiceUrl, NotificationsServiceUrl)
+	server := NewServer(kafkaWriter, db, conf.AgendaServiceUrl, conf.NotificationsServiceUrl)
 	OpenAPI(r)
 
 	// mount the API on the server
