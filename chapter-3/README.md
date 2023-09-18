@@ -13,7 +13,7 @@ Thanks to the fantastic cloud-native community, you can read these tutorials in 
 
 If you want to get rid of the KinD Cluster created for these tutorials, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 
