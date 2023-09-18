@@ -12,9 +12,9 @@ Thanks to the fantastic cloud-native community, you can read these tutorials in 
 
 ## Creating a local cluster with Kubernetes KinD
 
-1. Use the command below to create a KinD Cluster with three worker nodes and 1 Control Plane.
+Use the command below to create a KinD Cluster with three worker nodes and 1 Control Plane.
 
-```
+```shell
 cat <<EOF | kind create cluster --name dev --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -55,32 +55,34 @@ Now, let's fetch the required images into our KinD cluster.
 
 In your terminal, access the`chapter-2` directory, and from there, run the script: 
 
-```
+```shell
 ./kind-load.sh
 ```
 
-**Note:** If you are running Docker Desktop on MacOS and have set a smaller size for the virtual disk, you may encounter the following error:
+> [!Note]
+> If you are running Docker Desktop on MacOS and have set a smaller size for the virtual disk, you may encounter the following error:
+>
+> ```shell
+> $ ./kind-load.sh
+> ...
+> Command Output: Error response from daemon: write /var/lib/docker/...
+> /layer.tar: no space left on device
+> ```
+>
+> You can modify the value of the Virtual Disk limit in the ``Settings -> Resources`` menu.
+>   ![MacOS Docker Desktop virtual disk limits](imgs/macos-docker-desktop-virtual-disk-setting.png)
 
-```
-$ ./kind-load.sh
-...
-Command Output: Error response from daemon: write /var/lib/docker/.../layer.tar: no space left on device
-```
-
-You can modify the value of the Virtual Disk limit in the ``Settings -> Resources`` menu.
-
-![MacOS Docker Desktop virtual disk limits](imgs/macos-docker-desktop-virtual-disk-setting.png)
 
 ### Installing NGINX Ingress Controller
 
 We need the NGINX Ingress Controller to route traffic from our laptop to the services running inside the cluster. NGINX Ingress Controller acts as a router that is running inside the cluster but is also exposed to the outside world. 
 
-```
+```shell
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/release-1.8/deploy/static/provider/kind/deploy.yaml
 ```
 
 Check that the pods inside the `ingress-nginx` are started correctly before proceeding: 
-```
+```shell
 > kubectl get pods -n ingress-nginx
 NAME                                        READY   STATUS      RESTARTS   AGE
 ingress-nginx-admission-create-cflcl        0/1     Completed   0          62s
@@ -89,7 +91,7 @@ ingress-nginx-controller-5bb6b499dc-7chfm   0/1     Running     0          62s
 ```
 
 This should allow you to route traffic from `http://localhost` to services inside the cluster. Notice that for KinD to work in this way, we provided extra parameters and labels for the control plane node when we created the cluster:
-```
+```yaml
 nodes:
 - role: control-plane
   kubeadmConfigPatches:
@@ -116,13 +118,13 @@ From Helm 3.7+, we can use OCI images to publish, download, and install Helm Cha
 
 To install the Conference Application, you only need to run the following command:
 
-```
+```shell
 helm install conference oci://docker.io/salaboy/conference-app --version v1.0.0
 ```
 
 You can also run the following command to see the details of the chart: 
 
-```
+```shell
 helm show all oci://docker.io/salaboy/conference-app --version v1.0.0
 ```
 
@@ -135,7 +137,7 @@ Check that all the application pods are up and running.
 
 Eventually, you should see something like this. It can take a few minutes: 
 
-```
+```shell
 kubectl get pods
 NAME                                                           READY   STATUS    RESTARTS      AGE
 conference-agenda-service-deployment-7cc9f58875-k7s2x          1/1     Running   4 (45s ago)   2m2s
@@ -163,13 +165,13 @@ These PVCs are the volumes used to store the data from the databases and Kafka. 
 
 You can delete all PVCs by listing them with:
 
-```
+```shell
 kubectl get pvc
 ```
 
 You should see:
 
-```
+```shell
 NAME                                   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-conference-kafka-0                Bound    pvc-2c3ccdbe-a3a5-4ef1-a69a-2b1022818278   8Gi        RWO            standard       8m13s
 data-conference-postgresql-0           Bound    pvc-efd1a785-e363-462d-8447-3e48c768ae33   8Gi        RWO            standard       8m13s
@@ -177,7 +179,7 @@ redis-data-conference-redis-master-0   Bound    pvc-5c2a96b1-b545-426d-b800-b8c7
 ```
 
 And then delete with: 
-```
+```shell
 kubectl delete pvc  data-conference-kafka-0 data-conference-postgresql-0 redis-data-conference-redis-master-0
 ```
 
@@ -185,7 +187,7 @@ The name of the PVCs will change based on the Helm Release name that you used wh
 
 Finally, if you want to get rid of the KinD Cluster entirely, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 
