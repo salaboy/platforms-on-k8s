@@ -13,7 +13,7 @@ Thanks to the fantastic cloud-native community, you can read these tutorials in 
 
 Create a KinD Cluster with three worker nodes and 1 Control Plane.
 
-```
+```shell
 cat <<EOF | kind create cluster --name dev --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -48,7 +48,7 @@ The idea here is to optimize the process for our Cluster, so when we install the
 
 Run the script by copying this command into your terminal from inside the `chapter-2` directory: 
 
-```
+```shell
 ./kind-load.sh
 ```
 
@@ -58,7 +58,7 @@ By running this script, you will fetch all the required images and then load the
 > [!Note]
 > If you are running Docker Desktop on MacOS and have set a smaller size for the virtual disk, you may encounter the following error:
 >
-> ```bash
+> ```shell
 > $ ./kind-load.sh
 > ...
 > Command Output: Error response from daemon: write /var/lib/docker/...
@@ -73,12 +73,12 @@ By running this script, you will fetch all the required images and then load the
 
 We need the NGINX Ingress Controller to route traffic from our laptop to the services running inside the cluster. NGINX Ingress Controller acts as a router that is running inside the cluster but exposed to the outside world. 
 
-```
+```shell
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/release-1.8/deploy/static/provider/kind/deploy.yaml
 ```
 
 Check that the pods inside the `ingress-nginx` are started correctly before proceeding: 
-```
+```shell
 > kubectl get pods -n ingress-nginx
 NAME                                        READY   STATUS      RESTARTS   AGE
 ingress-nginx-admission-create-cflcl        0/1     Completed   0          62s
@@ -87,7 +87,7 @@ ingress-nginx-controller-5bb6b499dc-7chfm   0/1     Running     0          62s
 ```
 
 This allows you to route traffic from `http://localhost` to services inside the cluster. Notice that for KinD to work in this way, when we created the cluster we provided extra parameters and labels for the control plane node:
-```
+```yaml
 nodes:
 - role: control-plane
   kubeadmConfigPatches:
@@ -112,13 +112,13 @@ Once we have our cluster and our Ingress Controller installed and configured, we
 
 From Helm 3.7+, we can use OCI images to publish, download, and install Helm Charts. This approach uses Docker Hub as a Helm Chart registry, and to install the Conference Application, you only need to run the following command:
 
-```
+```shell
 helm install conference oci://docker.io/salaboy/conference-app --version v1.0.0
 ```
 
 You can also run the following command to see the details of the chart: 
 
-```
+```shell
 helm show all oci://docker.io/salaboy/conference-app --version v1.0.0
 ```
 
@@ -126,7 +126,7 @@ Check that all the application pods are up and running. Notice that if your inte
 
 Eventually, you should see something like this, It can take a few minutes: 
 
-```
+```shell
 kubectl get pods
 NAME                                                           READY   STATUS    RESTARTS      AGE
 conference-agenda-service-deployment-7cc9f58875-k7s2x          1/1     Running   4 (45s ago)   2m2s
@@ -151,13 +151,13 @@ Because the Conference Application is installing PostgreSQL, Redis, and Kafka, i
 
 You can delete all PVCs by listing them with:
 
-```
+```shell
 kubectl get pvc
 ```
 
 You should see:
 
-```
+```shell
 NAME                                   STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-conference-kafka-0                Bound    pvc-2c3ccdbe-a3a5-4ef1-a69a-2b1022818278   8Gi        RWO            standard       8m13s
 data-conference-postgresql-0           Bound    pvc-efd1a785-e363-462d-8447-3e48c768ae33   8Gi        RWO            standard       8m13s
@@ -165,7 +165,7 @@ redis-data-conference-redis-master-0   Bound    pvc-5c2a96b1-b545-426d-b800-b8c7
 ```
 
 And then delete with: 
-```
+```shell
 kubectl delete pvc  data-conference-kafka-0 data-conference-postgresql-0 redis-data-conference-redis-master-0
 ```
 
@@ -173,7 +173,7 @@ The name of the PVCs will change based on the Helm Release name that you used wh
 
 Finally, if you want to get rid of the KinD Cluster entirely, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 
