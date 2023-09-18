@@ -1,8 +1,9 @@
 # Chapter 2 :: Cloud-Native Application Challenges
 
-In this short tutorial, we will be installing the `Conference Application` using Helm into a local KinD Kubernetes Cluster. 
+In this tutorial, we install the `Conference Application` into a local KinD Kubernetes Cluster, using Helm. 
 
-Helm Charts can be published to Helm Chart repositories or also, since Helm 3.7 as OCI containers to container registries. 
+> [!NOTE]
+> Helm Charts can be published to Helm Chart repositories or also, since Helm 3.7, as OCI containers to container registries. 
 
 Check the pre-requisites for all the tutorials [here](../chapter-1/README.md#pre-requisites-for-the-other-chapters)
 
@@ -11,7 +12,7 @@ Thanks to the fantastic cloud-native community, you can read these tutorials in 
 
 ## Creating a local cluster with Kubernetes KinD
 
-Create a KinD Cluster with three worker nodes and 1 Control Plane.
+1. Use the command below to create a KinD Cluster with three worker nodes and 1 Control Plane.
 
 ```
 cat <<EOF | kind create cluster --name dev --config=-
@@ -43,16 +44,20 @@ EOF
 
 ### Loading some container images before installing the application and other components
 
-The `kind-load.sh` script prefetch (pulls and load container images) that we will be using for our application to our KinD Cluster. 
-The idea here is to optimize the process for our Cluster, so when we install the application, we don't wait for 10+ minutes to fetch all the container images needed. With all images already pre-loaded into our KinD cluster, the application should start in around 1 minute, as we still need to wait for PostgreSQL, Redis and Kafka to bootstrap. 
+The `kind-load.sh` script prefetches, in other words, pulls and loads container images that we will use for our application to our KinD Cluster. 
 
-Run the script by copying this command into your terminal from inside the `chapter-2` directory: 
+The idea here is to optimize the process for our Cluster, so that when we install the application, we won't have to wait for 10+ minutes while all needed container images are being fetched. With all images already preloaded into our KinD cluster, the application should start in around 1 minute, which is the time needed for PostgreSQL, Redis and Kafka to bootstrap. 
+
+Now, let's fetch the required images into our KinD cluster.
+
+> [!Important]
+> By running the script mentioned in next step, you will fetch all the required images and then load them into every node of your KinD cluster. If you are running the examples on a Cloud Provider, this might not be worth it as Cloud Providers with Gigabyte connections to container registries might fetch these images in a matter of seconds.
+
+In your terminal, access the`chapter-2` directory, and from there, run the script: 
 
 ```
 ./kind-load.sh
 ```
-
-By running this script, you will fetch all the required images and then load them into every node of your KinD cluster. If you are running the examples on a Cloud Provider, this might not be worth it as Cloud Providers with Gigabyte connections to container registries might fetch these images in a matter of seconds.
 
 **Note:** If you are running Docker Desktop on MacOS and have set a smaller size for the virtual disk, you may encounter the following error:
 
@@ -68,7 +73,7 @@ You can modify the value of the Virtual Disk limit in the ``Settings -> Resource
 
 ### Installing NGINX Ingress Controller
 
-We need the NGINX Ingress Controller to route traffic from our laptop to the services running inside the cluster. NGINX Ingress Controller acts as a router that is running inside the cluster but exposed to the outside world. 
+We need the NGINX Ingress Controller to route traffic from our laptop to the services running inside the cluster. NGINX Ingress Controller acts as a router that is running inside the cluster but is also exposed to the outside world. 
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/release-1.8/deploy/static/provider/kind/deploy.yaml
@@ -83,7 +88,7 @@ ingress-nginx-admission-patch-sb64q         0/1     Completed   0          62s
 ingress-nginx-controller-5bb6b499dc-7chfm   0/1     Running     0          62s
 ```
 
-This allows you to route traffic from `http://localhost` to services inside the cluster. Notice that for KinD to work in this way, when we created the cluster we provided extra parameters and labels for the control plane node:
+This should allow you to route traffic from `http://localhost` to services inside the cluster. Notice that for KinD to work in this way, we provided extra parameters and labels for the control plane node when we created the cluster:
 ```
 nodes:
 - role: control-plane
@@ -102,12 +107,14 @@ nodes:
     protocol: TCP
 ```
 
-Once we have our cluster and our Ingress Controller installed and configured, we can move ahead and install our application.
+Once we have our cluster and our Ingress Controller installed and configured, we can move ahead to install our application.
 
 
 ## Installing the Conference Application
 
-From Helm 3.7+, we can use OCI images to publish, download, and install Helm Charts. This approach uses Docker Hub as a Helm Chart registry, and to install the Conference Application, you only need to run the following command:
+From Helm 3.7+, we can use OCI images to publish, download, and install Helm Charts. This approach uses Docker Hub as a Helm Chart registry. 
+
+To install the Conference Application, you only need to run the following command:
 
 ```
 helm install conference oci://docker.io/salaboy/conference-app --version v1.0.0
@@ -119,9 +126,14 @@ You can also run the following command to see the details of the chart:
 helm show all oci://docker.io/salaboy/conference-app --version v1.0.0
 ```
 
-Check that all the application pods are up and running. Notice that if your internet connection is slow, it might take a while for the application to start. Since the application's services depend on some infrastructure components (Redis, Kafka, PostgreSQL), these components need to start and be ready for the services to connect. Components like Kafka are quite heavy, with around 335+ MB, PostgreSQL 88+ MB, and Redis 35+ MB.
+Check that all the application pods are up and running. 
 
-Eventually, you should see something like this, It can take a few minutes: 
+> [!Note]
+> Notice that if your internet connection is slow, it might take a while for the application to start. Since the application's services depend on some infrastructure components (Redis, Kafka, PostgreSQL), these components need to start and be ready for the services to connect. 
+> 
+> Components like Kafka are quite heavy, with around 335+ MB, PostgreSQL 88+ MB, and Redis 35+ MB.
+
+Eventually, you should see something like this. It can take a few minutes: 
 
 ```
 kubectl get pods
@@ -142,9 +154,12 @@ Now you can point your browser to [http://localhost](http://localhost) to see th
 
 ![conference app](imgs/conference-app-homepage.png)
 
-## Clean up - Important !!! READ!!
+------
+## [Important] Clean up - _!!! Must READ!!_
 
-Because the Conference Application is installing PostgreSQL, Redis, and Kafka, if you want to remove and install the application again, you need to make sure to delete the associated PersistenceVolumeClaims (PVCs). These PVCs are the volumes used to store the data from the databases and Kafka. Failing to delete these PVCs in between installations will cause the services to use old credentials to connect to the new provisioned databases. 
+Because the Conference Application is installing PostgreSQL, Redis, and Kafka, if you want to remove and install the application again (which we will do as we move through the guides), you need to make sure to delete the associated PersistenceVolumeClaims (PVCs). 
+
+These PVCs are the volumes used to store the data from the databases and Kafka. Failing to delete these PVCs in between installations will cause the services to use old credentials to connect to the new provisioned databases. 
 
 You can delete all PVCs by listing them with:
 
@@ -174,7 +189,7 @@ Finally, if you want to get rid of the KinD Cluster entirely, you can run:
 kind delete clusters dev
 ```
 
-
+-------
 ## Next Steps
 
 I strongly recommend you get your hands dirty with a real Kubernetes Cluster hosted in a Cloud Provider. You can try most Cloud Providers, as they offer a free trial where you can create Kubernetes Clusters and run all these examples [check this repository for more information](https://github.com/learnk8s/free-kubernetes). 
@@ -183,7 +198,6 @@ If you can create a Cluster in a Cloud provider and get the application up and r
 
 ## Sum up and Contribute
 
-In this short tutorial, we have managed to install the Conference Application walking skeleton. We will be using this application as an example throughout the rest of the chapters. Make sure that this application works for you as it covers the basics of using and interacting with a Kubernetes Cluster. 
+In this short tutorial, we have managed to install the **Conference Application** walking skeleton. We will use this application as an example throughout the rest of the chapters. Make sure that this application works for you as it covers the basics of using and interacting with a Kubernetes Cluster.
 
-
-Do you want to improve this tutorial? Create an [issue](https://github.com/salaboy/platforms-on-k8s/issues), drop me a message on [Twitter](https://twitter.com/salaboy), or send a Pull Request.
+Do you want to improve this tutorial? Create an [issue](https://github.com/salaboy/platforms-on-k8s/issues/new), message me on [Twitter](https://twitter.com/salaboy), or send a [Pull Request](https://github.com/salaboy/platforms-on-k8s/compare).
