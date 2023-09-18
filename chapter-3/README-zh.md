@@ -4,9 +4,9 @@
 
 These short tutorials cover both Tekton and Dagger for Service Pipelines. With Tekton we extend the Kubernetes APIs to define our Pipelines and Tasks. With Dagger we programatically define Pipelines that can be executed remotely in Kubernentes or locally in our development laptops. Finally, a pointer to a set of GitHub Actions is provided to be able to compare between these different approaches.
 
-- [Tekton 流水线教程](tekton/README.zh-cn.md)
-- [Dagger 流水线教程](dagger/README.zh-cn.md)
-- [GitHub Actions](github-actions/README.zh-cn.md)
+- [Tekton 流水线教程](tekton/README-zh.md)
+- [Dagger 流水线教程](dagger/README-zh.md)
+- [GitHub Actions](github-actions/README-zh.md)
 
 ## 清理
 
