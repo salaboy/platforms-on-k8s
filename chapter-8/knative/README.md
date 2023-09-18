@@ -8,7 +8,7 @@ In this tutorial we will create a Kubernetes Cluster and install Knative Serving
 
 You need a Kubernetes Cluster to install [Knative Serving](https://knative.dev). You can create one using Kubernetes KinD, but instead of using the configurations provided in Chapter 2, we will use the following command:
 
-```
+```shell
 cat <<EOF | kind create cluster --name dev --config=-
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
@@ -28,27 +28,27 @@ Once you have a Cluster let's start by installing [Knative Serving](https://knat
 
 Install Knative Serving Custom Resource Definitions:
 
-```
+```shell
 kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.10.2/serving-crds.yaml
 
 ```
 
 Then install the Knative Serving Control Plane: 
-```
+```shell
 kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.10.2/serving-core.yaml
 
 ```
 
 Install a compatible Knative Serving Networking Stack, here you can install Istio, a full-blown service mesh or more simple options like Kourier, that we will use here to limit the resource utilization on your cluster: 
 
-```
+```shell
 kubectl apply -f https://github.com/knative/net-kourier/releases/download/knative-v1.10.0/kourier.yaml
 
 ```
 
 Configure Kourier as the selected networking stack: 
 
-```
+```shell
 kubectl patch configmap/config-network \
   --namespace knative-serving \
   --type merge \
@@ -57,7 +57,7 @@ kubectl patch configmap/config-network \
 
 Finally, configure the DNS resolution for your cluster, so it can expose reachable URLs for our services:
 
-```
+```shell
 kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1.10.2/serving-default-domain.yaml
 
 ```
@@ -66,13 +66,13 @@ kubectl apply -f https://github.com/knative/serving/releases/download/knative-v1
 
 For Knative Magic DNS to work in KinD you need to patch the following ConfigMap:
 
-```
+```shell
 kubectl patch configmap -n knative-serving config-domain -p "{\"data\": {\"127.0.0.1.sslip.io\": \"\"}}"
 ```
 
 and if you installed the `kourier` networking layer you need to create an ingress:
 
-```
+```shell
 cat <<EOF | kubectl apply -f -
 apiVersion: v1
 kind: Service
@@ -96,7 +96,7 @@ EOF
 
 One more step is needed to run the examples covered in the following section and this is to enable `tag-header-based-routing` and access to the [Kubernetes Downward API](https://knative.dev/docs/serving/configuration/feature-flags/#kubernetes-downward-api) to fetch information about the pods running in the cluster. We can tune the Knative Serving installation by patching the config-features ConfigMap (https://knative.dev/docs/serving/configuration/feature-flags/#feature-and-extension-flags):
 
-```
+```shell
 kubectl patch cm config-features -n knative-serving -p '{"data":{"tag-header-based-routing":"Enabled", "kubernetes.podspec-fieldref": "Enabled"}}'
 ```
 
@@ -115,7 +115,7 @@ Knative Services also expose a simplified configuration that resembles Container
 
 Because the Notifications Service uses Kafka for emitting events, we need to install Kafka using Helm:
 
-```
+```shell
 helm install kafka oci://registry-1.docker.io/bitnamicharts/kafka --version 22.1.5 --set "provisioning.topics[0].name=events-topic" --set "provisioning.topics[0].partitions=1" --set "persistence.size=1Gi" 
 ```
 
@@ -123,7 +123,7 @@ Check that Kafka is running before proceeding, as it usually takes a bit of time
 
 If you have a Kubernetes Cluster with Knative Serving installed you can apply the following Knative Service resource to run an instance of our Notifications Service:
 
-```
+```shell
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -141,7 +141,7 @@ spec:
 
 You can apply this resource by running: 
 
-```
+```shell
 kubectl apply -f knative/notifications-service.yaml
 ```
 
@@ -149,7 +149,7 @@ Knative Serving will create an instance of our container and setup all the netwo
 
 You can list all Knative Services running the following command: 
 
-```
+```shell
 > kubectl get ksvc 
 NAME                    URL                                                       LATESTCREATED                 LATESTREADY                   READY   REASON
 notifications-service   http://notifications-service.default.127.0.0.1.sslip.io   notifications-service-00001   notifications-service-00001   True    
@@ -158,13 +158,13 @@ notifications-service   http://notifications-service.default.127.0.0.1.sslip.io 
 
 You can now curl the `service/info` URL of the service to make sure that it is working, we are using [`jq`](https://jqlang.github.io/jq/download/) a popular json utility to pretty-print the output:
 
-```
+```shell
 curl http://notifications-service.default.127.0.0.1.sslip.io/service/info | jq 
 ```
 
 You should see the following output: 
 
-```
+```json
 {
     "name": "NOTIFICATIONS",
     "podIp": "10.244.0.16",
@@ -180,7 +180,7 @@ You should see the following output:
 
 Check that there is a Pod running our container: 
 
-```
+```shell
 > kubectl get pods
 NAME                                                      READY   STATUS    RESTARTS   AGE
 kafka-0                                                   1/1     Running   0          7m54s
@@ -202,30 +202,30 @@ In this section we will look into implementing different release strategies for 
 
 Before installing the other services we need to set up PostgreSQL and Redis, as we already installed Kafka before. Before installing PostgreSQL we need to create a ConfigMap containing the SQL statement create the `Proposals`` Table, so the Helm Chart can reference to the configMap and execute the statement when the database instance is started.
 
-```
+```shell
 kubectl apply -f knative/c4p-sql-init.yaml
 ```
 
-```
+```shell
 helm install postgresql oci://registry-1.docker.io/bitnamicharts/postgresql --version 12.5.7 --set "image.debug=true" --set "primary.initdb.user=postgres" --set "primary.initdb.password=postgres" --set "primary.initdb.scriptsConfigMap=c4p-init-sql" --set "global.postgresql.auth.postgresPassword=postgres" --set "primary.persistence.size=1Gi"
 
 ```
 
 and Redis: 
 
-```
+```shell
 helm install redis oci://registry-1.docker.io/bitnamicharts/redis --version 17.11.3 --set "architecture=standalone" --set "master.persistence.size=1Gi"
 ```
 
 Now we can install all the other services (frontend, c4p-service, and agenda-service) by running: 
 
-```
+```shell
 kubectl apply -f knative/
 ```
 
 Check that all the Knative Services are `READY`
 
-```
+```shell
 > kubectl get ksvc
 NAME                    URL                                                       LATESTCREATED                 LATESTREADY                   READY   REASON
 agenda-service          http://agenda-service.default.127.0.0.1.sslip.io          agenda-service-00001          agenda-service-00001          True    
@@ -238,7 +238,7 @@ notifications-service   http://notifications-service.default.127.0.0.1.sslip.io 
 Access the Conference Application Frontend by pointing your browser to the following URL [http://frontend.default.127.0.0.1.sslip.io](http://frontend.default.127.0.0.1.sslip.io)
 
 At this point the application should work as expected, with a small difference, services like the Agenda Service and the C4P Service will be downscaled when they are not being used. If you list the pods after 90 seconds of inactivity you should see the following: 
-```
+```shell
 > kubectl get pods 
 NAME                                                     READY   STATUS    RESTARTS   AGE
 frontend-00002-deployment-7fdfb7b8c5-cw67t               2/2     Running   0          60s
@@ -261,13 +261,13 @@ Percentage-based traffic-splitting functionalities provided out-of-the-box by Kn
 
 To make sure that the service is still up and running you can run the following command: 
 
-```
+```shell
 curl http://notifications-service.default.127.0.0.1.sslip.io/service/info | jq
 ```
 
 You should see the following output: 
 
-```
+```json
 {
     "name": "NOTIFICATIONS",
     "podIp": "10.244.0.16",
@@ -283,13 +283,13 @@ You should see the following output:
 
 You can edit the Knative Service (ksvc) of the Notification Service and create a new revision by changing the container image that the service is using or changing any other configuration parameter such as environment variables:
 
-```
+```shell
 kubectl edit ksvc notifications-service
 ```
 
 And then change from: 
 
-```
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -307,7 +307,7 @@ spec:
 
 To `v1.1.0`: 
 
-```
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -325,7 +325,7 @@ spec:
 
 Before saving this change, that will create a new revision which we can use to split traffic, we need to add the following values into the traffic section:
 
-```
+```yaml
  traffic:
   - latestRevision: false
     percent: 50
@@ -336,7 +336,7 @@ Before saving this change, that will create a new revision which we can use to s
 
 Now if you start hitting the `service/info` endpoint again you will see that half of the traffic is being routed to version `v1.0.0` of our service and the other half to version `v1.1.0`.
 
-```
+```shell
 > curl http://notifications-service.default.127.0.0.1.sslip.io/service/info | jq
 {
     "name":"NOTIFICATIONS-IMPROVED",
@@ -366,7 +366,7 @@ This mechanism is really useful when you need to test a new version but you are 
 
 You can modify the traffic rules to have a different percentage split, if you feel confident that the newest version is stable enough to receive more traffic. 
 
-```
+```yaml
  traffic:
   - latestRevision: false
     percent: 10
@@ -395,13 +395,13 @@ Make sure to access application Frontend by pointing your browser to [http://fro
 
 Let's now modify the Frontend Knative Service to deploy a new version with the debug feature enabled: 
 
-```
+```shell
 kubectl edit ksvc frontend
 ```
 
 Update the image field to point to `v1.1.0` and add the FEATURE_DEBUG_ENABLED environment variable (remember that we are using the first version of the application that is not using OpenFeature).
 
-```
+```yaml
 spec:
       containerConcurrency: 0
       containers:
@@ -414,7 +414,7 @@ spec:
 
 Before saving the Knative Service, let's change the traffic rules to match the following:
 
-```
+```yaml
 traffic:
   - latestRevision: false
     percent: 100
@@ -444,7 +444,7 @@ Now we can access to the normal Knative Service URL (with no changes) to access 
 
 Tag and Header based routing allow us to implement Blue/Green deployments in the same way, as the `green` service (the one we want to test until it is ready for prime time) can be hidden behind a tag with 0% traffic assigned to it.
 
-```
+```yaml
 traffic:
     - revisionName: <blue-revision-name>
       percent: 100 # All traffic is still being routed to this revision
@@ -455,7 +455,7 @@ traffic:
 
 Whenever we are ready to switch to our `green` service we can change the traffic rules: 
 
-```
+```yaml
 traffic:
     - revisionName: <blue-revision-name>
       percent: 0 
@@ -471,7 +471,7 @@ To recap, by using Knative Services traffic splitting and header/tag based routi
 
 If you want to get rid of the KinD Cluster created for this tutorial, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 

@@ -17,15 +17,15 @@ In these tutorials you will install Knative Serving and Argo Rollouts on a Kuber
 
 If you want to get rid of the KinD Cluster created for this tutorial, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 
 ## Next Steps
 
-- Check the [Knative Functions](https://knative.dev/docs/functions/) project if you are intereted in building a Function-as-a-Service platform, as this initiative is working on tooling to make Function developers life easier.
+- Check the [Knative Functions](https://knative.dev/docs/functions/) project if you are interested in building a Function-as-a-Service platform, as this initiative is working on tooling to make Function developers life easier.
 
-- After tryingout Argo Rollouts, the next step is to create an example end-to-end showing the flow of Argo CD to Argo Rollouts. This requires to create a repository that contains your Rollouts definitions. Check the [FAQ section on the Argo Projects](https://argo-rollouts.readthedocs.io/en/latest/FAQ/) for more details about their integration.
+- After trying out Argo Rollouts, the next step is to create an example end-to-end showing the flow of Argo CD to Argo Rollouts. This requires to create a repository that contains your Rollouts definitions. Check the [FAQ section on the Argo Projects](https://argo-rollouts.readthedocs.io/en/latest/FAQ/) for more details about their integration.
 
 - Experiment with more complex examples using `AnalysisTemplates` and `AnalysisRuns` as this feature helps teams to deploy new versions with more confident. 
 

@@ -19,7 +19,7 @@ You can clone this repository and from the [Confernece Application directory](..
 
 You can run any defined task inside the `service-pipeline.go` file:
 
-```
+```shell
 go mod tidy
 go run service-pipeline.go build <SERVICE DIRECTORY>
 ```
@@ -33,7 +33,7 @@ If you run `go run service-pipeline.go all notifications-service v1.0.0-dagger` 
 
 You can safely run `go run service-pipeline.go build notifications-service` which doesn't require you to set any credentials. You can set up your container registry and username using envorionment variables, for example: 
 
-```
+```shell
 CONTAINER_REGISTRY=<YOUR_REGISTRY> CONTAINER_REGISTRY_USER=<YOUR_USER> go run service-pipeline.go publish notifications-service v1.0.0-dagger
 ```
 This require you to be logged in to the registry where you want to publish your container images to.
@@ -51,18 +51,18 @@ In this short tutorial we will run the pipelines that we were running locally wi
 
 Let's run the Dagger Pipeline Engine inside Kubernetes by creating a Pod with Dagger: 
 
-```
+```shell
 kubectl run dagger --image=registry.dagger.io/engine:v0.3.13 --privileged=true
 ```
 
 Alternatively, you can apply the `chapter-3/dagger/k8s/pod.yaml` manifest using `kubectl apply -f chapter-3/dagger/k8s/pod.yaml`.
 
 Check that the `dagger`` pod is running: 
-```
+```shell
 kubectl get pods 
 ```
 You should see something like this: 
-```
+```shell
 NAME     READY   STATUS    RESTARTS   AGE
 dagger   1/1     Running   0          49s
 ```
@@ -70,30 +70,30 @@ dagger   1/1     Running   0          49s
 **Note**: this is far from ideal because we are not setting any persistence or replication mechanism for Dagger itself, all the caching mechanism are volatile in this case. Check the official documentation for more about this. 
 
 Now to run the projects pipelines against this remote service you only need to export the following environment variable: 
-```
+```shell
 export _EXPERIMENTAL_DAGGER_RUNNER_HOST=kube-pod://<podname>?context=<context>&namespace=<namespace>&container=<container>
 ```
 
 Where `<podname>` is `dagger` (because we created the pod manually), `<context>` is your Kubernetes Cluster context, if you are running against a KinD Cluster this might be `kind-dev`. You can find your current context name by running `kubectl config current-context`. Finally `<namespace>` is the namespace where you run the Dagger Container, and `<container>` is once again `dagger`. For my setup against KinD, this would look like this: 
 
-```
+```shell
 export _EXPERIMENTAL_DAGGER_RUNNER_HOST="kube-pod://dagger?context=kind-dev&namespace=default&container=dagger"
 ```
 
 Notice also that my KinD cluster (named `kind-dev`) didn't had anything related to Pipelines. 
 
 Now if you run in any of the projects: 
-```
+```shell
 go run service-pipeline.go build notifications-service
 ```
 Or to test your service remotly: 
 
-```
+```shell
 go run service-pipeline.go test notifications-service
 ```
 
 In a separate tab you can tail the logs from the Dagger engine by running: 
-```
+```shell
 kubectl logs -f dagger
 ```
 
