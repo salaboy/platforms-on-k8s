@@ -17,7 +17,7 @@ These short tutorials cover both Tekton and Dagger for Service Pipelines. With T
 
 If you want to get rid of the KinD Cluster created for these tutorials, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 

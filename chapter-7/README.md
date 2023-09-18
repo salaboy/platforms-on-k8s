@@ -19,7 +19,7 @@ Because both projects are focused on providing developers new APIs and tools to 
 You need a Kubernetes Cluster to install [Dapr](https://dapr.io) and `flagd` an [OpenFeature](https://openfeature.dev/) Provider. You can create one using Kubernetes KinD as we did in [Chapter 2](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind)
 
 Then you can install Dapr into the cluster by running: 
-```
+```shell
 helm repo add dapr https://dapr.github.io/helm-charts/
 helm repo update
 helm upgrade --install dapr dapr/dapr \
@@ -36,7 +36,7 @@ Once Dapr is installed, we can install our Dapr-Enabled and FeatureFlag-Enabled 
 
 Now you can install v2.0.0 of the application by running: 
 
-```
+```shell
 helm install conference oci://docker.io/salaboy/conference-app --version v2.0.0
 ```
 
@@ -46,7 +46,7 @@ This version of the Helm Chart installs the same application infrastructure as v
 
 In version `v2.0.0`, if you list the Application pods now, you will see that each service (agenda, c4p, frontend and notifications) has a Dapr Sidecar (`daprd`) running alongside the service container (READY 2/2): 
 
-```
+```shell
 > kubectl get pods
 NAME                                                           READY   STATUS    RESTARTS      AGE
 conference-agenda-service-deployment-5dd4bf67b-qkctd           2/2     Running   7 (7s ago)    74s
@@ -69,7 +69,7 @@ The Dapr Sidecar expose the Dapr Commponents APIs to enable the application to i
 
 You can list Dapr Components by running: 
 
-```
+```shell
 > kubectl get components
 NAME                                   AGE
 conference-agenda-service-statestore   30m
@@ -77,7 +77,7 @@ conference-conference-pubsub           30m
 ```
 
 You can describe each component to see its configurations:
-```
+```shell
 > kubectl describe component conference-agenda-service-statestore
 Name:         conference-agenda-service-statestore
 Namespace:    default
@@ -113,7 +113,7 @@ You can see that the Statestore component is connecting to the Redis instance ex
 
 Similarly, the PubSub Dapr Component that is connecting to Kafka: 
 
-```
+```shell
 kubectl describe component conference-conference-pubsub 
 Name:         conference-conference-pubsub
 Namespace:    default
@@ -140,14 +140,14 @@ Events:     <none>
 
 The final piece of the puzzle that allows the Frontend service to receive events that are submitted to the PubSub component is the following Dapr Subscription: 
 
-```
+```shell
 > kubectl get subscription
 NAME                               AGE
 conference-frontend-subscritpion   39m
 ```
 
 You can also describe this resource to see its configurations: 
-```
+```shell
 > kubectl describe subscription conference-frontend-subscritpion
 Name:         conference-frontend-subscritpion
 Namespace:    default
@@ -189,7 +189,7 @@ Finally, because this is all about enabling developers with Application Level AP
 
 When the Agenda Service wants to store or read data from the Dapr Statestore component it can use the Dapr Client to perform these operations, for example [reading values from the Statestore looks like this](https://github.com/salaboy/platforms-on-k8s/blob/v2.0.0/conference-application/agenda-service/agenda-service.go#L136C2-L136C116): 
 
-```
+```golang
 agendaItemsStateItem, err := s.APIClient.GetState(ctx, STATESTORE_NAME, fmt.Sprintf("%s-%s", TENANT_ID, KEY), nil)
 ```
 
@@ -199,7 +199,7 @@ All the application needs to know is the Statestore name (`STATESTORE_NAME`) and
 
 When the application wants to [store state into the Statestore it looks like this](https://github.com/salaboy/platforms-on-k8s/blob/v2.0.0/conference-application/agenda-service/agenda-service.go#L197C2-L199C3):
 
-```
+```golang
 if err := s.APIClient.SaveState(ctx, STATESTORE_NAME, fmt.Sprintf("%s-%s", TENANT_ID, KEY), jsonData, nil); err != nil {
 		...
 }
@@ -207,7 +207,7 @@ if err := s.APIClient.SaveState(ctx, STATESTORE_NAME, fmt.Sprintf("%s-%s", TENAN
 
 Finally, if the application code wants to [publish a new event to the PubSub component](https://github.com/salaboy/platforms-on-k8s/blob/v2.0.0/conference-application/agenda-service/agenda-service.go#L225), it will look like this: 
 
-```
+```golang
 if err := s.APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); err != nil {
 			...
 }
@@ -233,13 +233,13 @@ In the same way as Dapr APIs, the idea here is to have a consistent experience n
 
 You can get the flag configuration json file included in the ConfigMap by running: 
 
-```
+```shell
 kubectl get cm flag-configuration -o go-template='{{index .data "flag-config.json"}}'
 ```
 
 You should see the following output: 
 
-```
+```json
 {
   "flags": {
     "debugEnabled": {
@@ -290,13 +290,13 @@ There are three feature flags defined for this example:
 
 
 You can patch the ConfigMap to turn on the debug feature by following these steps. First fetch the content of the `flag-config.json` file located inside the ConfigMap and store it locally.
-```
+```shell
 kubectl get cm flag-configuration -o go-template='{{index .data "flag-config.json"}}' > flag-config.json
 ```
 
 Modify the content of this file, for example turn on the debug flag: 
 
-```
+```json
 {
   "flags": {
     "debugEnabled": {
@@ -311,7 +311,7 @@ Modify the content of this file, for example turn on the debug flag:
 ```
 Then patch the existing `ConfigMap`: 
 
-```
+```shell
 kubectl create cm flag-configuration --from-file=flag-config.json=flag-config.json --dry-run=client -o yaml | kubectl patch cm flag-configuration --type merge --patch-file /dev/stdin
 ```
 
@@ -343,7 +343,7 @@ In this example, we haven't used more advanved features to evaluate feature flag
 
 If you want to get rid of the KinD Cluster created for this tutorial, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 

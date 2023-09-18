@@ -20,8 +20,7 @@ To install Crossplane you need to have a Kubernetes Cluster, you can create one 
 
 Let's install [Crossplane](https://crossplane.io) into its own namespace using Helm: 
 
-```
-
+```shell
 helm repo add crossplane-stable https://charts.crossplane.io/stable
 helm repo update
 
@@ -30,31 +29,31 @@ helm install crossplane --namespace crossplane-system --create-namespace crosspl
 
 Install the `kubectl crossplane` plugin: 
 
-```
+```shell
 curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | sh
 sudo mv kubectl-crossplane /usr/local/bin
 ```
 
 Then install the Crossplane Helm provider: 
-```
+```shell
 kubectl crossplane install provider crossplane/provider-helm:v0.10.0
 ```
 
 We need the correct `ServiceAccount` to create a new `ClusterRoleBinding` so the Helm Provider can install Charts on our behalf. 
 
-```
+```shell
 SA=$(kubectl -n crossplane-system get sa -o name | grep provider-helm | sed -e 's|serviceaccount\/|crossplane-system:|g')
 kubectl create clusterrolebinding provider-helm-admin-binding --clusterrole cluster-admin --serviceaccount="${SA}"
 ```
 
-```
+```shell
 kubectl apply -f crossplane/helm-provider-config.yaml
 ```
 
 
 After a few seconds, if you check the configured providers, you should see the Helm `INSTALLED` and `HEALTHY`: 
 
-```
+```shell
 > kubectl get providers.pkg.crossplane.io
 NAME                             INSTALLED   HEALTHY   PACKAGE                               AGE
 crossplane-provider-helm         True        True      crossplane/provider-helm:v0.10.0      49s
@@ -67,7 +66,7 @@ Now we are ready to install our Databases and Message Brokers Crossplane composi
 
 We need to install our Crossplane Compositions for our Key-Value Database (Redis), our SQL Database (PostgreSQL) and our Message Broker(Kafka). 
 
-```
+```shell
 kubectl apply -f resources/
 ```
 
@@ -80,13 +79,13 @@ Check the [resources/](resources/) directory for the Compositions and the Compos
 
 We can provision a new Key-Value Database for our team to use by executing the following command: 
 
-```
+```shell
 kubectl apply -f my-db-keyvalue.yaml
 ```
 
 The `my-db-keyvalue.yaml` resource looks like this: 
 
-```
+```yaml
 apiVersion: salaboy.com/v1alpha1
 kind: Database
 metadata:
@@ -105,7 +104,7 @@ Notice that we are using the labels `provider: local`, `type: dev` and `kind: ke
 
 You can check the database status using:
 
-```
+```shell
 > kubectl get dbs
 NAME              SIZE    MOCKDATA   KIND       SYNCED   READY   COMPOSITION                     AGE
 my-db-keyavalue   small   false      keyvalue   True     True    keyvalue.db.local.salaboy.com   97s
@@ -115,13 +114,13 @@ You can check that a new Redis instance was created in the `default` namespace.
 
 You can follow the same steps to provision a PostgreSQL database by running: 
 
-```
+```shell
 kubectl apply -f my-db-sql.yaml
 ```
 
 You should see now two `dbs`
 
-```
+```shell
 > kubectl get dbs
 NAME              SIZE    MOCKDATA   KIND       SYNCED   READY   COMPOSITION                     AGE
 my-db-keyavalue   small   false      keyvalue   True     True    keyvalue.db.local.salaboy.com   2m
@@ -131,7 +130,7 @@ my-db-sql         small   false      sql        True     False   sql.db.local.sa
 
 You can now check that there are two Pods running, one for each database:
 
-```
+```shell
 > kubectl get pods
 NAME                             READY   STATUS    RESTARTS   AGE
 my-db-keyavalue-redis-master-0   1/1     Running   0          3m40s
@@ -140,7 +139,7 @@ my-db-sql-postgresql-0           1/1     Running   0          104s
 
 And there should be 4 Kubernetes Secrets (two for our two helm releases and two containing the credentials to connect to the newly created instances):
 
-```
+```shell
 > kubectl get secret
 NAME                                    TYPE                 DATA   AGE
 my-db-keyavalue-redis                   Opaque               1      2m32s
@@ -151,13 +150,13 @@ sh.helm.release.v1.my-db-sql.v1         helm.sh/release.v1   1      36s
 
 We can do the same to provision a new instance of our Kafka Message Broker: 
 
-```
+```shell
 kubectl apply -f my-messagebroker-kafka.yaml
 ```
 
 And then list with: 
 
-```
+```shell
 > kubectl get mbs
 NAME          SIZE    KIND    SYNCED   READY   COMPOSITION                  AGE
 my-mb-kafka   small   kafka   True     True    kafka.mb.local.salaboy.com   2m51s
@@ -167,7 +166,7 @@ Kafka doesn't require any secret to be created when using its default configurat
 
 You should see three running pods (one for Kafka, one for Redis and one for PostgreSQL).
 
-```
+```shell
 > kubectl get pods
 NAME                             READY   STATUS    RESTARTS   AGE
 my-db-keyavalue-redis-master-0   1/1     Running   0          113s
@@ -185,12 +184,12 @@ Ok, now that we have our two databases and our message broker running, we need t
 
 For that, we will use the `app-values.yaml` file containing the configurations for the services to connect to our newly created databases:
 
-```
+```shell
 helm install conference oci://registry-1.docker.io/salaboy/conference-app --version v1.0.0 -f app-values.yaml
 ```
 
 The `app-values.yaml` content looks like this: 
-```
+```yaml
 install:
   infrastructure: false
 frontend:
@@ -223,7 +222,7 @@ If you made it this far, you can now provision multi-cloud infrastructure by usi
 
 If you want to get rid of the KinD Cluster created for this tutorial, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 

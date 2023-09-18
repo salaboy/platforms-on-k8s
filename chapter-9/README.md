@@ -23,7 +23,7 @@ Platform teams should evaluate tools like the ones presented here, not only to c
 
 If you want to get rid of the KinD Cluster created for this tutorial, you can run:
 
-```
+```shell
 kind delete clusters dev
 ```
 
