@@ -162,7 +162,7 @@ kubectl port-forward svc/admin 8081:80
 
 Now you can create and check your environments using a simple interface. If you wait for the environment to be ready you will get the `vcluster` command to use to connect to the environment.
 
-[imgs/admin-ui.png]
+![imgs/admin-ui.png](imgs/admin-ui.png)
 
 By using this simple interface, development teams will not need to access the Kubernetes APIs from the cluster which has all the platform tools (Crossplane and Argo CD for example) directly.
 
