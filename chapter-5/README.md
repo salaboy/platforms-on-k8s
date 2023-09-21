@@ -7,16 +7,16 @@ _🌍 Available in_: [English](README.md) | [中文 (Chinese)](README.zh.md)
 
 ---
 
-In this step-by-step tutorial, we will be using Crossplane to Provision the Redis, PostgreSQL and Kafka instances for our application services to use. 
+In this step-by-step tutorial, we will use Crossplane to Provision the Redis, PostgreSQL, and Kafka instances for our application services. 
 
-By using Crossplane and Crossplane Compositions, we aim to unify how these components are provisioned, hiding away where these components are for the end users (application teams).
+Using Crossplane and Crossplane Compositions, we aim to unify how these components are provisioned, hiding away where these components are for the end users (application teams).
 
 Application teams should be able to request these resources using a declarative approach as with any other Kubernetes Resource. This enables teams to use Environment Pipelines to configure both the application services and the application infrastructure components needed by the application.
 
 
 ## Installing Crossplane
 
-To install Crossplane you need to have a Kubernetes Cluster, you can create one using KinD as we did for you [Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind). 
+To install Crossplane, you need to have a Kubernetes Cluster; you can create one using KinD as we did for you [Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind). 
 
 Let's install [Crossplane](https://crossplane.io) into its own namespace using Helm: 
 
@@ -59,12 +59,12 @@ NAME                             INSTALLED   HEALTHY   PACKAGE                  
 crossplane-provider-helm         True        True      crossplane/provider-helm:v0.10.0      49s
 ```
 
-Now we are ready to install our Databases and Message Brokers Crossplane compositions to provision all the components our application needs to work.
+Now we are ready to install our Databases and Message Brokers Crossplane compositions to provide all the components our application needs.
 
 
 ## App Infrastructure on demand using Crossplane Compositions
 
-We need to install our Crossplane Compositions for our Key-Value Database (Redis), our SQL Database (PostgreSQL) and our Message Broker(Kafka). 
+We need to install our Crossplane Compositions for our Key-Value Database (Redis), our SQL Database (PostgreSQL), and our Message Broker(Kafka). 
 
 ```shell
 kubectl apply -f resources/
@@ -100,7 +100,7 @@ spec:
     size: small
 ```
 
-Notice that we are using the labels `provider: local`, `type: dev` and `kind: keyvalue`. This allows Crossplane to find the right composition based on the labels. In this case, a local Redis instance was created by the Helm Provider.
+Notice that we are using the labels `provider: local`, `type: dev`, and `kind: keyvalue`. This allows Crossplane to find the right composition based on the labels. In this case, the Helm Provider created a local Redis instance.
 
 You can check the database status using:
 
@@ -137,7 +137,7 @@ my-db-keyavalue-redis-master-0   1/1     Running   0          3m40s
 my-db-sql-postgresql-0           1/1     Running   0          104s
 ```
 
-And there should be 4 Kubernetes Secrets (two for our two helm releases and two containing the credentials to connect to the newly created instances):
+There should be 4 Kubernetes Secrets (two for our two helm releases and two containing the credentials to connect to the newly created instances):
 
 ```shell
 > kubectl get secret
@@ -162,9 +162,9 @@ NAME          SIZE    KIND    SYNCED   READY   COMPOSITION                  AGE
 my-mb-kafka   small   kafka   True     True    kafka.mb.local.salaboy.com   2m51s
 ```
 
-Kafka doesn't require any secret to be created when using its default configuration. 
+Kafka doesn't require creating any secret when using its default configuration. 
 
-You should see three running pods (one for Kafka, one for Redis and one for PostgreSQL).
+You should see three running pods (one for Kafka, one for Redis, and one for PostgreSQL).
 
 ```shell
 > kubectl get pods
@@ -180,7 +180,7 @@ You can now create as many database or message broker instances as your cluster 
 
 ## Let's deploy our Conference Application
 
-Ok, now that we have our two databases and our message broker running, we need to make sure that our application services connect to these instances. The first thing that we need to do is to disable the Helm dependencies defined in the Conference Application chart, so that when the application gets installed don't install the databases and the message broker. We can do this by setting the `install.infrastructure` flag to `false`.
+Ok, now that we have our two databases and our message broker running, we need to make sure that our application services connect to these instances. The first thing that we need to do is to disable the Helm dependencies defined in the Conference Application chart so that when the application gets installed, don't install the databases and the message broker. We can do this by setting the `install.infrastructure` flag to `false`.
 
 For that, we will use the `app-values.yaml` file containing the configurations for the services to connect to our newly created databases:
 
@@ -212,10 +212,10 @@ notifications:
     url: my-mb-kafka.default.svc.cluster.local
 ```
 
-Notice that the `app-values.yaml` file relies on the names that we specified for our databases (`my-db-keyavalue` and `my-db-sql`) and our message brokers (`my-mb-kafka`) in the example files. If you request other databases and message brokers with other names you will need to adapt this file with the new names.
+Notice that the `app-values.yaml` file relies on the names that we specified for our databases (`my-db-keyavalue` and `my-db-sql`) and our message brokers (`my-mb-kafka`) in the example files. If you request other databases and message brokers with different names you will need to adapt this file with the new names.
 
-Once the application pods started you should be access to the application by pointing your browser to [http://localhost](http://localhost). 
-If you made it this far, you can now provision multi-cloud infrastructure by using Crossplane Compositions. Check the [AWS Crossplane Compositions Tutorial](aws/) which was contributed by [@asarenkansah](https://github.com/asarenkansah). By separating the application infrastructure provisiniong from the Application Code you not only enable cross cloud provider portability but also enable teams to connect the application's services with infrastructure that can be managed by the platform team.
+Once the application pods start you should have access to the application by pointing your browser to [http://localhost](http://localhost). 
+If you made it this far, you can now provision multi-cloud infrastructure using Crossplane Compositions. Check the [AWS Crossplane Compositions Tutorial](aws/) which was contributed by [@asarenkansah](https://github.com/asarenkansah). By separating the application infrastructure provision from the application code you not only enable cross-cloud provider portability but also enable teams to connect the application's services with infrastructure that can be managed by the platform team.
 
 
 ## Clean up
@@ -229,15 +229,15 @@ kind delete clusters dev
 
 ## Next Steps
 
-If you have access to a Cloud Provider such as Google Cloud Platform, Microsoft Azure or Amazon AWS, I strongly recommend you checking the Crossplane Providers for these platforms. Installing these providers and provisioning Cloud Resources, instead of using the Crossplane Helm Provider will give you real life experience on how these tools work. 
+If you have access to a Cloud Provider such as Google Cloud Platform, Microsoft Azure, or Amazon AWS, I strongly recommend you check the **Crossplane Providers** for these platforms. Installing these providers and provisioning Cloud Resources, instead of using the Crossplane Helm Provider will give you real-life experience on how these tools work. 
 
-As mentioned in Chapter 5, how would you deal with services that need infrastrucutre components that are not offered as managed services? In the case of Google Cloud Platform, they don't offer a Managed Kafka Service that you can provision. Would you install Kafka using Helm Charts or VMs or would you switch Kafka for a managed service such as Google PubSub? Would you maintain two versions of the same service? 
+As mentioned in Chapter 5, how would you deal with services that need infrastructure components that are not offered as managed services? In the case of Google Cloud Platform, they don't offer a Managed Kafka Service that you can provision. Would you install Kafka using Helm Charts or VMs or would you switch Kafka for a managed service such as Google PubSub? Would you maintain two versions of the same service? 
 
 
 ## Sum up and Contribute
 
 In this tutorial, we have managed to separate the provisioning for the application infrastructure from the application deployment. This enables different teams to request resources on-demand (using Crossplane compositions) and application services that can evolve independently. 
 
-Using Helm Chart dependencies for development purposes and quickly getting a fully functional instance of the application up and running is great. For more sensitive environments you might want to follow an approach like the one shown here, where you have multiple ways to connect your application with the components required by each service. 
+Using Helm Chart dependencies for development purposes and quickly getting a fully functional instance of the application up and running is great. For more sensitive environments, you might want to follow an approach like the one shown here, where you have multiple ways to connect your application with the components required by each service. 
 
-Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.
+Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy), or send a Pull Request.
