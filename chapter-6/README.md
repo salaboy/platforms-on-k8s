@@ -1,31 +1,31 @@
 # Chapter 6 :: Let's build a Platform on top of Kubernetes
 
 ---
-_🌍 Available in_: [English](README.md)
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md)
 
 > **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
 
 ---
 
 
-On this step-by-step tutorial we will create the APIs of our platform by reusing the power of the Kubernetes APIs. The first use case where the platform can assist the development teams is by creating new development environments providing a self-service approach. 
+In this step-by-step tutorial, we will create our platform's APIs by reusing the Kubernetes APIs' power. The first use case where the platform can assist the development teams is by creating new development environments and providing a self-service approach. 
 
-To build this example we will be using Crossplane and `vcluster`, two Open Source projects hosted in the Cloud-Native Computing Foundation. 
+To build this example, we will use Crossplane and `vcluster`, two Open Source projects hosted in the Cloud-Native Computing Foundation. 
 
 ## Installation 
 
-To install Crossplane you need to have a Kubernetes Cluster, you can create one using KinD as we did for you [Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind). 
+To install Crossplane, you need to have a Kubernetes Cluster; you can create one using KinD as we did for you [Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind). 
 
 Then you can install Crossplane and the Crossplane Helm Provider in your cluster as we did in [Chapter 5](https://github.com/salaboy/platforms-on-k8s/tree/main/chapter-5#installing-crossplane)
 
-We will be using [`vcluster`](https://www.vcluster.com/) in this tutorial, but there is no need to install anything in our cluster for vcluster to work. We just need the `vcluster` CLI to connect to our `vcluster`s you can install it by following the instructions on the official site: [https://www.vcluster.com/docs/getting-started/setup](https://www.vcluster.com/docs/getting-started/setup)
+We will use [`vcluster`](https://www.vcluster.com/) in this tutorial, but there is no need to install anything in our cluster for vcluster to work. We need the `vcluster` CLI to connect to our `vcluster`s you can install it by following the instructions on the official site: [https://www.vcluster.com/docs/getting-started/setup](https://www.vcluster.com/docs/getting-started/setup)
 
 
 ## Defining our Environment API
 
-An environment represent a Kubernetes cluster where the Conference Application will be installed for development purposes. The idea is to provide teams with self-service environments for them to do their work. 
+An environment represents a Kubernetes cluster where the Conference Application will be installed for development. The idea is to provide teams with self-service environments for them to do their work. 
 
-For this tutorial we will define a Environment API and a Crossplane Composition that uses the Helm Provider to create a new instance of `vcluster`. 
+For this tutorial, we will define an Environment API and a Crossplane Composition that uses the Helm Provider to create a new instance of `vcluster`. 
 
 Check the Crossplane Composite Resource Definition (XRD) for our [Environments here](resources/env-resource-definition.yaml) and the Crossplane [Composition here](resources/composition-devenv.yaml). This resource configures the provisioning of a new `vcluster` using the Crossplane Helm Provider, [check this configuration here](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-6/resources/composition-devenv.yaml#L24). When a new `vcluster` is created then the composition install our Conference Application into it, once again using the Crossplane Helm Provider, but this time configured [pointing to the just created `vcluster` APIs](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-6/resources/composition-devenv.yaml#L87), you can [check this here](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-6/resources/composition-devenv.yaml#L117).
 
@@ -46,7 +46,7 @@ With the Environment resource and the Crossplane Composition using `vcluster` ou
 
 ## Requesting a new Environment
 
-To request a new Environment teams can create new environment resources like this one: 
+To request a new Environment, teams can create new environment resources like this one: 
 
 ```yaml
 apiVersion: salaboy.com/v1alpha1
@@ -106,7 +106,7 @@ Then we can connect to the provisioned environment by running (use the CONNECT-T
 vcluster connect team-a-dev-env-jp7j4 --server https://localhost:8443 -- zsh
 ```
 
-Once you are connected to the `vcluster` you are in a different Kubernetes Cluster, so if you list all the available namespaces you should see: 
+Once you are connected to the `vcluster` you are in a different Kubernetes Cluster, so if you list all the available namespaces, you should see: 
 
 ```shell
 kubectl get ns
@@ -137,16 +137,16 @@ kubectl port-forward svc/frontend 8080:80
 Now your application is available at [http://localhost:8080](http://localhost:8080)
 
 
-You can exit the vcluster context by typing `exit` in the terminal.
+You can exit the `vcluster` context by typing `exit` in the terminal.
 
 
 ## Simplifying our platform surface
 
-We can go one step further to simplify the interaction with the platform APIs, avoiding teams to connect to the Platform Cluster and remove the need for having access to the Kubernetes APIs. 
+We can go one step further to simplify the interaction with the platform APIs, preventing teams from connecting to the Platform Cluster and removing the need for having access to the Kubernetes APIs. 
 
-In this short section we deploy an Admin User Interface that allow teams to request new environments using a website, or a set of simplified REST APIs. 
+In this short section, we deploy an Admin User Interface that allows teams to request new environments using a website, or a set of simplified REST APIs. 
 
-Before installing the Admin User Interface you need to make sure that you are not inside a `vcluster` session. (You can exit the vcluster context by typing `exit` in the terminal). Check that you have the `crossplane-system` namespaces in the current cluster were you are connected. 
+Before installing the Admin User Interface, you need to make sure that you are not inside a `vcluster` session. (You can exit the `vcluster` context by typing `exit` in the terminal). Check that you have the `crossplane-system` namespaces in the current cluster where you are connected. 
 
 You can install this Admin User Interface using Helm:
 
@@ -160,13 +160,13 @@ Once installed you can port-forward to the Admin UI by running:
 kubectl port-forward svc/admin 8081:80
 ```
 
-Now you can create and check your environments using a simple interface. If you wait for the environment to be ready you will get the `vcluster` command to use to connect to the environment.
+Now you can create and check your environments using a simple interface. If you wait for the environment to be ready, you will get the `vcluster` command to use to connect to the environment.
 
 ![imgs/admin-ui.png](imgs/admin-ui.png)
 
 By using this simple interface, development teams will not need to access the Kubernetes APIs from the cluster which has all the platform tools (Crossplane and Argo CD for example) directly.
 
-Besides the User interface, the Platform Admin application offers you a simplified set of REST endpoints where you have full flexibility to define how the resources looks like instead of following the Kubernetes Resource Model. For example, instead of having a Kubernetes Resource with all the metadata needed by the Kubernetes API, we can use the following JSON payload to create a new Environment: 
+Besides the User interface, the Platform Admin application offers you a simplified set of REST endpoints where you have full flexibility to define how the resources look like instead of following the Kubernetes Resource Model. For example, instead of having a Kubernetes Resource with all the metadata needed by the Kubernetes API, we can use the following JSON payload to create a new Environment: 
 
 ```json
 {
@@ -198,7 +198,7 @@ Or delete one environment running:
 curl -X DELETE http://localhost:8081/api/environments/team-curl-dev-env
 ```
 
-This application serves as a facade between Kubernetes and the outside world. Depending on your organization needs, you might want to have this abstractions (APIs) early on, so the platform team can pivot on their tooling and workflow decisions under the covers.
+This application serves as a facade between Kubernetes and the outside world. Depending on your organization's needs, you might want to have these abstractions (APIs) early on, so the platform team can pivot on their tooling and workflow decisions under the covers.
 
 
 ## Clean up
@@ -212,7 +212,7 @@ kind delete clusters dev
 
 ## Next Steps
 
-Can you extend the Admin User Interface to create Databases and Message Brokers like we did in Chapter 5? What would it take? Understanding where the changes needs to be made will give you hands-on experience on developing components that interact with the Kubernetes APIs and provide simplified interfaces for consumers.
+Can you extend the Admin User Interface to create Databases and Message Brokers like we did in Chapter 5? What would it take? Understanding where the changes need to be made will give you hands-on experience in developing components that interact with the Kubernetes APIs and provide simplified interfaces for consumers.
 
 Can you create your own compositions to use Real Clusters instead of `vcluster`? For which kind of scenario would you use a real Cluster and when a `vcluster`?
 
@@ -222,8 +222,8 @@ What extra steps would you need to do to run this in a real Kubernetes Cluster i
 
 ## Sum up and Contribute
 
-On this tutorial we have built a new Platform API reusing the Kubernetes Resource model to provision on demand development environments. On top of that with the Platform Admin application we have created a simplified layer to expose the same capabilities without pushing teams to learn about how Kubernetes work or the underlaying details, projects and technologies that we have used to build our Platform. 
+In this tutorial, we have built a new Platform API reusing the Kubernetes Resource model to provision on-demand development environments. On top of that with the Platform Admin application we have created a simplified layer to expose the same capabilities without pushing teams to learn about how Kubernetes works or the underlying details, projects, and technologies that we have used to build our Platform. 
 
-By relying on contracts (for this example the Environment resource definition), the platform team have the flexibility to change the mechanisms used to provision environments depending on their requirements and available tools. 
+By relying on contracts (for this example the Environment resource definition), the platform team has the flexibility to change the mechanisms used to provision environments depending on their requirements and available tools. 
 
-Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.
+Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy), or send a Pull Request.
