@@ -7,7 +7,7 @@ _🌍 Available in_: [English](README.md) | [中文 (Chinese)](README.zh.md)
 
 ---
 
-In this step-by-step tutorial, we will use Crossplane to Provision the Redis, PostgreSQL, and Kafka instances for our application services. 
+This step-by-step tutorial use Crossplane to Provision the Redis, PostgreSQL, and Kafka instances for our application services. 
 
 Using Crossplane and Crossplane Compositions, we aim to unify how these components are provisioned, hiding away where these components are for the end users (application teams).
 
