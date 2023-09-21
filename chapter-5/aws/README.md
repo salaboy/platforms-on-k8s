@@ -1,11 +1,18 @@
 # AWS Cloud Provider
 
-In this step-by-step tutorial, we will be using Crossplane to Provision the Redis, PostgreSQL and Kafka in AWS
+---
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md)
 
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
+
+In this step-by-step tutorial, we will use Crossplane to Provision Redis, PostgreSQL, and Kafka in AWS.
 
 ## Installing Crossplane
 
-To install Crossplane you need to have a Kubernetes Cluster, you can create one using KinD as we did for you [Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind). 
+To install Crossplane, you need to have a Kubernetes Cluster; you can create one using KinD as we did for you [Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind). 
 
 Let's install [Crossplane](https://crossplane.io) into its own namespace using Helm: 
 
@@ -46,7 +53,7 @@ We need to install our Crossplane Compositions for our Key-Value Database (Redis
 kubectl apply -f resources/
 ```
 
-The Crossplane Composition resource (`app-database-redis.yaml`) defines which cloud resources need to be created and how they need to be configured together. The Crossplane Composite Resource Definition (XRD) (`app-database-resource.yaml`) defines a simplified interface that enables application development teams to quickly request new databases by creating resources of this type.
+The Crossplane Composition resource (`app-database-redis.yaml`) defines which cloud resources need to be created and how they must be configured together. The Crossplane Composite Resource Definition (XRD) (`app-database-resource.yaml`) defines a simplified interface that enables application development teams to quickly request new databases by creating resources of this type.
 
 Check the [resources/](resources/) directory for the Compositions and the Composite Resource Definitions (XRDs). 
 
@@ -58,7 +65,7 @@ aws_access_key_id =
 aws_secret_access_key = 
 ```
 
-Create a Kubernetes secret with the AWS credentials 
+Create a Kubernetes secret with the AWS credentials. 
 
 ```shell
 kubectl create secret \
@@ -97,7 +104,7 @@ kubectl apply -f aws-messagebroker-kafka.yaml
 
 ## Let's deploy our Conference Application
 
-Ok, now that we have our two databases and our message broker running, we need to make sure that our application services connect to these instances. The first thing that we need to do is to disable the Helm dependencies defined in the Conference Application chart, so that when the application gets installed don't install the databases and the message broker. We can do this by setting the `install.infrastructure` flag to `false`.
+Ok, now that we have our two databases and our message broker running, we need to make sure that our application services connect to these instances. The first thing we need to do is disable the Helm dependencies defined in the Conference Application chart so that when the application gets installed, don't install the databases and the message broker. We can do this by setting the `install.infrastructure` flag to `false`.
 
 For that, we will use the `app-values.yaml` file containing the configurations for the services to connect to our newly created databases:
 
