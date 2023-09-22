@@ -223,7 +223,7 @@ Next, let's talk about feature flags, a topic that involves not only developers 
 
 The [OpenFeature](https://openfeature.dev/) project aims to standardize how to consume Feature Flags from applications that can be written in different languages. 
 
-In this short tutorial we will look at how the Conference Application `v2.0.0` uses Open Feature and more specifically the `flagd` provider to enable features flags across all application services. For this example, to keep it simple, I've used the `flagd` provider that allows us to define our feature flag configurations inside a Kubernetes `ConfigMap``.
+In this short tutorial we will look at how the Conference Application `v2.0.0` uses Open Feature and more specifically the `flagd` provider to enable features flags across all application services. For this example, to keep it simple, I've used the `flagd` provider that allows us to define our feature flag configurations inside a Kubernetes `ConfigMap`.
 
 ![openfeature](imgs/conference-app-openfeature.png)
 
