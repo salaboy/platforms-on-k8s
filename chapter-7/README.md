@@ -1,17 +1,17 @@
 # Chapter 7 :: Shared Applications Concerns
 
 ---
-_🌍 Available in_: [English](README.md)
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md)
 
 > **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
 
 ---
 
-On this step-by-step tutorials we will look into how to use [Dapr](https://dapr.io) to provide Application-level APIs to solve common challenges that most Distributed Applications will face. 
+In this step-by-step tutorial, we will look into using [Dapr](https://dapr.io) to provide Application-level APIs to solve everyday challenges that most Distributed Applications will face. 
 
-Then we will look at [OpenFeature](https://openfeature.dev) a project that aims to standardize Feature Flags, so developement teams can keep releasing new features and stakeholders can decide when to enable/disable these features for their customers. 
+Then we will look at [OpenFeature](https://openfeature.dev), a project that aims to standardize Feature Flags so development teams can keep releasing new features and stakeholders can decide when to enable/disable these features for their customers. 
 
-Because both projects are focused on providing developers new APIs and tools to use inside their service's code, we will deploy a new version of the application (`v2.0.0`). You can find all the changes required for this new version in the `v2.0.0` of this repository. [You can also compare the differences between the branches here](https://github.com/salaboy/platforms-on-k8s/compare/v2.0.0).
+Because both projects are focused on providing developers with new APIs and tools to use inside their service's code, we will deploy a new version of the application (`v2.0.0`). You can find all the changes required for this new version in the `v2.0.0` of this repository. [You can also compare the differences between the branches here](https://github.com/salaboy/platforms-on-k8s/compare/v2.0.0).
 
 
 # Installation
@@ -30,7 +30,7 @@ helm upgrade --install dapr dapr/dapr \
 
 ```
 
-Once Dapr is installed, we can install our Dapr-Enabled and FeatureFlag-Enabled version of the application `v2.0.0`.
+Once Dapr is installed, we can install our Dapr-Enabled and FeatureFlag-Enabled versions of the application `v2.0.0`.
 
 # Running v2.0.0
 
@@ -40,11 +40,11 @@ Now you can install v2.0.0 of the application by running:
 helm install conference oci://docker.io/salaboy/conference-app --version v2.0.0
 ```
 
-This version of the Helm Chart installs the same application infrastructure as version `v1.0.0` (PostgreSQL, Redis, and Kafka). Services now interact with Redis and Kafka are now using Dapr APIs. This version of the Application also adds OpenFeature Feature Flags using `flagd`.
+This version of the Helm Chart installs the same application infrastructure as version `v1.0.0` (PostgreSQL, Redis, and Kafka). Services now interact with Redis and Kafka are now using Dapr APIs. This application version also adds OpenFeature Feature Flags using `flagd`.
 
 # Application Level APIs with Dapr
 
-In version `v2.0.0`, if you list the Application pods now, you will see that each service (agenda, c4p, frontend and notifications) has a Dapr Sidecar (`daprd`) running alongside the service container (READY 2/2): 
+In version `v2.0.0`, if you list the Application pods now, you will see that each service (agenda, c4p, frontend, and notifications) has a Dapr Sidecar (`daprd`) running alongside the service container (READY 2/2): 
 
 ```shell
 > kubectl get pods
@@ -65,7 +65,7 @@ From the Dapr perspective the application looks like this:
 
 ![conference-app-with-dapr](imgs/conference-app-with-dapr.png)
 
-The Dapr Sidecar expose the Dapr Commponents APIs to enable the application to interact with   Statestore (Redis) and PubSub (Kafka) APIs. 
+The Dapr Sidecar exposes the Dapr Components APIs to enable the application to interact with   Statestore (Redis) and PubSub (Kafka) APIs. 
 
 You can list Dapr Components by running: 
 
@@ -173,7 +173,7 @@ Spec:
 Events:       <none>
 ```
 
-As you can see, this subscription forwards events to the route `/api/new-events/` for the Dapr applications listed in the `Scopes` section, in this case only the `frontend` application. The Frontend Application only needs to expose the `/api/new-events/` endpoint to receive events, in this case the Dapr Sidecar (`daprd`) waits for incoming messages on the PubSub component called `conference-conference-pubsub` and forwards all messages to the Application Endpoint. 
+As you can see, this subscription forwards events to the route `/api/new-events/` for the Dapr applications listed in the `Scopes` section, only the `frontend` application. The Frontend Application only needs to expose the `/api/new-events/` endpoint to receive events, in this case the Dapr Sidecar (`daprd`) waits for incoming messages on the PubSub component called `conference-conference-pubsub` and forwards all messages to the Application Endpoint. 
 
 This version of the application removes application dependencies such as the Kafka Client from all services and the Redis Client from the Agenda Service. 
 
@@ -185,9 +185,9 @@ Besides removing the dependencies and making these containers smaller, by consum
 ![in gcp](imgs/conference-app-dapr-and-gcp.png)
 
 
-Finally, because this is all about enabling developers with Application Level APIs, let's take a look at how this look from the application's service perspectives. Because the services are written in Go, I've decided to add the Dapr Go SDK (which is optional). 
+Finally, because this is all about enabling developers with Application Level APIs, let's look at how this looks from the application's service perspective. Because the services are written in Go, I've decided to add the Dapr Go SDK (which is optional). 
 
-When the Agenda Service wants to store or read data from the Dapr Statestore component it can use the Dapr Client to perform these operations, for example [reading values from the Statestore looks like this](https://github.com/salaboy/platforms-on-k8s/blob/v2.0.0/conference-application/agenda-service/agenda-service.go#L136C2-L136C116): 
+When the Agenda Service wants to store or read data from the Dapr Statestore component, it can use the Dapr Client to perform these operations, for example [reading values from the Statestore looks like this](https://github.com/salaboy/platforms-on-k8s/blob/v2.0.0/conference-application/agenda-service/agenda-service.go#L136C2-L136C116): 
 
 ```golang
 agendaItemsStateItem, err := s.APIClient.GetState(ctx, STATESTORE_NAME, fmt.Sprintf("%s-%s", TENANT_ID, KEY), nil)
@@ -214,22 +214,22 @@ if err := s.APIClient.PublishEvent(ctx, PUBSUB_NAME, PUBSUB_TOPIC, eventJson); e
 
 ```
 
-As we have seen, Dapr provides Application-Level APIs for application developers to use regarding the programming language that they are using. These APIs abstract away the complexities of setting up and manage application infrastucture components, enabling platformm teams to have more flexiblity to focus on fine tunning how applications will interact with them without pushing teams to change the application source code. 
+As we have seen, Dapr provides Application-Level APIs for application developers to use regarding the programming language that they are using. These APIs abstract away the complexities of setting up and managing application infrastructure components, enabling platform teams to have more flexibility to focus on fine-tuning how applications will interact with them without pushing teams to change the application source code. 
 
-Next, let's talk about feature flags, a topic that involves not only developers but also enable product managers and roles closer to the business to decide when certain features should be exposed.
+Next, let's talk about feature flags. This topic involves not only developers but also enables product managers and roles closer to the business to decide when certain features should be exposed.
 
 
 ## Feature Flags for everyone
 
-The [OpenFeature](https://openfeature.dev/) project aims to standardize how to consume Feature Flags from applications that can be written in different languages. 
+The [OpenFeature](https://openfeature.dev/) project aims to standardize how to consume Feature Flags from applications written in different languages. 
 
-In this short tutorial we will look at how the Conference Application `v2.0.0` uses Open Feature and more specifically the `flagd` provider to enable features flags across all application services. For this example, to keep it simple, I've used the `flagd` provider that allows us to define our feature flag configurations inside a Kubernetes `ConfigMap`.
+In this short tutorial, we will look at how the Conference Application `v2.0.0` uses Open Feature and, more specifically, the `flagd` provider to enable feature flags across all application services. For this example, to keep it simple, I've used the `flagd` provider that allows us to define our feature flag configurations inside a Kubernetes `ConfigMap`.
 
 ![openfeature](imgs/conference-app-openfeature.png)
 
-In the same way as Dapr APIs, the idea here is to have a consistent experience no matter which provider we have selected. If the platform team wants to switch providers, for example to LaunchDarkly or Split, there will be no need to change how features are fetched orevaluated. The platform team will be able to swap providers to whichever they thing its best. 
+In the same way as Dapr APIs, the idea here is to have a consistent experience no matter which provider we have selected. If the platform team wants to switch providers, for example, LaunchDarkly or Split, there will be no need to change how features are fetched or evaluated. The platform team will be able to swap providers to whichever they think is best. 
 
-`v2.0.0` created a ConfigMap called `flag-configuration` that contains the Feature Flag that the application's services will be using. 
+`v2.0.0` created a ConfigMap called `flag-configuration` containing the Feature Flag that the application's services will use. 
 
 You can get the flag configuration json file included in the ConfigMap by running: 
 
@@ -284,12 +284,12 @@ You should see the following output:
 ```
 
 There are three feature flags defined for this example: 
-- `debugEnabled` it is a boolean flag that allows us to turn on and off the Debug tab in the back office of the application. This replaces the need for an environment variable that we used in `v1.0.0`. We can turn on and off the debug section without the need to restart the application frontend container.
-- `callForProposalsEnabled` this boolean flag allows us to disable the **Call for Proposals** section of the application. As conferences have a window to allow potential speakers to submit proposals, when that period is over this section can be hidden away. Having to release a specific version to just turn off that section would be too complicated to manage, hence having a feature flag for this makes a lot of sense. We can make this change without the need to restart the application frontend container.
-- `eventsEnabled` is an object feature flag, this means that it contains a structure and allow teams to define complex configurations. In this case, I've defined different profiles of flags to configure which service can emit events (Events tab in the application back office). By default all services emit events, but by changing the `defaultVariant` value to `none` we can disable events for all services, without the need to restart any container.
+- `debugEnabled` is a boolean flag that allows us to turn on and off the Debug tab in the back office of the application. This replaces the need for an environment variable that we used in `v1.0.0`. We can turn the debug section on and off without restarting the application frontend container.
+- `callForProposalsEnabled` This boolean flag allows us to disable the **Call for Proposals** section of the application. As conferences have a window to allow potential speakers to submit proposals, when that period is over, this section can be hidden away. Having to release a specific version to just turn off that section would be too complicated to manage, hence having a feature flag for this makes a lot of sense. We can make this change without the need to restart the application frontend container.
+- `eventsEnabled` is an object feature flag, this means that it contains a structure and allows teams to define complex configurations. In this case, I've defined different profiles of flags to configure which service can emit events (Events tab in the application back office). By default all services emit events, but by changing the `defaultVariant` value to `none` we can disable events for all services, without the need to restart any container.
 
 
-You can patch the ConfigMap to turn on the debug feature by following these steps. First fetch the content of the `flag-config.json` file located inside the ConfigMap and store it locally.
+You can patch the ConfigMap to turn on the debug feature by following these steps. First, fetch the content of the `flag-config.json` file located inside the ConfigMap and store it locally.
 ```shell
 kubectl get cm flag-configuration -o go-template='{{index .data "flag-config.json"}}' > flag-config.json
 ```
@@ -315,29 +315,29 @@ Then patch the existing `ConfigMap`:
 kubectl create cm flag-configuration --from-file=flag-config.json=flag-config.json --dry-run=client -o yaml | kubectl patch cm flag-configuration --type merge --patch-file /dev/stdin
 ```
 
-After 20 seconds or so, you should see the Debug Tab in the application's backoffice section
+After 20 seconds or so, you should see the Debug Tab in the application's back office section
 
 ![debug feature flag](imgs/feature-flag-debug-tab.png)
 
 You can see that feature flags are now also displayed in this tab. 
 
-Now submit a new proposal and approve it, you will see that in the `Events` tab, for Events will be displayed. 
+Now submit a new proposal and approve it. You will see that in the `Events` tab, Events will be displayed. 
 
 ![events for approved proposal](imgs/feature-flag-events-for-proposal.png)
 
 
 If you repeat the previous process and change the `eventsEnabled` feature flag to `"defaultVariant": "none"`, all services will stop emitting events. Submit a new proposal from the application user interface and approve it, then check the `Events` tab to validate that no event has been emitted. Remember that when changing the `flag-configuration` ConfigMap, `flagd` needs to wait around 10 seconds to refresh the content of the ConfigMap. If you have the Debug tab enabled you can refresh that screen until you see that the value has changed. 
 
-**Notice that this feature flag is being consumed by all services which evaluate the flag before sending any event. **
+**Notice that this feature flag is being consumed by all services that evaluate the flag before sending any event. **
 
-Finally, if you change the `callForProposalsEnabled` feature flag `"defaultVariant": "off"`, the Call for Proposal menu option will dissapear from the application frontend. 
+Finally, if you change the `callForProposalsEnabled` feature flag `"defaultVariant": "off"`, the Call for Proposal menu option will disappear from the application frontend. 
 
 ![no call for proposals feature flag](imgs/feature-flag-no-c4p.png)
 
 
-While we are still using a `ConfigMap` to store the feature flags configurations we have achieved some important improvements that enable teams to go faster. Developers can keep releasing new features to their application services that then product managers (or stakeholders) can decide when to enable/disable. Platform Teams can define where the feature flags will be stored (a managed service or local storage). By using a standard specification driven by a community composed by Feature Flag vendors enable our application development teams to make use of feature flags without defining all the technical aspects required to implement these mechanisms in-house. 
+While we are still using a `ConfigMap` to store the feature flags configurations we have achieved some important improvements that enable teams to go faster. Developers can keep releasing new features to their application services that then product managers (or stakeholders) can decide when to enable/disable. Platform Teams can define where the feature flags will be stored (a managed service or local storage). By using a standard specification driven by a community composed of Feature Flag vendors enables our application development teams to make use of feature flags without defining all the technical aspects required to implement these mechanisms in-house. 
 
-In this example, we haven't used more advanved features to evaluate feature flags like [context-based evaluations](https://openfeature.dev/docs/reference/concepts/evaluation-context#providing-evaluation-context), that can use for example the geo-location of the user to provide different values for the same feature flag, or [targetting keys](https://openfeature.dev/docs/reference/concepts/evaluation-context#targeting-key). It is up to the reader to go deeper into OpenFeature capabilities as well as which other [Open Feature flag providers](https://openfeature.dev/docs/reference/concepts/provider) are available.  
+In this example, we haven't used more advanced features to evaluate feature flags like [context-based evaluations](https://openfeature.dev/docs/reference/concepts/evaluation-context#providing-evaluation-context), which can use for example, the geo-location of the user to provide different values for the same feature flag, or [targetting keys](https://openfeature.dev/docs/reference/concepts/evaluation-context#targeting-key). It is up to the reader to go deeper into OpenFeature capabilities as well as which other [Open Feature flag providers](https://openfeature.dev/docs/reference/concepts/provider) are available.  
 
 ## Clean up
 
@@ -352,11 +352,11 @@ kind delete clusters dev
 
 A natural next step would be to run `v2.0.0` against infrastructure provisioned by Crossplane, as we did in Chapter 5. This can be managed by our Platform Walking skeleton, which will be in charge of configuring the Conference Application Helm chart to connect to the provisioned infrastructure by wiring Kubernetes resources together. If you are interested in this topic, I've written a blog post about why tools like Crossplane and Dapr are meant to work together: [https://blog.crossplane.io/crossplane-and-dapr/](https://blog.crossplane.io/crossplane-and-dapr/).
 
-Another simple but very useful extension to the application code would be to make sure that the Call for Proposals Service reads the `callForProposalsEnabled` feature flag and return meaningful errors when this feature is disabled. The current implementation only removes the `Call for Proposals` menu entry, meaning that if you send a `curl` request to the APIs, the functionality should still work. 
+Another simple but very useful extension to the application code would be to make sure that the Call for Proposals Service reads the `callForProposalsEnabled` feature flag and returns meaningful errors when this feature is disabled. The current implementation only removes the `Call for Proposals` menu entry, meaning that if you send a `curl` request to the APIs, the functionality should still work. 
 
 ## Sum up and Contribute
 
-In this tutorial we have looked into Application-level APIs using Dapr and Feature Flags using OpenFeature. Application-level APIs like the ones exposed by Dapr Components can be leveraged by application development teams, as most applications will be interested in storing and reading state, emitting and consuming events and resiliency policies for service-to-service communications. Feature Flags can also help to speed up the development and release process by enableing developers to keep releasing features while other stakeholders can decide when these features are enabled or disabled. 
+In this tutorial, we have looked into Application-level APIs using Dapr and Feature Flags using OpenFeature. Application-level APIs like the ones exposed by Dapr Components can be leveraged by application development teams, as most applications will be interested in storing and reading state, emitting, and consuming events and resiliency policies for service-to-service communications. Feature Flags can also help to speed up the development and release process by enabling developers to keep releasing features while other stakeholders can decide when these features are enabled or disabled. 
 
 
-Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy) or send a Pull Request.
+Do you want to improve this tutorial? Create an issue, drop me a message on [Twitter](https://twitter.com/salaboy), or send a Pull Request.
