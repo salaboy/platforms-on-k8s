@@ -109,7 +109,7 @@ Before jumping into implementing different release strategies we need to underst
 
 ## Knative Services quick intro
 
-Knative Serving simplifies and extend the capabilities offered by Kubernetes by using the concept of a `Knative Service``. A `Knative Service`` uses the Knative Serving networking layer to route traffic to our workloads without pushing us to define complex Kubernetes Resources. Because Knative Serving has access to information about how traffic is flowing to our services it can understand the load that our services are experiencing and make use of a purposefully build autoscaler to upscale or downscale our service instances based on demand. This can be really useful for platform teams looking to implement a function-as-a-service model for their workloads, as Knative Serving can downscale to zero services that are not receiving traffic. 
+Knative Serving simplifies and extend the capabilities offered by Kubernetes by using the concept of a `Knative Service`. A `Knative Service` uses the Knative Serving networking layer to route traffic to our workloads without pushing us to define complex Kubernetes Resources. Because Knative Serving has access to information about how traffic is flowing to our services it can understand the load that our services are experiencing and make use of a purposefully build autoscaler to upscale or downscale our service instances based on demand. This can be really useful for platform teams looking to implement a function-as-a-service model for their workloads, as Knative Serving can downscale to zero services that are not receiving traffic. 
 
 Knative Services also expose a simplified configuration that resembles Containers as a Service models like Google Cloud Run, Azure Container Apps and AWS App Runner, where by defining which container we want to run, the platform will take care of the rest (no complex configurations for networking, routing traffic, etc). 
 
@@ -123,7 +123,7 @@ Check that Kafka is running before proceeding, as it usually takes a bit of time
 
 If you have a Kubernetes Cluster with Knative Serving installed you can apply the following Knative Service resource to run an instance of our Notifications Service:
 
-```shell
+```yaml
 apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
@@ -200,7 +200,7 @@ To recap, we get two things out of the box with Knative Serving:
 
 In this section we will look into implementing different release strategies for our Conference Application, for that we will be deploying all the other application services also using Knative Services. 
 
-Before installing the other services we need to set up PostgreSQL and Redis, as we already installed Kafka before. Before installing PostgreSQL we need to create a ConfigMap containing the SQL statement create the `Proposals`` Table, so the Helm Chart can reference to the configMap and execute the statement when the database instance is started.
+Before installing the other services we need to set up PostgreSQL and Redis, as we already installed Kafka before. Before installing PostgreSQL we need to create a ConfigMap containing the SQL statement create the `Proposals` Table, so the Helm Chart can reference to the configMap and execute the statement when the database instance is started.
 
 ```shell
 kubectl apply -f knative/c4p-sql-init.yaml
@@ -433,7 +433,7 @@ Notice that no traffic (percent: 0) will be routed to `v1.1.0` unless the tag is
 Notice that `v1.1.0` has a different color theme, when you see them side by side you can notice the difference. Check the other sections of the application too. 
 
 
-If for some reason, you don't want or can't change the URL of the service, you can use HTTP Headers to acesss `v1.1.0`. Using a Browser plugin like [Chrome ModHeader](https://chrome.google.com/webstore/detail/modheader-modify-http-hea/idgpnmonknjnojddfkpgkljpfnnfcklj) you can modify all the requests that the browswer is sending by adding parameters or headers. 
+If for some reason, you don't want or can't change the URL of the service, you can use HTTP Headers to acesss `v1.1.0`. Using a Browser plugin like [Chrome ModHeader](https://chrome.google.com/webstore/detail/modheader-modify-http-hea/idgpnmonknjnojddfkpgkljpfnnfcklj) you can modify all the requests that the browser is sending by adding parameters or headers. 
 
 Here we are setting the `Knative-Serving-Tag` header with the value `version110`, which is the name of the tag that we configured in the traffic rules for our frontend Knative Service. 
 

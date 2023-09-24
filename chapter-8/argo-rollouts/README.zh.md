@@ -1,12 +1,12 @@
-# Release Strategies with Argo Rollouts
+# 使用 Argo Rollouts 实现发布策略
 
-In this tutorial we will be looking at Argo Rollout built-in mechanisms to implement release strategies. We will also look into the Argo Rollouts Dashboard that allow teams to promote new versions without using the terminal (`kubectl`).
+本文中我们尝试一下 Argo Rollout 内置的策略化发布的能力。另外我们还会看看 Argo Rollout 的 Dashboard，有了 Dashboard，团队就可以脱离终端（`kubectl`）进行发布了。
 
-## Installation
+## 安装
 
-You need a Kubernetes Cluster to install [Argo Rollouts](https://argoproj.github.io/rollouts/). You can create one using Kubernetes KinD as we did in [Chapter 2](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind)
+首先需要有个 Kubernetes 集群来运行 [Argo Rollouts](https://argoproj.github.io/rollouts/)。可以用[第二章](../../chapter-2/README-zh.md)介绍的方法部署一个 Kind 集群。
 
-Once you have the cluster, we can install Argo Rollouts by running:
+有了集群之后，就可以安装 Argo Rollout 了：
 
 ```shell
 kubectl create namespace argo-rollouts
@@ -14,24 +14,23 @@ kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/rele
 
 ```
 
-or by following the [official documentation that you can find here](https://argoproj.github.io/argo-rollouts/installation/#controller-installation).
+或者也可以阅读一下[官方文档](https://argoproj.github.io/argo-rollouts/installation/#controller-installation)
 
-You also need to install the [Argo Rollouts `kubectl` plugin](https://argoproj.github.io/argo-rollouts/installation/#kubectl-plugin-installation) 
+另外还需要安装 [Argo Rollout 的 `kubectl` 插件](https://argoproj.github.io/argo-rollouts/installation/#kubectl-plugin-installation)
 
-Once you have the plugin you can start a local version of the Argo Rollouts Dashboard, by running in a new terminal:
+插件完成安装之后，在新的终端窗口中运行命令，启动一个本地的 Argo Rollout Dashboard：
 
 ```shell
 kubectl argo rollouts dashboard
 ```
 
-Then you can access the dashboard by pointing your browser to [http://localhost:3100/rollouts](http://localhost:3100/rollouts)
-
+这样就可以用浏览器访问 [Dashboar](http://localhost:3100/rollouts) 了。
 
 ![argo rollouts dashboard empty](../imgs/argo-rollouts-dashboard-empty.png)
 
-## Canary Releases
+## 金丝雀发布
 
-Let's create an Argo Rollout resource to implement a Canary Release on the Notification Service of the Conference Application. You can find the [full definition here](canary-release/rollout.yaml).
+创建一个 Argo Rollout 资源，给 Notification 服务实现金丝雀发布能力，[完整声明在此](canary-release/rollout.yaml)。
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -77,9 +76,9 @@ spec:
 
 ```
 
-The `Rollout` resource replaces our Kubernetes `Deployment` resource. This means that we still need to create a Kubernetes Service and an Ingress Resource to route traffic to our Notification Service instance. Notice that we are defining 3 replicas for the Notification Service.
+`Rollout` 资源替换了 Kubernetes 的 `Deployment` 资源。这意味着我们需要创建一个 Kubernetes Service 和 Ingress 资源来对 Notification 服务的路由。这里我们给 Notification 服务定义了三个副本。
 
-The previous `Rollout` defines a canary release with two steps: 
+`Rollout` 中定义了两步骤组成的金丝雀发布过程：
 
 ```yaml
 strategy:
@@ -91,28 +90,28 @@ strategy:
       - pause: {duration: 10}
 ```
 
-First it will set the traffic split to 25 percent and wait the team to test the new version (the `pause` step), then after we manually signal that we want to continue the rollout will move to 75 percent to the new version to finally pause for 10 seconds and then move to 100 percent. 
+首先设置 25% 的流量到新版本，然后暂停（`pause`），等待团队对新版本进行测试，然后我们会手动发出信号，将 75% 流量路由给新版本，经过 10 秒钟暂停之后，100% 流量会被引入新版本。
 
-Before applying the Rollout, Service and Ingress resources located in the `canary-release/` directory, let's install Kafka for the Notification Service to connect. 
+在提交 `canary-release/` 目录里面的 `Rollout`、`Service` 和 `Ingress` 资源之前，首先我们给 Notification 服务部署一个 Kafka 实例：
 
 ```shell
 helm install kafka oci://registry-1.docker.io/bitnamicharts/kafka --version 22.1.5 --set "provisioning.topics[0].name=events-topic" --set "provisioning.topics[0].partitions=1" --set "persistence.size=1Gi" 
 
 ```
 
-Now when Kafka is running, let's apply all the resources in the `canary-releases/` directory: 
+Kafka 成功启动后，我们把 `canary-release/` 目录的所有资源提交给集群：
 
 ```shell
 kubectl apply -f canary-release/
 ```
 
-Using the argo rollouts plugin you can watch the rollout from the terminal: 
+使用 Argo Rollout 插件，你可以在终端查看 `Rollout` 对象：
 
 ```shell
 kubectl argo rollouts get rollout notifications-service-canary --watch
 ```
 
-You should see something like this: 
+你会看到类似这样的输出：
 
 ```shell
 Name:            notifications-service-canary
@@ -139,16 +138,16 @@ NAME                                                      KIND        STATUS    
       └──□ notifications-service-canary-7f6b88b5fb-tw8fj  Pod         ✔ Running  80s  ready:1/1
 ```
 
-As you can see, because we just created the Rollouts, three replicas are created and all the traffic is being routed to this initial `revision:1` and the Status is set to `Healthy`.
+如你所见，我们创建 `Rollout` 对象之后，产生了三个副本，全部流量都路由到初始的 `revision:1`，服务状态为 `Healthy`。
 
-Let's update the Notification Service version to `v1.1.0` by running: 
+用下面的命令，把 Notification 服务版本更新到 `v1.1.0`：
 
 ```shell
 kubectl argo rollouts set image notifications-service-canary \
   notifications-service=salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525:v1.1.0
 ```
 
-Now you see the second revision (revision:2) created: 
+现在会看到 `revision:2` 出现了：
 
 ```shell
 Name:            notifications-service-canary
@@ -180,14 +179,15 @@ NAME                                                      KIND        STATUS    
       └──□ notifications-service-canary-7f6b88b5fb-tw8fj  Pod         ✔ Running  4m29s  ready:1/1
 ```
 
-Now the Rollout stops at step 1, where only 25 percent of the traffic is routed to `revision:2` and the status is set to `Pause`.
+现在 `Rollout` 停在了第一步，只有 25% 的流量被路由到了 `revision:2`，状态被设置为 `Pause`。
 
-Feel free to hit the `service/info` endpoint to see which version is answering your requests:
+浏览 `service/info`，看看是哪个版本在响应你的请求：
 
 ```shell
 curl localhost/service/info
 ```
-Roughly, one in four requests should be answered by version `v1.1.0`:
+
+`v1.1.0` 大约会处理 1/4 的请求：
 
 ```shell
 > curl localhost/service/info | jq
@@ -244,17 +244,17 @@ Roughly, one in four requests should be answered by version `v1.1.0`:
 
 ```
 
-Also check the Argo Rollouts Dashboards now, it should show the Canary Release: 
+检查一下 Argo Rollout Dashboard，就会看到金丝雀发布过程：
 
 ![canary release in dashboard](../imgs/argo-rollouts-dashboard-canary-1.png)
 
-You can move the canary forward by using the promote command or the promote button in the Dashboard. The command looks like this: 
+可以用 `promote` 命令，或者 Dashboard 上的 `Promote` 按钮来推动金丝雀过程，命令大致如下：
 
 ```shell
 kubectl argo rollouts promote notifications-service-canary
 ```
 
-That should move the canary to 75% of the traffic and after 10 more seconds it should be at 100%, as the last puase step is just for 10 seconds. You should see in the terminal: 
+这会把金丝雀进程推进一步，75% 的流量进入新版本，10 秒钟之后，100% 流量都会进入新版本。在终端中查看是这样的：
 
 ```shell
 Name:            notifications-service-canary
@@ -283,11 +283,12 @@ NAME                                                      KIND        STATUS    
    └──⧉ notifications-service-canary-7f6b88b5fb           ReplicaSet  • ScaledDown  16m  
 
 ```
-And in the Dashboard: 
+
+而在 Dashboard：
 
 ![canary promoted](../imgs/argo-rollouts-dashboard-canary-2.png)
 
-Now all requests should be answered by `v1.1.0`:
+现在所有流量都由 `v1.1.0` 响应：
 
 ```shell
 
@@ -332,17 +333,17 @@ Now all requests should be answered by `v1.1.0`:
 
 ```
 
-Before moving forward to Blue/Green deployments let's clean up the canary rollout by running: 
+在开始蓝绿部署之前，我们先删除金丝雀 `Rollout`：
 
 ```shell
 kubectl delete -f canary-release/
 ```
 
-## Blue/Green Deployments 
+## 蓝绿部署
 
-With Blue/Green deployments we want to have two versions of our service running at the same time. The Blue (active) version that all the users will access and the Green (preview) version that internal teams can use to test new features and changes. 
+蓝绿部署指的是同时运行一个服务的两个版本，所有用户都会访问蓝（活动）版本，绿（预览）版本则专供内部团队访问，便于对新功能进行测试。
 
-Argo Rollouts provide a blueGreen strategy out-of-the-box: 
+Argo Rollouts 内置了蓝绿策略：
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -374,23 +375,23 @@ spec:
       autoPromotionEnabled: false
 ```
 
-Once again, we are using our Notifications Service to test the Rollout mechanism. Here we have defined a Blue/Green deployment for the Notification Service which points to two existing Kubernetes Services: `notifications-service-blue` and `notifications-service-green`. Notice that the `autoPromotionEnabled` flag is set to `false`, this stops the promotion to happen automatically when the new version is ready.
+这次我们还是选用 Notification 服务测试蓝绿机制。首先为 Notification 服务定义一个蓝绿部署。这个蓝绿部署会指向两个服务：`notifications-service-blue` 以及 `notifications-service-green`。注意这里的 `autoPromotionEnabled` 开关被设置为 `false`，防止新版本就绪之后直接升级。
 
-Check that you have Kafka already running from the previous section (Canary releases) and apply all the resources located inside the `blue-green/` directory: 
+检查一下，前面步骤部署的 Kafka 是否正常运行，然后提交 `blue-green/` 目录里的所有内容：
 
 ```shell
 kubectl apply -f blue-green/
 ```
 
-This is creating the `Rollout` resource, two Kubernetes Services and two Ingress resources, one of for the Blue Service which forwards traffic from `/` and one for the Green service that forward traffic from `/preview/`
+这操作的结果是创建一个 `Rollout` 资源，两个 Kubernetes Service 以及两个 Ingress 资源，一套是蓝服务，从 `/` 获得流量，另一套是绿服务，从 `/preview` 获得流量。
 
-You can monitor the Rollout in the terminal by running: 
+运行下面的命令，查询 `Rollout` 状态：
 
 ```shell
 kubectl argo rollouts get rollout notifications-service-bluegreen --watch
 ```
 
-You should see something like this: 
+你会看到这样的内容：
 
 ```
 Name:            notifications-service-bluegreen
@@ -414,7 +415,7 @@ NAME                                                         KIND        STATUS 
 
 ```
 
-We get two replicas of our Notification Service up and running. If we curl `localhost/service/info` we should get the Notification Service `v1.0.0` information: 
+这里看到了 Notification 服务的两个副本都在运行。如果我们用 `curl` 访问 `localhost/service/info`，会看到来自 `v1.0.0` 的信息：
 
 ```shell
 > curl localhost/service/info | jq
@@ -431,19 +432,18 @@ We get two replicas of our Notification Service up and running. If we curl `loca
 }
 ```
 
-
-And the Argo Rollouts Dashboard should show us our Blue/Green Rollout: 
+Argo Rollouts Dashboard 中则会如此展示：
 
 ![blue green 1](../imgs/argo-rollouts-dashboard-bluegree-1.png)
 
-As we did with the Canary Release, we can update our Rollout configuration, in this case setting the image for version `v1.1.0`.
+和我们在金丝雀发布过程中做的事情类似，我们可以更新 `Rollout` 配置，这里我们设置下 `v1.1.0` 的镜像：
 
 ```shell
 kubectl argo rollouts set image notifications-service-bluegreen \
   notifications-service=salaboy/notifications-service-0e27884e01429ab7e350cb5dff61b525:v1.1.0
 ```
 
-Now you should see in the terminal both versions of the Notification Service running in parallel: 
+这下在终端中你能看到，两个版本的 Notification 服务正在同时运行：
 
 ```shell
 Name:            notifications-service-bluegreen
@@ -472,13 +472,13 @@ NAME                                                         KIND        STATUS 
       └──□ notifications-service-bluegreen-56bb777689-qzg9l  Pod         ✔ Running  8m34s  ready:1/1
 ```
 
-Both `v1.0.0` and `v1.1.0` are running and Healthy, but the Status of the BlueGreen Rollout is in Pause, as it will keep running both versions until the team responsible for validating the `preview` / `green` version is ready for the prime time. 
+`v1.0.0` 和 `v1.1.0` 都在运行，健康情况良好。但是蓝绿 Rollout 的状态是暂停的。两个版本会同时运行，一直到负责验证的团队确认 `preview` 版本就绪为止。
 
-Check the Argo Rollouts Dashboard, it should show both versions running too:
+检查一下 Dashboard，也会看到两个版本同时运行：
 
 ![blue green 2](../imgs/argo-rollouts-dashboard-bluegree-2.png)
 
-At this point you can send requests to both services by using the Ingress routes that we defined. You can curl `localhost/service/info` to hit the Blue service (stable service) and curl `localhost/preview/service/info` to hit the Green service (preview service).
+这时你可以根据 Ingress 定义发送请求到两个版本。`localhost/service/info` 指向蓝版本而 `localhost/preview/service/` 指向用于预览的绿版本。
 
 ```shell
 > curl localhost/service/info
@@ -495,7 +495,7 @@ At this point you can send requests to both services by using the Ingress routes
 }
 ```
 
-And now let's check Green Service: 
+现在看看绿服务：
 
 ```shell
 > curl localhost/green/service/info
@@ -512,13 +512,13 @@ And now let's check Green Service:
 }
 ```
 
-If we are happy with the results we can promote our Green Service to be our new stable service, we do this by hitting the Promote button in the Argo Rollouts Dashboard or by running the following command: 
+如果我们对结果满意，就可以把旅服务升级为新的稳定版本，同样地，我们可以用命令行或者 Dashboard 完成这个操作：
 
 ```shell
 kubectl argo rollouts promote notifications-service-bluegreen
 ```
 
-You should see in the terminal: 
+终端可以看到：
 
 ```shell
 Name:            notifications-service-bluegreen
@@ -546,21 +546,18 @@ NAME                                                         KIND        STATUS 
       └──□ notifications-service-bluegreen-56bb777689-vzsw7  Pod         ✔ Running  2m44s  ready:1/1
 ```
 
-Now the stable service is `revision:2`. You will see that Argo Rollouts will keep `revision:1` active for a while, just in case that we want to revert back, but after a few seconds it will be downscaled. 
+现在的稳定版本是 `revision:2`。你会看到 `revision:1` 还会继续存活一段时间——这是为了给我们时间进行回滚。几秒钟之后，老版本开始缩容。
 
-Check the Dashboard to see that our Rollout is in `revision:2` as well:
+检查 Dashboard 看看我们的 `Rollout` 也是 `revision:2`：
 
 ![rollout promoted](../imgs/argo-rollouts-dashboard-bluegree-3.png)
 
+走到这里，我们借助 Argo Rollouts 完整的实现了金丝雀和蓝绿部署。
 
-If you made it this far, you implemented Canary Releases and Blue/Green Deployments using Argo Rollouts! 
+## 清理
 
-
-## Clean up
-
-If you want to get rid of the KinD Cluster created for this tutorial, you can run:
+可以用如下命令删除 Kind 集群：
 
 ```shell
 kind delete clusters dev
 ```
-
