@@ -1,5 +1,13 @@
 # Keptn Lifecycle Toolkit, out of the box Deployment Frequency
 
+---
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md)
+
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
+
 On this short tutorial we explore the Keptn Lifecycle Toolkit to monitor, observe and react to our cloud native applications lifecycle events. 
 
 
