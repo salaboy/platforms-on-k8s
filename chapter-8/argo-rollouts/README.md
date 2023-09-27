@@ -1,6 +1,13 @@
 # Release Strategies with Argo Rollouts
 
-In this tutorial we will be looking at Argo Rollout built-in mechanisms to implement release strategies. We will also look into the Argo Rollouts Dashboard that allow teams to promote new versions without using the terminal (`kubectl`).
+---
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md)
+
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
+In this tutorial, we will be looking at Argo Rollout's built-in mechanisms to implement release strategies. We will also look into the Argo Rollouts Dashboard that allows teams to promote new versions without using the terminal (`kubectl`).
 
 ## Installation
 
@@ -18,7 +25,7 @@ or by following the [official documentation that you can find here](https://argo
 
 You also need to install the [Argo Rollouts `kubectl` plugin](https://argoproj.github.io/argo-rollouts/installation/#kubectl-plugin-installation) 
 
-Once you have the plugin you can start a local version of the Argo Rollouts Dashboard, by running in a new terminal:
+Once you have the plugin, you can start a local version of the Argo Rollouts Dashboard by running in a new terminal the following command:
 
 ```shell
 kubectl argo rollouts dashboard
@@ -77,7 +84,7 @@ spec:
 
 ```
 
-The `Rollout` resource replaces our Kubernetes `Deployment` resource. This means that we still need to create a Kubernetes Service and an Ingress Resource to route traffic to our Notification Service instance. Notice that we are defining 3 replicas for the Notification Service.
+The `Rollout` resource replaces our Kubernetes `Deployment` resource. This means we still need to create a Kubernetes Service and an Ingress Resource to route traffic to our Notification Service instance. Notice that we are defining three replicas for the Notification Service.
 
 The previous `Rollout` defines a canary release with two steps: 
 
@@ -91,9 +98,9 @@ strategy:
       - pause: {duration: 10}
 ```
 
-First it will set the traffic split to 25 percent and wait the team to test the new version (the `pause` step), then after we manually signal that we want to continue the rollout will move to 75 percent to the new version to finally pause for 10 seconds and then move to 100 percent. 
+First, it will set the traffic split to 25 percent and wait for the team to test the new version (the `pause` step), then after we manually signal that we want to continue the rollout will move to 75 percent to the new version to finally pause for 10 seconds and then move to 100 percent. 
 
-Before applying the Rollout, Service and Ingress resources located in the `canary-release/` directory, let's install Kafka for the Notification Service to connect. 
+Before applying the Rollout, Service, and Ingress resources located in the `canary-release/` directory, let's install Kafka for the Notification Service to connect. 
 
 ```shell
 helm install kafka oci://registry-1.docker.io/bitnamicharts/kafka --version 22.1.5 --set "provisioning.topics[0].name=events-topic" --set "provisioning.topics[0].partitions=1" --set "persistence.size=1Gi" 
@@ -139,7 +146,7 @@ NAME                                                      KIND        STATUS    
       └──□ notifications-service-canary-7f6b88b5fb-tw8fj  Pod         ✔ Running  80s  ready:1/1
 ```
 
-As you can see, because we just created the Rollouts, three replicas are created and all the traffic is being routed to this initial `revision:1` and the Status is set to `Healthy`.
+As you can see, because we just created the Rollouts, three replicas are created and all the traffic is being routed to this initial `revision:1`, and the Status is set to `Healthy`.
 
 Let's update the Notification Service version to `v1.1.0` by running: 
 
@@ -374,7 +381,7 @@ spec:
       autoPromotionEnabled: false
 ```
 
-Once again, we are using our Notifications Service to test the Rollout mechanism. Here we have defined a Blue/Green deployment for the Notification Service which points to two existing Kubernetes Services: `notifications-service-blue` and `notifications-service-green`. Notice that the `autoPromotionEnabled` flag is set to `false`, this stops the promotion to happen automatically when the new version is ready.
+Once again, we are using our Notifications Service to test the Rollout mechanism. Here we have defined a Blue/Green deployment for the Notification Service which points to two existing Kubernetes Services: `notifications-service-blue` and `notifications-service-green`. Notice that the `autoPromotionEnabled` flag is set to `false`, this stops the promotion from happening automatically when the new version is ready.
 
 Check that you have Kafka already running from the previous section (Canary releases) and apply all the resources located inside the `blue-green/` directory: 
 
@@ -478,7 +485,7 @@ Check the Argo Rollouts Dashboard, it should show both versions running too:
 
 ![blue green 2](../imgs/argo-rollouts-dashboard-bluegree-2.png)
 
-At this point you can send requests to both services by using the Ingress routes that we defined. You can curl `localhost/service/info` to hit the Blue service (stable service) and curl `localhost/preview/service/info` to hit the Green service (preview service).
+At this point, you can send requests to both services by using the Ingress routes that we defined. You can curl `localhost/service/info` to hit the Blue service (stable service) and curl `localhost/preview/service/info` to hit the Green service (preview service).
 
 ```shell
 > curl localhost/service/info
@@ -546,7 +553,7 @@ NAME                                                         KIND        STATUS 
       └──□ notifications-service-bluegreen-56bb777689-vzsw7  Pod         ✔ Running  2m44s  ready:1/1
 ```
 
-Now the stable service is `revision:2`. You will see that Argo Rollouts will keep `revision:1` active for a while, just in case that we want to revert back, but after a few seconds it will be downscaled. 
+Now the stable service is `revision:2`. You will see that Argo Rollouts will keep `revision:1` active for a while, just in case that we want to revert back, but after a few seconds, it will be downscaled. 
 
 Check the Dashboard to see that our Rollout is in `revision:2` as well:
 
