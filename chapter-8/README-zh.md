@@ -8,8 +8,8 @@ _🌍 Available in_: [English](README.md)
 ---
 本节教程我们将会在 Kubernetes 集群上安装 Knative Serving 和 Argo Rollouts，以实现 Canary 发布、A/B 测试和蓝/绿部署。这些发布策略让团队在发布服务的新版本时拥有更多控制能力。使用不同的技术进行发布，团队可以在一个受控环境中实验和测试他们的新版本，无需在单一时间点将所有实时流量推送到新版本。
 
-- [使用 Knative Serving 实现发布策略](knative/README.zh.md)
-- [使用 Argo Rollouts 实现发布策略](argo-rollouts/README.zh.md)
+- [使用 Knative Serving 实现发布策略](knative/README-zh.md)
+- [使用 Argo Rollouts 实现发布策略](argo-rollouts/README-zh.md)
 
 ## 清理
 
