@@ -1,5 +1,12 @@
 # DORA Metrics + CloudEvents & CDEvents for Kubernetes
 
+---
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md)
+
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
 This tutorial install a set of components that consumes [CloudEvents](https://cloudevents.io) from multiple sources and allows you to track the DORA metrics, using  a Kubernetes-native architecture (cloud-agnostic).
 
 This demo focus on observing different event sources to then map these events to meaninful events related to our software delivery practices that can be aggregated to calculate DORA metrics.
