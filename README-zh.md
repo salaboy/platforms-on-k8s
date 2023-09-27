@@ -12,8 +12,8 @@
 - [第四章：使用 GitOps 管理环境](chapter-4/README.zh.md)
 - [第五章：多云基础设施](chapter-5/README-zh.md)
 - [第六章：在 Kubernetes 基础上构建平台工程](chapter-6/README-zh.md)
-- [Chapter 7: Platform Capabilities I: Shared Application Concerns](chapter-7/README.zh.md)
-- [Chapter 8: Platform Capabilities II: Enabling Teams to Experiment](chapter-8/README.md)
+- [第七章：应用级 API 和特性开关](chapter-7/README.zh.md)
+- [第八章：蓝绿和金丝雀发布](chapter-8/README.zh.md)
 - [Chapter 9: Measure your Platforms](chapter-9/README.md)
 
 ## 代码

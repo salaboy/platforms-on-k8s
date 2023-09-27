@@ -1,4 +1,4 @@
-# Chapter 7 :: Shared Applications Concerns
+# 应用级 API 和特性开关
 
 ---
 _🌍 Available in_: [English](README.md)
