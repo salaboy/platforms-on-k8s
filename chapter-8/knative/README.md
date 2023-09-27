@@ -1,6 +1,13 @@
 # Release Strategies with Knative Serving
 
-In this tutorial we will create a Kubernetes Cluster and install Knative Serving into it to implement different release strategies. We will be using Knative Serving percentage-based traffic splitting and tag and header-based routing.
+---
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md)
+
+> **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
+
+---
+
+This tutorial will create a Kubernetes Cluster and install Knative Serving to implement different release strategies. We will use Knative Serving percentage-based traffic splitting and tag and header-based routing.
 
 
 
@@ -21,10 +28,10 @@ nodes:
 EOF
 ```
 
-When using Knative Serving there is no need to install an Ingress Controller, as Knative Serving requires a more advanced networking stack to enable features such as traffic routing and splitting. We will be installing [Kourier](https://github.com/knative-extensions/net-kourier) for this, but you can install a fully fledge service mesh like [Istio](https://istio.io/).  
+When using Knative Serving, there is no need to install an Ingress Controller, as Knative Serving requires a more advanced networking stack to enable features such as traffic routing and splitting. We will be installing [Kourier](https://github.com/knative-extensions/net-kourier) for this, but you can install a fully fledge service mesh like [Istio](https://istio.io/).  
 
 
-Once you have a Cluster let's start by installing [Knative Serving](https://knative.dev/docs/install/yaml-install/serving/install-serving-with-yaml/) you can follow the official documentation or copy the installation steps listed here, as the examples had been tested with this version of Knative. 
+Once you have a Cluster, let's start by installing [Knative Serving](https://knative.dev/docs/install/yaml-install/serving/install-serving-with-yaml/). You can follow the official documentation or copy the installation steps listed here, as the examples had been tested with this version of Knative. 
 
 Install Knative Serving Custom Resource Definitions:
 
@@ -109,9 +116,9 @@ Before jumping into implementing different release strategies we need to underst
 
 ## Knative Services quick intro
 
-Knative Serving simplifies and extend the capabilities offered by Kubernetes by using the concept of a `Knative Service`. A `Knative Service` uses the Knative Serving networking layer to route traffic to our workloads without pushing us to define complex Kubernetes Resources. Because Knative Serving has access to information about how traffic is flowing to our services it can understand the load that our services are experiencing and make use of a purposefully build autoscaler to upscale or downscale our service instances based on demand. This can be really useful for platform teams looking to implement a function-as-a-service model for their workloads, as Knative Serving can downscale to zero services that are not receiving traffic. 
+Knative Serving simplifies and extends the capabilities offered by Kubernetes by using the concept of a `Knative Service`. A `Knative Service` uses the Knative Serving networking layer to route traffic to our workloads without pushing us to define complex Kubernetes Resources. Because Knative Serving has access to information about how traffic is flowing to our services, it can understand the load that our services are experiencing and make use of a purposefully built autoscaler to upscale or downscale our service instances based on demand. This can be really useful for platform teams looking to implement a function-as-a-service model for their workloads, as Knative Serving can downscale to zero services that are not receiving traffic. 
 
-Knative Services also expose a simplified configuration that resembles Containers as a Service models like Google Cloud Run, Azure Container Apps and AWS App Runner, where by defining which container we want to run, the platform will take care of the rest (no complex configurations for networking, routing traffic, etc). 
+Knative Services also expose a simplified configuration that resembles a Containers-as-a-Service model like Google Cloud Run, Azure Container Apps, and AWS App Runner, whereby defining which container we want to run, the platform will take care of the rest (no complex configurations for networking, routing traffic, etc). 
 
 Because the Notifications Service uses Kafka for emitting events, we need to install Kafka using Helm:
 
@@ -145,7 +152,7 @@ You can apply this resource by running:
 kubectl apply -f knative/notifications-service.yaml
 ```
 
-Knative Serving will create an instance of our container and setup all the networking configurations to provide us with an URL to access the service. 
+Knative Serving will create an instance of our container and setup all the networking configurations to provide us with a URL to access the service. 
 
 You can list all Knative Services running the following command: 
 
@@ -194,13 +201,13 @@ After 90 seconds (by default), if you are not sending requests to the Notificati
 
 To recap, we get two things out of the box with Knative Serving: 
 - A simplified way to run our workloads without creating multiple Kubernetes Resources. This approach resembles a Container-as-a-Service offering, that as a Platform team you might want to offer to your teams.
-- Dynamic autoscaling using the Knative Autoscaler, which can be used to downscaled your applications to zero when they are not being used. This resembles a Functions-as-a-Service approach, that as a Platform team you might want to provide your teams.
+- Dynamic autoscaling using the Knative Autoscaler, which can be used to downscale your applications to zero when they are not being used. This resembles a Functions-as-a-Service approach, that as a Platform team, you might want to provide your teams.
 
 ## Run the Conference application with Knative Services
 
 In this section we will look into implementing different release strategies for our Conference Application, for that we will be deploying all the other application services also using Knative Services. 
 
-Before installing the other services we need to set up PostgreSQL and Redis, as we already installed Kafka before. Before installing PostgreSQL we need to create a ConfigMap containing the SQL statement create the `Proposals` Table, so the Helm Chart can reference to the configMap and execute the statement when the database instance is started.
+Before installing the other services we need to set up PostgreSQL and Redis, as we already installed Kafka before. Before installing PostgreSQL we need to create a ConfigMap containing the SQL statement and create the `Proposals` Table, so the Helm Chart can reference the configMap and execute the statement when the database instance is started.
 
 ```shell
 kubectl apply -f knative/c4p-sql-init.yaml
@@ -254,10 +261,10 @@ Now that we have the application up and running let's take a look at some differ
 
 # Canary releases
 
-In this section we will run a simple example showing how to do canary releases by using Knative Services. We will start simple by looking into percentage-based traffic splitting.
+In this section, we will run a simple example showing how to do canary releases by using Knative Services. We will start simply by looking into percentage-based traffic splitting.
 
 
-Percentage-based traffic-splitting functionalities provided out-of-the-box by Knative Services. We will be updating the Notification Service that we deployed before instead of changing the Frontend as dealing with multiple requests to fetch CCS and JavaScript files can get tricky when using percentage based traffic-splitting.
+Percentage-based traffic-splitting functionalities provided out-of-the-box by Knative Services. We will be updating the Notification Service that we deployed before instead of changing the Frontend as dealing with multiple requests to fetch CCS and JavaScript files can get tricky when using percentage-based traffic-splitting.
 
 To make sure that the service is still up and running you can run the following command: 
 
@@ -281,7 +288,7 @@ You should see the following output:
 
 ```
 
-You can edit the Knative Service (ksvc) of the Notification Service and create a new revision by changing the container image that the service is using or changing any other configuration parameter such as environment variables:
+You can edit the Knative Service (`ksvc`) of the Notification Service and create a new revision by changing the container image that the service is using or changing any other configuration parameter such as environment variables:
 
 ```shell
 kubectl edit ksvc notifications-service
@@ -380,15 +387,15 @@ The moment that one revision (version) doesn't has any traffic rule point to it,
 
 # A/B Testing and Blue/Green Deployments
 
-With A/B testing we want to run two or more versions of the same application/service at the same time to enable different group of users to test changes so we can decide which version works best for them. 
+With A/B testing we want to run two or more versions of the same application/service at the same time to enable different groups of users to test changes so we can decide which version works best for them. 
 
-With Knative Serving we have two options: `Header-based` routing and `Tag-based` routing, both uses the same mechanisms and configurations behind the covers, but let's see how these mechanisms can be used. 
+With Knative Serving we have two options: `Header-based` routing and `Tag-based` routing, both use the same mechanisms and configurations behind the covers, but let's see how these mechanisms can be used. 
 
-With Tag/Header-based routing we have more control about where request will go, as we can use an HTTP header or a specific URL to instruct Knative networking mechanisms to route traffic to specific versions of the service. 
+With Tag/Header-based routing we have more control over where request will go, as we can use an HTTP header or a specific URL to instruct Knative networking mechanisms to route traffic to specific versions of the service. 
 
-This means that for this example we can change the Frontend of our application, as all request including a Header or a specific URL will be rounted to the same version of the service.
+This means that for this example we can change the Frontend of our application, as all requests including a Header or a specific URL will be routed to the same version of the service.
 
-Make sure to access application Frontend by pointing your browser to [http://frontend.default.127.0.0.1.sslip.io](http://frontend.default.127.0.0.1.sslip.io)
+Make sure to access the application Frontend by pointing your browser to [http://frontend.default.127.0.0.1.sslip.io](http://frontend.default.127.0.0.1.sslip.io)
 
 ![frontend v1.0.0](../imgs/frontend-v1.0.0.png)
 
@@ -433,7 +440,7 @@ Notice that no traffic (percent: 0) will be routed to `v1.1.0` unless the tag is
 Notice that `v1.1.0` has a different color theme, when you see them side by side you can notice the difference. Check the other sections of the application too. 
 
 
-If for some reason, you don't want or can't change the URL of the service, you can use HTTP Headers to acesss `v1.1.0`. Using a Browser plugin like [Chrome ModHeader](https://chrome.google.com/webstore/detail/modheader-modify-http-hea/idgpnmonknjnojddfkpgkljpfnnfcklj) you can modify all the requests that the browser is sending by adding parameters or headers. 
+If for some reason, you don't want or can't change the URL of the service, you can use HTTP Headers to access `v1.1.0`. Using a Browser plugin like [Chrome ModHeader](https://chrome.google.com/webstore/detail/modheader-modify-http-hea/idgpnmonknjnojddfkpgkljpfnnfcklj) you can modify all the requests that the browser is sending by adding parameters or headers. 
 
 Here we are setting the `Knative-Serving-Tag` header with the value `version110`, which is the name of the tag that we configured in the traffic rules for our frontend Knative Service. 
 
@@ -442,7 +449,7 @@ Now we can access to the normal Knative Service URL (with no changes) to access 
 ![v1.1.0 with header](../imgs/frontend-v1.1.0-with-header.png)
 
 
-Tag and Header based routing allow us to implement Blue/Green deployments in the same way, as the `green` service (the one we want to test until it is ready for prime time) can be hidden behind a tag with 0% traffic assigned to it.
+Tag and header-based routing allow us to implement Blue/Green deployments in the same way, as the `green` service (the one we want to test until it is ready for prime time) can be hidden behind a tag with 0% traffic assigned to it.
 
 ```yaml
 traffic:
@@ -465,7 +472,7 @@ traffic:
       
 ```
 
-To recap, by using Knative Services traffic splitting and header/tag based routing capabilities we have implemented Canary Releases, A/B testing patterns and Blue/Green deployments. Check the [Knative Website](https://knative.dev) for more information about the project. 
+To recap, by using Knative Services traffic splitting and header/tag-based routing capabilities we have implemented Canary Releases, A/B testing patterns, and Blue/Green deployments. Check the [Knative Website](https://knative.dev) for more information about the project. 
 
 ## Clean up
 
