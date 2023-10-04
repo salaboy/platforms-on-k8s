@@ -84,7 +84,7 @@ func main() {
 	reader := getKafkaReader(KafkaUrl, KafkaTopic, KafkaGroupId)
 
 	retry.Constant(ctx, time.Second*5, func(ctx context.Context) error {
-		kafkaAlive, err := isKafkaAlive(KafkaUrl, KafkaTopic)
+		kafkaAlive, err := isKafkaAlive()
 		if !kafkaAlive {
 			log.Printf("Cannot connect to Kafka, retrying until it is healthy.")
 			return retry.RetryableError(err)
@@ -139,8 +139,8 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 	})
 }
 
-func isKafkaAlive(kafkaURL string, topic string) (bool, error) {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
+func isKafkaAlive() (bool, error) {
+	conn, err := kafka.DialLeader(context.Background(), "tcp", KafkaUrl, KafkaTopic, 0)
 	if err != nil {
 		return false, err
 	}
@@ -329,8 +329,16 @@ func NewChiServer() *chi.Mux {
 	r.Handle("/*", http.StripPrefix("/", fs))
 
 	// Add handlers for readiness and liveness endpoints
-	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/health/liveness", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	})
+
+	r.HandleFunc("/health/readiness", func(w http.ResponseWriter, r *http.Request) {
+		is, err := isKafkaAlive()
+		if !is || err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]bool{"ok": false})
+		}
 	})
 
 	return r
