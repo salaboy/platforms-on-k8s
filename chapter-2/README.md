@@ -85,7 +85,7 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/rele
 ```
 
 > [!Note]
-> Review deploy.yaml to gain a better understanding of actions being carried to support Installing the NGINX Ingress Controller. At a high level, the list of actions include: Creating a Namespace, Setting Up Service Accounts, Defining Roles and ClusterRoles, Creating RoleBindings and ClusterRoleBindings, Configure a ConfigMap, Exposing and Deploying Ingress Controller, Creating Jobs for Webhook Configuration, Setting up IngressClass, and Configuring a ValidatingWebHookConfigration.
+> Review deploy.yaml to gain a better understanding of actions being carried to support Installing the NGINX Ingress Controller. At a high level, the list of actions include: Creating a Namespace, Setting Up Service Accounts, Defining Roles and ClusterRoles, Creating RoleBindings and ClusterRoleBindings, Configuring a ConfigMap, Exposing and Deploying Ingress Controller, Creating Jobs for Webhook Configuration, Setting up IngressClass, and Configuring a ValidatingWebHookConfigration.
 
 
 Check that the pods inside the `ingress-nginx` are started correctly before proceeding: 
