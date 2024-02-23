@@ -39,6 +39,12 @@ Then install the Crossplane Helm provider:
 kubectl crossplane install provider index.docker.io/crossplane/provider-helm:v0.10.0
 ```
 
+Then we need to patch the image name to make sure that we are using the appropriate controller: 
+
+```
+kubectl set image -n crossplane-system deployment/crossplane-provider-helm-3d2f09bcd965 package-runtime=index.docker.io/crossplane/provider-helm-controller:v0.10.0
+```
+
 We need the correct `ServiceAccount` to create a new `ClusterRoleBinding` so the Helm Provider can install Charts on our behalf. 
 
 ```shell
