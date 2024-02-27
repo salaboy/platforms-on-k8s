@@ -29,9 +29,16 @@ For this tutorial, we will define an Environment API and a Crossplane Compositio
 
 Check the Crossplane Composite Resource Definition (XRD) for our [Environments here](resources/env-resource-definition.yaml) and the Crossplane [Composition here](resources/composition-devenv.yaml). This resource configures the provisioning of a new `vcluster` using the Crossplane Helm Provider, [check this configuration here](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-6/resources/composition-devenv.yaml#L24). When a new `vcluster` is created then the composition install our Conference Application into it, once again using the Crossplane Helm Provider, but this time configured [pointing to the just created `vcluster` APIs](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-6/resources/composition-devenv.yaml#L87), you can [check this here](https://github.com/salaboy/platforms-on-k8s/blob/main/chapter-6/resources/composition-devenv.yaml#L117).
 
-Let's install both the XRD and the Composition by running: 
+Let's install both XRD by running: 
+
 ```shell
-kubectl apply -f resources/
+kubectl apply -f resources/definitions
+```
+
+Now that the XRD is defined, let's install the Composition by running:
+
+```shell
+kubectl apply -f resources/compositions
 ```
 
 You should see: 
@@ -160,7 +167,7 @@ Once installed you can port-forward to the Admin UI by running:
 kubectl port-forward svc/admin 8081:80
 ```
 
-Now you can create and check your environments using a simple interface. If you wait for the environment to be ready, you will get the `vcluster` command to use to connect to the environment.
+Now you can create and check your environments using a simple interface at [http://localhost:8081](http://localhost:8081). If you wait for the environment to be ready, you will get the `vcluster` command to use to connect to the environment.
 
 ![imgs/admin-ui.png](imgs/admin-ui.png)
 

@@ -24,45 +24,27 @@ Let's install [Crossplane](https://crossplane.io) into its own namespace using H
 helm repo add crossplane-stable https://charts.crossplane.io/stable
 helm repo update
 
-helm install crossplane --namespace crossplane-system --create-namespace crossplane-stable/crossplane --wait
+helm install crossplane --namespace crossplane-system --create-namespace crossplane-stable/crossplane --version 1.15.0 --wait 
 ```
 
-Install the `kubectl crossplane` plugin: 
+Then install the Crossplane Helm provider, along with a new `ClusterRoleBinding` so the Helm Provider can install Charts on our behalf. 
 
 ```shell
-curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | sh
-sudo mv kubectl-crossplane /usr/local/bin
+kubectl apply -f crossplane/helm-provider.yaml
 ```
-
-Then install the Crossplane Helm provider: 
-```shell
-kubectl crossplane install provider index.docker.io/crossplane/provider-helm:v0.10.0
-```
-
-Then we need to patch the image name to make sure that we are using the appropriate controller: 
-
-```
-kubectl set image -n crossplane-system deployment/crossplane-provider-helm-3d2f09bcd965 package-runtime=index.docker.io/crossplane/provider-helm-controller:v0.10.0
-```
-
-We need the correct `ServiceAccount` to create a new `ClusterRoleBinding` so the Helm Provider can install Charts on our behalf. 
-
-```shell
-SA=$(kubectl -n crossplane-system get sa -o name | grep provider-helm | sed -e 's|serviceaccount\/|crossplane-system:|g')
-kubectl create clusterrolebinding provider-helm-admin-binding --clusterrole cluster-admin --serviceaccount="${SA}"
-```
-
-```shell
-kubectl apply -f crossplane/helm-provider-config.yaml
-```
-
 
 After a few seconds, if you check the configured providers, you should see the Helm `INSTALLED` and `HEALTHY`: 
 
 ```shell
-> kubectl get providers.pkg.crossplane.io
-NAME                             INSTALLED   HEALTHY   PACKAGE                               AGE
-crossplane-provider-helm         True        True      crossplane/provider-helm:v0.10.0      49s
+❯ kubectl get providers.pkg.crossplane.io
+NAME            INSTALLED   HEALTHY   PACKAGE                                                    AGE
+provider-helm   True        True      xpkg.upbound.io/crossplane-contrib/provider-helm:v0.17.0   49s
+```
+
+Then create a `ProviderConfig` that instructs the Helm Provider to use the in-cluster config to install Charts within the cluster.
+
+```shell
+kubectl apply -f crossplane/helm-provider-config.yaml
 ```
 
 Now we are ready to install our Databases and Message Brokers Crossplane compositions to provide all the components our application needs.
@@ -70,10 +52,17 @@ Now we are ready to install our Databases and Message Brokers Crossplane composi
 
 ## App Infrastructure on demand using Crossplane Compositions
 
-We need to install our Crossplane Compositions for our Key-Value Database (Redis), our SQL Database (PostgreSQL), and our Message Broker(Kafka). 
+We need to install our Crossplane Composite Resource Definitions (XRDs) for our Key-Value Database (Redis), our SQL Database (PostgreSQL), and our Message Broker (Kafka). 
 
 ```shell
-kubectl apply -f resources/
+kubectl apply -f resources/definitions
+```
+
+Now install the corresponding Crossplane Compositions and initialization data:
+
+```shell
+kubectl apply -f resources/compositions
+kubectl apply -f resources/config
 ```
 
 The Crossplane Composition resource (`app-database-redis.yaml`) defines which cloud resources need to be created and how they need to be configured together. The Crossplane Composite Resource Definition (XRD) (`app-database-resource.yaml`) defines a simplified interface that enables application development teams to quickly request new databases by creating resources of this type.
@@ -186,7 +175,7 @@ You can now create as many database or message broker instances as your cluster 
 
 ## Let's deploy our Conference Application
 
-Ok, now that we have our two databases and our message broker running, we need to make sure that our application services connect to these instances. The first thing that we need to do is to disable the Helm dependencies defined in the Conference Application chart so that when the application gets installed, don't install the databases and the message broker. We can do this by setting the `install.infrastructure` flag to `false`.
+Ok, now that we have our two databases and our message broker running, we need to make sure that our application services connect to these instances. The first thing that we need to do is to disable the Helm dependencies defined in the Conference Application chart so that when the application gets installed, it doesn't install the databases and the message broker. We can do this by setting the `install.infrastructure` flag to `false`.
 
 For that, we will use the `app-values.yaml` file containing the configurations for the services to connect to our newly created databases:
 
@@ -220,7 +209,7 @@ notifications:
 
 Notice that the `app-values.yaml` file relies on the names that we specified for our databases (`my-db-keyavalue` and `my-db-sql`) and our message brokers (`my-mb-kafka`) in the example files. If you request other databases and message brokers with different names you will need to adapt this file with the new names.
 
-Once the application pods start you should have access to the application by pointing your browser to [http://localhost](http://localhost). 
+Once the application pods start you should have access to the application by pointing your browser to [http://localhost:8080](http://localhost:8080). 
 If you made it this far, you can now provision multi-cloud infrastructure using Crossplane Compositions. Check the [AWS Crossplane Compositions Tutorial](aws/) which was contributed by [@asarenkansah](https://github.com/asarenkansah). By separating the application infrastructure provision from the application code you not only enable cross-cloud provider portability but also enable teams to connect the application's services with infrastructure that can be managed by the platform team.
 
 
