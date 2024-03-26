@@ -17,7 +17,10 @@ You'll need the tools below to follow the step-by-step tutorials linked in the b
 These are technologies and versions used when testing the tutorials.
 
 > [!Warning]
-> If you want to use other technologies, like [Podman](https://podman.io/) instead of Docker, it should be possible as there is nothing specific to Docker.
+> If you want to use other technologies, like [Podman](https://podman.io/) instead of Docker, it is possible by turning on rootful container execution with this command
+```shell
+podman machine set --rootful
+```
 
 ## Conference Application Scenario
 
