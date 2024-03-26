@@ -26,7 +26,7 @@ type ServerInterface interface {
 	// (POST /proposals/{proposalId}/decide/)
 	DecideProposal(w http.ResponseWriter, r *http.Request, proposalId string)
 	// Get Service Info
-	// (GET /service/info)
+	// (GET /service/info/)
 	GetServiceInfo(w http.ResponseWriter, r *http.Request)
 }
 
@@ -262,7 +262,7 @@ func HandlerWithOptions(si ServerInterface, options ChiServerOptions) http.Handl
 		r.Post(options.BaseURL+"/proposals/{proposalId}/decide/", wrapper.DecideProposal)
 	})
 	r.Group(func(r chi.Router) {
-		r.Get(options.BaseURL+"/service/info", wrapper.GetServiceInfo)
+		r.Get(options.BaseURL+"/service/info/", wrapper.GetServiceInfo)
 	})
 
 	return r

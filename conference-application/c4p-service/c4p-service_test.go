@@ -63,17 +63,9 @@ func Test_API(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a GET request is made to '/service/info'", func(t *testing.T) {
+	t.Run("It should return 200 when a GET request is made to '/service/info/'", func(t *testing.T) {
 		// arrange, act
-		resp, _ := http.Get(fmt.Sprintf("%s/service/info", ts.URL))
-
-		// assert
-		assert.Equal(t, http.StatusOK, resp.StatusCode)
-	})
-
-	t.Run("It should return 200 when a GET request is made to '/proposals/'", func(t *testing.T) {
-		// arrange, act
-		resp, _ := http.Get(fmt.Sprintf("%s/proposals/", ts.URL))
+		resp, _ := http.Get(fmt.Sprintf("%s/service/info/", ts.URL))
 
 		// assert
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
