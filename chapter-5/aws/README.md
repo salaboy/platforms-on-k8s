@@ -12,7 +12,7 @@ In this step-by-step tutorial, we will use Crossplane to Provision Redis, Postgr
 
 ## Installing Crossplane
 
-To install Crossplane, you need to have a Kubernetes Cluster; you can create one using KinD as we did for you [Chapter 2](../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind). 
+To install Crossplane, you need to have a Kubernetes Cluster; you can create one using KinD as we did for you [Chapter 2](../../chapter-2/README.md#creating-a-local-cluster-with-kubernetes-kind). 
 
 Let's install [Crossplane](https://crossplane.io) into its own namespace using Helm: 
 
