@@ -4,12 +4,13 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/stretchr/testify/assert"
-	tc "github.com/testcontainers/testcontainers-go/modules/compose"
-	"github.com/testcontainers/testcontainers-go/wait"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+	tc "github.com/testcontainers/testcontainers-go/modules/compose"
+	"github.com/testcontainers/testcontainers-go/wait"
 )
 
 func testServer() *httptest.Server {
@@ -73,17 +74,17 @@ func Test_API(t *testing.T) {
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a POST is made to '/api/events'", func(t *testing.T) {
+	t.Run("It should return 200 when a POST is made to '/api/events/'", func(t *testing.T) {
 		// arrange, act
-		resp, _ := http.Post(fmt.Sprintf("%s/api/events", ts.URL), "", nil)
+		resp, _ := http.Post(fmt.Sprintf("%s/api/events/", ts.URL), "", nil)
 
 		// assert
 		assert.Equal(t, http.StatusOK, resp.StatusCode)
 	})
 
-	t.Run("It should return 200 when a GET is made to '/api/events'", func(t *testing.T) {
+	t.Run("It should return 200 when a GET is made to '/api/events/'", func(t *testing.T) {
 		// arrange, act
-		resp, _ := http.Get(fmt.Sprintf("%s/api/events", ts.URL))
+		resp, _ := http.Get(fmt.Sprintf("%s/api/events/", ts.URL))
 
 		// assert
 		assert.Equal(t, http.StatusOK, resp.StatusCode)

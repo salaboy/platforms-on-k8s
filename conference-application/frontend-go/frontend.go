@@ -16,6 +16,7 @@ import (
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/chi/v5"
 	"github.com/salaboy/platforms-on-k8s/conference-application/frontend-go/api"
+	"github.com/sethvargo/go-retry"
 
 	kafka "github.com/segmentio/kafka-go"
 )
@@ -77,15 +78,19 @@ type Features struct {
 
 func main() {
 
+	ctx := context.Background()
 	r := NewChiServer()
 	log.Printf("Connecting to Kafka Instance: %s, topic: %s., group: %s", KafkaUrl, KafkaTopic, KafkaGroupId)
 	reader := getKafkaReader(KafkaUrl, KafkaTopic, KafkaGroupId)
 
-	kafkaAlive := isKafkaAlive(KafkaUrl, KafkaTopic)
-	if !kafkaAlive {
-		log.Printf("Cannot connect to Kafka, restarting until it is healthy.")
-		return
-	}
+	retry.Constant(ctx, time.Second*5, func(ctx context.Context) error {
+		kafkaAlive, err := isKafkaAlive()
+		if !kafkaAlive {
+			log.Printf("Cannot connect to Kafka, retrying until it is healthy.")
+			return retry.RetryableError(err)
+		}
+		return nil
+	})
 
 	go consumeFromKafka(reader)
 
@@ -134,11 +139,12 @@ func getKafkaReader(kafkaURL, topic, groupID string) *kafka.Reader {
 	})
 }
 
-func isKafkaAlive(kafkaURL string, topic string) bool {
-	conn, err := kafka.DialLeader(context.Background(), "tcp", kafkaURL, topic, 0)
+func isKafkaAlive() (bool, error) {
+	conn, err := kafka.DialLeader(context.Background(), "tcp", KafkaUrl, KafkaTopic, 0)
 	if err != nil {
-		panic(any(err.Error()))
+		return false, err
 	}
+
 	defer conn.Close()
 
 	brokers, err := conn.Brokers()
@@ -151,9 +157,9 @@ func isKafkaAlive(kafkaURL string, topic string) bool {
 		log.Printf("Available Broker: %v", b)
 	}
 	if len(brokers) > 0 {
-		return true
+		return true, nil
 	} else {
-		return false
+		return false, nil
 	}
 
 }
@@ -323,8 +329,16 @@ func NewChiServer() *chi.Mux {
 	r.Handle("/*", http.StripPrefix("/", fs))
 
 	// Add handlers for readiness and liveness endpoints
-	r.HandleFunc("/health/{endpoint:readiness|liveness}", func(w http.ResponseWriter, r *http.Request) {
+	r.HandleFunc("/health/liveness", func(w http.ResponseWriter, r *http.Request) {
 		json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	})
+
+	r.HandleFunc("/health/readiness", func(w http.ResponseWriter, r *http.Request) {
+		is, err := isKafkaAlive()
+		if !is || err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			json.NewEncoder(w).Encode(map[string]bool{"ok": false})
+		}
 	})
 
 	return r
