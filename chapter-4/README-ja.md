@@ -16,7 +16,7 @@ _🌍 利用可能な言語_: [English](README.md) | [中文 (Chinese)](README-z
 - クラスタにArgoCDをインストールします。[こちらの手順](https://argo-cd.readthedocs.io/en/stable/getting_started/)に従い、オプションで`argocd` CLIをインストールします
 - アプリケーションの設定を変更したい場合は、[このリポジトリ](http://github.com/salaboy/platforms-on-k8s/)をフォーク/コピーする必要があります。リポジトリへの書き込みアクセスが必要です。`chapter-4/argo-cd/staging/`ディレクトリを使用します
 
-[第2章で行ったようにKinDクラスタを作成します](../chapter-2/README-ja.md#kubernetes-kindを使用してローカルクラスタを作成する)。
+[第2章で行ったようにKinDクラスタを作成します](../chapter-2/README-ja.md#KinDでローカルクラスターを作成する)。
 
 nginx-ingressコントローラーを使用してクラスタが稼働したら、クラスタにArgo CDをインストールしましょう：
 
