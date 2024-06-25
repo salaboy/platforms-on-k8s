@@ -15,7 +15,7 @@ CrossplaneとCrossplane Compositionsを使用して、これらのコンポー�
 
 ## Crossplaneのインストール
 
-Crossplaneをインストールするには、Kubernetesクラスターが必要です。[第2章](../chapter-2/README-ja.md#kubernetes-kindを使用してローカルクラスタを作成する)で行ったように、KinDを使用してクラスターを作成できます。
+Crossplaneをインストールするには、Kubernetesクラスターが必要です。[第2章](../chapter-2/README-ja.md#kindでローカルクラスターを作成する)で行ったように、KinDを使用してクラスターを作成できます。
 
 [Crossplane](https://crossplane.io)を独自の名前空間にHelmを使用してインストールしましょう：
 
