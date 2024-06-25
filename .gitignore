@@ -22,3 +22,7 @@ go.work
 
 .idea
 .DS_Store
+
+
+# Ignoring vscode
+.vscode
