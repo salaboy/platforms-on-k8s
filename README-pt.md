@@ -6,7 +6,7 @@ Este repositório contém todo o código-fonte, tutoriais e exemplos do livro [E
 
 ## Tutoriais K8s
 
-_Disponível em_: [English](README.md) | [中文 (Chinese)](README.zh.md) | [Português(Portuguese)](README-pt.md)
+_Disponível em_: [English](README.md) | [中文 (Chinese)](README.zh.md) | [Português(Portuguese)](README-pt.md) | [日本語 (Japanese)](README-ja.md)
 > **Nota:** Essa diversidade de idiomas é trazida até você por [contribuidores](https://github.com/salaboy/platforms-on-k8s/graphs/contributors) de uma fantástica comunidade cloud native. Muito obrigado! 🚀
 
 Cada capítulo do livro refere-se a um tutorial passo a passo que você pode executar para se familiarizar com alguns projetos open-source.
