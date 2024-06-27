@@ -4,7 +4,7 @@ Este repositorio contiene todo el código fuente, los tutoriales y los ejemplos 
 
 ## Tutoriales de Kubernetes
 
-Disponible en: [Inglés](README.md) | [Chino](README-zh.md) | [Portugués](README-pt.md)
+Disponible en: [Inglés](README.md) | [Chino](README-zh.md) | [Portugués](README-pt.md) | [日本語 (Japanese)](README-ja.md)
 
 Nota: Esta diversidad lingüística es posible gracias a los contribuyentes de una fantástica comunidad de cloud-native. ¡Muchas gracias! 🚀
 
