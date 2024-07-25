@@ -10,7 +10,7 @@ Nota: Esta diversidad lingüística es posible gracias a los contribuyentes de u
 
 Cada capítulo del libro hace referencia a un tutorial paso a paso que puede ejecutar para ensuciarse las manos con algunos proyectos de código abierto.
 
-- [Capítulo 1: (El surgimiento) Plataformas basadas en Kubernetes](chapter-1/README.md)
+- [Capítulo 1: (El surgimiento) Plataformas basadas en Kubernetes](chapter-1/README-es.md)
 - Capítulo 2: Desafíos de las aplicaciones nativas en la nube
 - Capítulo 3: Pipelines de servicios: construcción de aplicaciones nativas en la nube
 - Capítulo 4: Pipelines de entorno: despliegue de aplicaciones nativas en la nube
