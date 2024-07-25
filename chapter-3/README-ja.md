@@ -1,7 +1,7 @@
 # サービスパイプライン
 
 ---
-*🌍 翻訳*: [English](README.md) | [中文 (Chinese)](README-zh.md) | [日本語](README-ja.md)
+*🌍 翻訳*: [English](README.md) | [中文 (Chinese)](README-zh.md) | [日本語 (Japanese)](README-ja.md) | [Español](README-es.md)
 > **注意:** このコンテンツは素晴らしいクラウドネイティブコミュニティの [🌟 コントリビューター](https://github.com/salaboy/platforms-on-k8s/graphs/contributors) によってもたらされています！
 ---
 
