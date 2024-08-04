@@ -19,7 +19,7 @@ algunos proyectos de código abierto.
 - [Capítulo 3: Pipelines de servicios: construcción de aplicaciones nativas en la nube](chapter-3/README-es.md)
 - Capítulo 4: Pipelines de entorno: despliegue de aplicaciones nativas en la nube
 - [Capítulo 5: Infraestructura multi-nube (App)](chapter-5/README-es.md)
-- Capítulo 6: Construyamos una plataforma basada en Kubernetes
+- [Capítulo 6: Construyamos una plataforma basada en Kubernetes](chapter-6/README-es.md)
 - Capítulo 7: Capacidades de la plataforma I: Preocupaciones comunes de las aplicaciones
 - Capítulo 8: Capacidades de la plataforma II: Permitir que los equipos experimenten
 - Capítulo 9: Mida sus plataformas
