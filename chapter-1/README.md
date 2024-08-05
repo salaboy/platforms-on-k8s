@@ -1,7 +1,7 @@
 # Chapter 1 :: (The rise of) Platforms on Top of Kubernetes
 
 ---
-_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md) | [Português (Portuguese)](README-pt.md) | [Español](README-es.md) | [日本語 (Japanese)](README-ja.md)
+_🌍 Available in_: [English](README.md) | [中文 (Chinese)](README-zh.md) | [Português (Portuguese)](README-pt.md) | [Español](README-es.md) | [日本語 (Japanese)](README-ja.md) | [French](README-fr.md)
 > **Note:** Brought to you by the fantastic cloud-native community's [ 🌟 contributors](https://github.com/salaboy/platforms-on-k8s/graphs/contributors)!
 
 ---
