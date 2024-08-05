@@ -1,7 +1,7 @@
 # 第1章 :: Kubernetesの上に構築されるプラットフォーム（の台頭）
 
 ---
-_🌍 翻訳_: [English](README.md) | [中文 (Chinese)](README-zh.md) | [Português (Portuguese)](README-pt.md) | [Español](README-es.md) | [日本語](README-ja.md)
+_🌍 翻訳_: [English](README.md) | [中文 (Chinese)](README-zh.md) | [Português (Portuguese)](README-pt.md) | [Español](README-es.md) | [日本語](README-ja.md) | [French](README-fr.md)
 > **注意:** このコンテンツは素晴らしいクラウドネイティブコミュニティの [🌟 コントリビューター](https://github.com/salaboy/platforms-on-k8s/graphs/contributors) によってもたらされています！
 
 ---
