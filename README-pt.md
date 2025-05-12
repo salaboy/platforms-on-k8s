@@ -12,7 +12,7 @@ _Disponível em_: [English](README.md) | [中文 (Chinese)](README.zh.md) | [Por
 Cada capítulo do livro refere-se a um tutorial passo a passo que você pode executar para se familiarizar com alguns projetos open-source.
 
 - [Capítulo 1: (A Ascensão das) Plataformas no Kubernetes](chapter-1/README-pt.md)
-- [Capítulo 2: Desafios da Aplicação Cloud-Native](chapter-2-pt/README.md)
+- [Capítulo 2: Desafios da Aplicação Cloud-Native](chapter-2/README-pt.md)
 - [Capítulo 3: Pipelines de Serviço: Construindo aplicações Cloud-Native](chapter-3/README.md)
 - [Capítulo 4: Pipelines de Ambiente: Implementando aplicações Cloud-Native](chapter-4/README.md)
 - [Capítulo 5: Infraestrutura Multi-Cloud (App)](chapter-5/README.md)
