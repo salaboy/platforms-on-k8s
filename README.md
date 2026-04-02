@@ -1,6 +1,6 @@
 # Platform Engineering on Kubernetes :: Book Code / Tutorials / Examples
 
-This repository contains all the source code, tutorials, and examples from the [Platform Engineering on Kubernetes](https://www.salaboy.com/book/) Book.
+This repository contains all the source code, tutorials, and examples from the [Platform Engineering on Kubernetes](https://www.salaboy.com/books/) Book.
 
 ---
 
