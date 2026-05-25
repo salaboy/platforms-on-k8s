@@ -162,6 +162,10 @@ Here are the Create Application inputs that I've used:
 
 <img src="imgs/argocd-app-creation2.png" width="600">
 
+:warning: As a custom plug-in is being used to handle the Helm chart rendering, make sure to select the `helm-postrender` plug-in file for the Plugin's `NAME` parameter. This is required for the plugin to take affect.
+
+<img src="imgs/argocd-app-creation-plugin.png" width="600">
+
 And left the other values to their default ones, hit **Create** on the top 
 
 Once the App is created, it will automatically synchronize the changes, as we selected the **Automatic** mode.
