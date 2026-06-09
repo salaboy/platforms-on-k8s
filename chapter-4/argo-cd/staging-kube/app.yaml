@@ -805,7 +805,7 @@ spec:
       serviceAccountName: conference-kafka
       containers:
         - name: kafka
-          image: docker.io/bitnami/kafka:3.4.1-debian-11-r0
+          image: docker.io/soldevelo/kafka:3.4.1-debian-12-r0
           imagePullPolicy: "IfNotPresent"
           securityContext:
             allowPrivilegeEscalation: false
@@ -1171,7 +1171,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: redis
-          image: docker.io/bitnami/redis:7.0.11-debian-11-r12
+          image: docker.io/soldevelo/redis:7.0.15-debian-12-r0
           imagePullPolicy: "IfNotPresent"
           securityContext:
             runAsUser: 1001
